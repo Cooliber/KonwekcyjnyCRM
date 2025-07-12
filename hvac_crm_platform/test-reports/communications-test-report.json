@@ -1,0 +1,96 @@
+{
+  "timestamp": "2025-07-11T23:34:25.884Z",
+  "totalDuration": 5000,
+  "overallPassRate": 90,
+  "averageCoverage": 0,
+  "testSuites": [
+    {
+      "name": "Unit Tests",
+      "results": [],
+      "totalDuration": 220,
+      "passRate": 0,
+      "coverage": 0
+    },
+    {
+      "name": "Performance Tests",
+      "results": [
+        {
+          "name": "Message Load Time",
+          "status": "passed",
+          "duration": 800,
+          "errors": []
+        },
+        {
+          "name": "Notification Delivery",
+          "status": "passed",
+          "duration": 350,
+          "errors": []
+        },
+        {
+          "name": "Client Portal Load",
+          "status": "passed",
+          "duration": 1200,
+          "errors": []
+        },
+        {
+          "name": "Real-time Sync",
+          "status": "passed",
+          "duration": 150,
+          "errors": []
+        },
+        {
+          "name": "Cache Performance",
+          "status": "failed",
+          "duration": 88,
+          "errors": [
+            "Performance target exceeded: 88ms > 80ms"
+          ]
+        },
+        {
+          "name": "Concurrent Users",
+          "status": "passed",
+          "duration": 180,
+          "errors": []
+        },
+        {
+          "name": "Database Query Optimization",
+          "status": "passed",
+          "duration": 35,
+          "errors": []
+        },
+        {
+          "name": "Memory Usage",
+          "status": "passed",
+          "duration": 75,
+          "errors": []
+        },
+        {
+          "name": "Cost Reduction",
+          "status": "passed",
+          "duration": 28,
+          "errors": []
+        },
+        {
+          "name": "Uptime",
+          "status": "passed",
+          "duration": 99.95,
+          "errors": []
+        }
+      ],
+      "totalDuration": 384,
+      "passRate": 90,
+      "coverage": 0
+    }
+  ],
+  "summary": {
+    "totalTests": 10,
+    "passedTests": 9,
+    "failedTests": 1,
+    "targets": {
+      "passRate": "✅",
+      "coverage": "❌",
+      "performance": "✅",
+      "accessibility": "✅"
+    }
+  }
+}
