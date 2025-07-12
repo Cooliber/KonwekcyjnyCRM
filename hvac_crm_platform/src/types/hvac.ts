@@ -6,14 +6,14 @@
 import { Id } from "../../convex/_generated/dataModel";
 
 // Warsaw district types
-export type WarsawDistrict = 
-  | 'Śródmieście' 
-  | 'Wilanów' 
-  | 'Mokotów' 
-  | 'Żoliborz' 
-  | 'Ursynów' 
-  | 'Wola' 
-  | 'Praga-Południe' 
+export type WarsawDistrict =
+  | 'Śródmieście'
+  | 'Wilanów'
+  | 'Mokotów'
+  | 'Żoliborz'
+  | 'Ursynów'
+  | 'Wola'
+  | 'Praga-Południe'
   | 'Targówek'
   | 'Ochota'
   | 'Praga-Północ'
@@ -22,7 +22,6 @@ export type WarsawDistrict =
   | 'Białołęka'
   | 'Rembertów'
   | 'Wesoła'
-  | 'Wilanów'
   | 'Włochy'
   | 'Ursus';
 

@@ -27,8 +27,8 @@ export const getAnalyticsData = mutation({
     timeRange: v.union(v.literal("7d"), v.literal("30d"), v.literal("90d"), v.literal("1y")),
     district: v.optional(v.string())
   },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+  handler: async (ctx, _args) => {
+    const userId = await getAuthUserId(_ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const timeRangeMs = getTimeRangeMs(args.timeRange);

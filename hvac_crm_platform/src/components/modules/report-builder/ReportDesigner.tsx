@@ -2,11 +2,11 @@ import React, { useState, useCallback } from 'react';
 import { useDrop } from 'react-dnd';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Button } from '../../ui/button';
-import { 
-  Settings, 
-  Play, 
-  Eye, 
-  Edit3, 
+import {
+  Settings,
+  Play,
+  Eye,
+  Edit3,
   Trash2,
   GripVertical,
   Plus,
@@ -20,17 +20,19 @@ import {
 import { DraggableField } from './DraggableField';
 import { DropZone } from './DropZone';
 import { FieldConfigDialog } from './FieldConfigDialog';
-
-interface ReportDesignerProps {
-  config: any;
-  onChange: (config: any) => void;
-  onExecute: () => Promise<any>;
-}
+import type {
+  ReportConfig,
+  ReportDesignerProps,
+  DataSource,
+  VisualizationType,
+  CalculatedField,
+  ExecutionResult
+} from '../../../types/report-builder';
 
 export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerProps) {
   const [selectedField, setSelectedField] = useState<any>(null);
   const [showFieldConfig, setShowFieldConfig] = useState(false);
-  const [draggedItem, setDraggedItem] = useState<any>(null);
+
 
   const [{ isOver }, drop] = useDrop({
     accept: ['field', 'visualization'],
@@ -49,9 +51,9 @@ export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerPr
   const handleDropItem = useCallback((item: any) => {
     if (item.type === 'field') {
       // Add field to data sources or calculated fields
-      const newDataSource = {
+      const newDataSource: DataSource = {
         id: `field_${Date.now()}`,
-        type: 'convex',
+        type: 'convex' as const,
         table: item.table,
         field: item.field,
         filters: []
@@ -72,7 +74,7 @@ export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerPr
           ...config.config,
           visualization: {
             ...config.config.visualization,
-            type: item.visualizationType
+            type: item.visualizationType as VisualizationType['type']
           }
         }
       });
@@ -164,13 +166,13 @@ export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerPr
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-5 gap-2">
-            {[
-              { type: 'table', icon: Table, label: 'Table' },
-              { type: 'bar_chart', icon: BarChart3, label: 'Bar Chart' },
-              { type: 'line_chart', icon: LineChart, label: 'Line Chart' },
-              { type: 'pie_chart', icon: PieChart, label: 'Pie Chart' },
-              { type: 'gauge', icon: Gauge, label: 'Gauge' }
-            ].map(({ type, icon: Icon, label }) => (
+            {([
+              { type: 'table' as const, icon: Table, label: 'Table' },
+              { type: 'bar_chart' as const, icon: BarChart3, label: 'Bar Chart' },
+              { type: 'line_chart' as const, icon: LineChart, label: 'Line Chart' },
+              { type: 'pie_chart' as const, icon: PieChart, label: 'Pie Chart' },
+              { type: 'gauge' as const, icon: Gauge, label: 'Gauge' }
+            ] as const).map(({ type, icon: Icon, label }) => (
               <button
                 key={type}
                 onClick={() => onChange({
@@ -204,10 +206,10 @@ export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerPr
         </CardHeader>
         <CardContent>
           <div
-            ref={drop}
+            ref={drop as any}
             className={`min-h-32 border-2 border-dashed rounded-lg p-4 transition-colors ${
-              isOver 
-                ? 'border-blue-500 bg-blue-50' 
+              isOver
+                ? 'border-blue-500 bg-blue-50'
                 : 'border-gray-300 hover:border-gray-400'
             }`}
           >
@@ -271,10 +273,10 @@ export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerPr
               variant="outline"
               size="sm"
               onClick={() => {
-                const newField = {
+                const newField: CalculatedField = {
                   name: `calculated_${Date.now()}`,
                   formula: '0',
-                  dataType: 'number'
+                  dataType: 'number' as const
                 };
                 onChange({
                   ...config,
@@ -298,7 +300,7 @@ export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerPr
             </div>
           ) : (
             <div className="space-y-2">
-              {config.config.calculatedFields?.map((field: any, index: number) => (
+              {config.config.calculatedFields?.map((field: CalculatedField, index: number) => (
                 <div
                   key={index}
                   className="flex items-center justify-between p-2 bg-gray-50 rounded border"

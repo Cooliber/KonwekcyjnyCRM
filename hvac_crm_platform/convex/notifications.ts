@@ -12,7 +12,7 @@ const NOTIFICATION_PRIORITIES = {
 };
 
 // Warsaw districts for location-based notifications
-const WARSAW_DISTRICTS = [
+const _WARSAW_DISTRICTS = [
   'Śródmieście', 'Mokotów', 'Wilanów', 'Żoliborz',
   'Ursynów', 'Wola', 'Praga-Południe', 'Targówek'
 ];
@@ -26,8 +26,8 @@ export const list = query({
     priority: v.optional(v.string()),
     district: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+  handler: async (ctx, _args) => {
+    const userId = await getAuthUserId(_ctx);
     if (!userId) throw new Error("Not authenticated");
 
     let notifications = await ctx.db
@@ -90,7 +90,7 @@ export const list = query({
                 relatedData = await ctx.db.get(notification.relatedId as any);
                 break;
             }
-          } catch (error) {
+          } catch (_error) {
             // Related data might not exist anymore
             console.warn(`Related data not found for notification ${notification._id}`);
           }
@@ -99,7 +99,7 @@ export const list = query({
         return {
           ...notification,
           relatedData,
-          priorityInfo: NOTIFICATION_PRIORITIES[notification.priority as keyof typeof NOTIFICATION_PRIORITIES] || NOTIFICATION_PRIORITIES.medium,
+          priorityInfo: NOTIFICATION_PRIORITIES[notification.priority] || NOTIFICATION_PRIORITIES.medium,
           timeAgo: getTimeAgo(notification._creationTime)
         };
       })
@@ -415,7 +415,7 @@ export const getByDistrict = query({
 
     return notifications.map(notification => ({
       ...notification,
-      priorityInfo: NOTIFICATION_PRIORITIES[notification.priority as keyof typeof NOTIFICATION_PRIORITIES] || NOTIFICATION_PRIORITIES.medium,
+      priorityInfo: NOTIFICATION_PRIORITIES[notification.priority] || NOTIFICATION_PRIORITIES.medium,
       timeAgo: getTimeAgo(notification._creationTime)
     }));
   },

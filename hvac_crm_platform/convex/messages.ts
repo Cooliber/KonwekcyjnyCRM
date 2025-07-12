@@ -41,7 +41,7 @@ function getCacheKey(key: string, params: Record<string, any>): string {
 
 function isHighAffluenceDistrict(district?: string): boolean {
   const highAffluenceDistricts = ['Śródmieście', 'Wilanów', 'Mokotów'];
-  return district ? highAffluenceDistricts.includes(district) : false;
+  return district ? highAffluenceDistricts.includes(_district) : false;
 }
 
 function getTTL(baseKey: string, district?: string): number {
@@ -127,7 +127,7 @@ export const list = query({
     includeThreads: v.optional(v.boolean()),
     district: v.optional(v.string()), // For cache TTL optimization
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, _args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 

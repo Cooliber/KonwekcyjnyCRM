@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useQuery } from 'convex/react';
+import { api } from '../../../../convex/_generated/api';
+import { Id } from '../../../../convex/_generated/dataModel';
 import { Button } from '../../ui/button';
 import { 
   Share, 
@@ -19,6 +22,38 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Type definitions for proper TypeScript support
+interface User {
+  _id: Id<"users">;
+  name: string;
+  email?: string;
+  role: string;
+  id?: string; // For compatibility with existing code
+}
+
+interface TechnicianProfile {
+  _id: Id<"users">;
+  name: string;
+  email?: string;
+  role: string;
+  homeLocation?: {
+    lat: number;
+    lng: number;
+  };
+  serviceAreas: string[];
+  skills: string[];
+  vehicleType: string;
+  isActive: boolean;
+  workingHours: {
+    start: string;
+    end: string;
+  };
+}
+
+interface ShareUser extends User {
+  permission: 'view' | 'edit' | 'admin';
+}
+
 interface ShareDialogProps {
   reportId: string | null;
   onClose: () => void;
@@ -33,13 +68,17 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
   const [isPublic, setIsPublic] = useState(false);
   const [linkExpiry, setLinkExpiry] = useState('never');
 
-  // Mock users for demonstration
-  const availableUsers = [
-    { id: 'user1', name: 'Jan Kowalski', email: 'jan.kowalski@hvac.pl', role: 'Technician' },
-    { id: 'user2', name: 'Anna Nowak', email: 'anna.nowak@hvac.pl', role: 'Manager' },
-    { id: 'user3', name: 'Piotr Wiśniewski', email: 'piotr.wisniewski@hvac.pl', role: 'Admin' },
-    { id: 'user4', name: 'Maria Wójcik', email: 'maria.wojcik@hvac.pl', role: 'Analyst' }
-  ];
+  // Fetch users from backend - using getTechnicians as the correct API method
+  const technicianProfiles = useQuery(api.users.getTechnicians, { isActive: true }) || [];
+
+  // Transform technician profiles to User format for compatibility
+  const availableUsers: User[] = technicianProfiles.map((tech: TechnicianProfile) => ({
+    _id: tech._id,
+    name: tech.name,
+    email: tech.email,
+    role: tech.role,
+    id: tech._id // For compatibility with existing code
+  }));
 
   const permissionLevels = [
     { 
@@ -64,9 +103,9 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
 
   const handleAddUser = () => {
     if (!newUserEmail) return;
-    
-    const existingUser = availableUsers.find(u => u.email === newUserEmail);
-    if (existingUser && !selectedUsers.find(u => u.id === existingUser.id)) {
+
+    const existingUser = availableUsers.find((u: User) => u.email === newUserEmail);
+    if (existingUser && !selectedUsers.find((u: ShareUser) => u.id === existingUser.id)) {
       setSelectedUsers([...selectedUsers, { ...existingUser, permission: defaultPermission }]);
       setNewUserEmail('');
     } else if (!existingUser) {
@@ -84,11 +123,11 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
   };
 
   const handleRemoveUser = (userId: string) => {
-    setSelectedUsers(selectedUsers.filter(u => u.id !== userId));
+    setSelectedUsers(selectedUsers.filter((u: ShareUser) => u.id !== userId));
   };
 
   const handleUpdatePermission = (userId: string, permission: 'view' | 'edit' | 'admin') => {
-    setSelectedUsers(selectedUsers.map(u => 
+    setSelectedUsers(selectedUsers.map((u: ShareUser) => 
       u.id === userId ? { ...u, permission } : u
     ));
   };
@@ -100,16 +139,34 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
     }
 
     try {
-      // Share with individual users
-      for (const user of selectedUsers) {
+      if (shareMode === 'users') {
+        // Share with individual users
+        for (const user of selectedUsers) {
+          await onShare({
+            reportId: reportId as any,
+            userId: user.id as any,
+            permission: user.permission
+          });
+        }
+        toast.success(`Report shared with ${selectedUsers.length} user(s)`);
+      } else if (shareMode === 'link') {
+        // Handle link sharing
         await onShare({
           reportId: reportId as any,
-          userId: user.id as any,
-          permission: user.permission
+          shareType: 'link',
+          expiry: linkExpiry
         });
+        toast.success('Share link created');
+      } else if (shareMode === 'public' && isPublic) {
+        // Handle public sharing
+        await onShare({
+          reportId: reportId as any,
+          shareType: 'public',
+          isPublic: true
+        });
+        toast.success('Report is now publicly accessible');
       }
 
-      toast.success(`Report shared with ${selectedUsers.length} user(s)`);
       onClose();
     } catch (error) {
       toast.error('Failed to share report');
@@ -119,7 +176,7 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
 
   const handleCopyLink = () => {
     const link = `${window.location.origin}/reports/${reportId}`;
-    navigator.clipboard.writeText(link);
+    void navigator.clipboard.writeText(link);
     toast.success('Link copied to clipboard');
   };
 
@@ -209,9 +266,9 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
                 <div className="text-sm font-medium text-gray-700 mb-2">Suggested Users</div>
                 <div className="grid grid-cols-2 gap-2">
                   {availableUsers
-                    .filter(user => !selectedUsers.find(u => u.id === user.id))
+                    .filter((user: User) => !selectedUsers.find((u: ShareUser) => u.id === user.id))
                     .slice(0, 4)
-                    .map(user => (
+                    .map((user: User) => (
                     <button
                       key={user.id}
                       onClick={() => {
@@ -221,7 +278,7 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
                     >
                       <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                         <span className="text-xs font-medium text-blue-600">
-                          {user.name.split(' ').map(n => n[0]).join('')}
+                          {user.name.split(' ').map((n: string) => n[0]).join('')}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">

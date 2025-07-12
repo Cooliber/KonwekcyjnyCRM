@@ -81,8 +81,8 @@ async function callOllama(prompt: string, systemPrompt?: string): Promise<string
       throw new Error('Invalid response format from Ollama API');
     }
     return result.response;
-  } catch (error) {
-    console.error("Ollama API call failed:", error);
+  } catch (_error) {
+    console.error("Ollama API call failed:", _error);
     throw new Error("AI service unavailable");
   }
 }

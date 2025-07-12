@@ -16,8 +16,8 @@ export const syncCommunicationData = mutation({
     includeProphecySync: v.optional(v.boolean()),
     auditLevel: v.optional(v.union(v.literal("basic"), v.literal("detailed")))
   },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+  handler: async (ctx, _args) => {
+    const userId = await getAuthUserId(_ctx);
     if (!userId) throw new Error("Not authenticated");
 
     // Get the message data

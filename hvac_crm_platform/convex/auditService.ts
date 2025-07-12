@@ -52,7 +52,7 @@ export const getAuditReport = query({
       v.literal("pending")
     ))
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, _args) => {
     const timeRange = args.timeRange || "24h";
     const timeRangeMs = getTimeRangeMs(timeRange);
     const cutoffTime = Date.now() - timeRangeMs;
@@ -115,7 +115,7 @@ export const getAuditReport = query({
       }));
 
     // Data sync health check
-    const dataSyncHealth = await performDataSyncHealthCheck(ctx);
+    const dataSyncHealth = await performDataSyncHealthCheck(_ctx);
 
     return {
       summary: {

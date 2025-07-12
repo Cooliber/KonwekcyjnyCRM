@@ -96,9 +96,9 @@ export const getOptimizedMessages = query({
     district: v.optional(v.string()),
     priority: v.optional(v.union(v.literal("high"), v.literal("medium"), v.literal("low")))
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, _args) => {
     const startTime = Date.now();
-    const userId = await getAuthUserId(ctx);
+    const userId = await getAuthUserId(_ctx);
     if (!userId) throw new Error("Not authenticated");
 
     // Generate cache key

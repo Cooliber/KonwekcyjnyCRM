@@ -3,7 +3,7 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
 // Warsaw districts for inventory tracking
-const WARSAW_DISTRICTS = [
+const _WARSAW_DISTRICTS = [
   'Śródmieście', 'Mokotów', 'Wilanów', 'Żoliborz',
   'Ursynów', 'Wola', 'Praga-Południe', 'Targówek'
 ];
@@ -31,8 +31,8 @@ export const list = query({
     warehouseId: v.optional(v.id("warehouses")),
     search: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+  handler: async (ctx, _args) => {
+    const userId = await getAuthUserId(_ctx);
     if (!userId) throw new Error("Not authenticated");
 
     let inventory;
@@ -247,7 +247,7 @@ export const updateQuantity = mutation({
 
       // Auto-reorder if enabled
       if (inventory.autoReorder && equipment?.category) {
-        const threshold = STOCK_THRESHOLDS[equipment.category as keyof typeof STOCK_THRESHOLDS];
+        const threshold = STOCK_THRESHOLDS[equipment.category];
         if (threshold) {
           const reorderQuantity = threshold.optimal - newQuantity;
 

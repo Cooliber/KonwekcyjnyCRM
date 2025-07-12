@@ -153,7 +153,7 @@ export function useConvexRealTime(config: UseConvexRealTimeConfig = {}): UseConv
 
     refreshIntervalRef.current = setInterval(() => {
       if (mountedRef.current && !isRefreshing) {
-        refresh();
+        void refresh();
       }
     }, refreshInterval);
 

@@ -333,7 +333,7 @@ export function ServiceAgreementModule() {
     return (completed / total) * 100;
   };
 
-  const handleCreateAgreement = () => {
+  const handleOpenCreateDialog = () => {
     setIsCreateDialogOpen(true);
   };
 
@@ -344,10 +344,6 @@ export function ServiceAgreementModule() {
 
   const handleScheduleService = (agreement: ServiceAgreement) => {
     toast.success(`Planowanie serwisu dla ${agreement.agreementNumber}`);
-  };
-
-  const handleRenewAgreement = (agreement: ServiceAgreement) => {
-    toast.success(`Inicjowanie odnowienia umowy ${agreement.agreementNumber}`);
   };
 
   return (
@@ -361,7 +357,7 @@ export function ServiceAgreementModule() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleCreateAgreement} className="bg-orange-500 hover:bg-orange-600">
+          <Button onClick={handleOpenCreateDialog} className="bg-orange-500 hover:bg-orange-600">
             <Plus className="w-4 h-4 mr-2" />
             Nowa Umowa
           </Button>

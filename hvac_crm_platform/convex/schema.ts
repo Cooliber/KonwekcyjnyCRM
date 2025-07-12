@@ -206,9 +206,19 @@ const applicationTables = {
       taxRate: v.number(),
       equipmentId: v.optional(v.id("equipment"))
     })),
+    // Legacy fields (for backward compatibility)
     subtotal: v.number(),
     totalTax: v.number(),
     totalAmount: v.number(),
+    // Polish VAT compliance fields
+    netAmount: v.optional(v.number()),
+    vatRate: v.optional(v.number()),
+    vatAmount: v.optional(v.number()),
+    grossAmount: v.optional(v.number()),
+    district: v.optional(v.string()), // Warsaw district optimization
+    isReverseCharge: v.optional(v.boolean()),
+    isExport: v.optional(v.boolean()),
+    vatCalculatedAt: v.optional(v.number()),
     paymentHistory: v.array(v.object({
       date: v.number(),
       amount: v.number(),
@@ -226,9 +236,10 @@ const applicationTables = {
     .index("by_status", ["status"])
     .index("by_due_date", ["dueDate"])
     .index("by_contact", ["contactId"])
+    .index("by_district", ["district"])
     .searchIndex("search_invoices", {
       searchField: "invoiceNumber",
-      filterFields: ["status", "jobId"]
+      filterFields: ["status", "jobId", "district"]
     }),
 
   // Enhanced Inventory Management
@@ -282,10 +293,10 @@ const applicationTables = {
     title: v.string(),
     description: v.string(),
     status: v.union(
-      v.literal("draft"), 
-      v.literal("sent"), 
+      v.literal("draft"),
+      v.literal("sent"),
       v.literal("viewed"),
-      v.literal("accepted"), 
+      v.literal("accepted"),
       v.literal("rejected"),
       v.literal("expired")
     ),
@@ -402,6 +413,7 @@ const applicationTables = {
       v.literal("receipt"),
       v.literal("contract"),
       v.literal("bank_statement"),
+      v.literal("quote"),
       v.literal("other")
     ),
     // Extracted Data

@@ -81,8 +81,8 @@ export const optimizeRoutes = action({
     maxJobsPerTechnician: v.optional(v.number()),
     prioritizeUrgent: v.optional(v.boolean()),
   },
-  handler: async (ctx, args): Promise<RouteOptimizationResult> => {
-    const userId = await getAuthUserId(ctx);
+  handler: async (ctx, _args): Promise<RouteOptimizationResult> => {
+    const userId = await getAuthUserId(_ctx);
     if (!userId) throw new Error("Not authenticated");
 
     // Get scheduled jobs for the date

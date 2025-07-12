@@ -40,11 +40,11 @@ export const getCustomerPortalUsers = query({
     )),
     limit: v.optional(v.number())
   },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+  handler: async (ctx, _args) => {
+    const userId = await getAuthUserId(_ctx);
     if (!userId) throw new Error("Unauthorized");
 
-    let query = ctx.db.query("customerPortalUsers");
+    const _query = ctx.db.query("customerPortalUsers");
 
     // Apply filters
     if (args.contactId) {

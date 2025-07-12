@@ -132,7 +132,7 @@ export const uploadFileWithProgress = async (
       onProgress?.(progress);
     }, 200);
 
-    upload.then((result) => {
+    void upload.then((result) => {
       clearInterval(interval);
       onProgress?.(100);
       resolve(result);

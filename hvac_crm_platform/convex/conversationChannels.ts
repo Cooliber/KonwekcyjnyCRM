@@ -30,7 +30,7 @@ export const list = query({
 
     // Filter by district if specified
     if (args.district) {
-      query = ctx.db.query("conversationChannels").filter((q) => q.eq(q.field("district"), args.district!));
+      query = ctx.db.query("conversationChannels").filter((q) => q.eq(q.field("district"), args.district));
     }
 
     const allChannels = await query.collect();

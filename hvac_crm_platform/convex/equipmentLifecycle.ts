@@ -44,11 +44,11 @@ export const getEquipmentLifecycle = query({
     manufacturer: v.optional(v.string()),
     limit: v.optional(v.number())
   },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+  handler: async (ctx, _args) => {
+    const userId = await getAuthUserId(_ctx);
     if (!userId) throw new Error("Unauthorized");
 
-    let query = ctx.db.query("equipmentLifecycle");
+    const _query = ctx.db.query("equipmentLifecycle");
 
     // Apply filters
     if (args.status) {

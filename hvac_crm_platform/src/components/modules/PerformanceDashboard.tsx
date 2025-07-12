@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-import { 
-  Activity, 
-  Zap, 
-  Database, 
-  Clock, 
-  TrendingUp, 
+import {
+  Activity,
+  Zap,
+  Database,
+  Clock,
+  TrendingUp,
   TrendingDown,
   AlertTriangle,
   CheckCircle,
@@ -15,9 +15,20 @@ import {
   RefreshCw,
   Settings,
   Target,
-  Server
+  Server,
+  Monitor,
+  Smartphone,
+  Wifi,
+  HardDrive,
+  Cpu,
+  MemoryStick
 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+import { Progress } from '../ui/progress';
 import { cacheManager } from '../../lib/cacheStrategy';
+import { toast } from 'sonner';
 
 interface PerformanceMetrics {
   totalRequests: number;
@@ -30,6 +41,49 @@ interface PerformanceMetrics {
     cacheHitRate: number;
     maxResponseTime: number;
     maxConcurrentUsers: number;
+  };
+}
+
+interface EnhancedPerformanceMetrics extends PerformanceMetrics {
+  // Bundle size metrics
+  bundleSize: {
+    total: number; // KB
+    vendor: number;
+    app: number;
+    target: number; // 800KB target
+  };
+
+  // Core Web Vitals
+  coreWebVitals: {
+    lcp: number; // Largest Contentful Paint (ms)
+    fid: number; // First Input Delay (ms)
+    cls: number; // Cumulative Layout Shift
+    fcp: number; // First Contentful Paint (ms)
+    ttfb: number; // Time to First Byte (ms)
+  };
+
+  // Mobile performance
+  mobileMetrics: {
+    score: number; // Lighthouse mobile score (0-100)
+    pwa: boolean; // PWA compliance
+    offline: boolean; // Offline capability
+    installable: boolean; // App installability
+  };
+
+  // Real-time metrics
+  realTimeMetrics: {
+    activeUsers: number;
+    concurrentSessions: number;
+    memoryUsage: number; // MB
+    cpuUsage: number; // Percentage
+    networkLatency: number; // ms
+  };
+
+  // Warsaw-specific metrics
+  warsawMetrics: {
+    districtResponseTimes: Record<string, number>;
+    districtCacheHitRates: Record<string, number>;
+    routeOptimizationScore: number;
   };
 }
 

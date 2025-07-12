@@ -200,9 +200,9 @@ function extractPhone(text: string): string | undefined {
 
 function extractAddress(text: string): string | undefined {
   const addressPatterns = [
-    /mieszkam na ([^,\.]+)/i,
-    /adres to ([^,\.]+)/i,
-    /ulica ([^,\.]+)/i,
+    /mieszkam na ([^,.]+)/i,
+    /adres to ([^,.]+)/i,
+    /ulica ([^,.]+)/i,
   ];
 
   for (const pattern of addressPatterns) {
@@ -285,9 +285,9 @@ function extractPreferredDate(text: string): string | undefined {
 function extractAdditionalNotes(text: string): string | undefined {
   // Extract any additional context or special requirements
   const notePatterns = [
-    /dodatkowo ([^\.]+)/i,
-    /ważne że ([^\.]+)/i,
-    /proszę pamiętać ([^\.]+)/i,
+    /dodatkowo ([^.]+)/i,
+    /ważne że ([^.]+)/i,
+    /proszę pamiętać ([^.]+)/i,
   ];
 
   for (const pattern of notePatterns) {

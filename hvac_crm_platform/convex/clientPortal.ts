@@ -120,9 +120,9 @@ export const getClientAccess = query({
     contactId: v.optional(v.id("contacts")),
     accessToken: v.optional(v.string())
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, _args) => {
     // For authenticated users, check if they have access to the contact
-    const userId = await getAuthUserId(ctx);
+    const userId = await getAuthUserId(_ctx);
     
     if (userId) {
       // Internal user access

@@ -1,10 +1,21 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { Plus, Search, Filter, Phone, Mail, Building, MapPin, Mic } from "lucide-react";
+import { Plus, Search, Filter, Phone, Mail, Building, MapPin, Mic, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { EnhancedAddressInput } from "../ui/AddressInput";
 import { TranscriptionModal } from "./TranscriptionModal";
+import { ErrorBoundary } from "../ui/ErrorBoundary";
+import {
+  validateForm,
+  validateEmail,
+  validatePolishPhone,
+  validateWarsawAddress,
+  validateRequired,
+  validateGDPRConsent,
+  sanitizeInput
+} from "../../utils/validation";
+import type { ValidationResult } from "../../utils/validation";
 
 export function ContactsModule() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -12,6 +23,12 @@ export function ContactsModule() {
   const [filterStatus, setFilterStatus] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showTranscriptionModal, setShowTranscriptionModal] = useState(false);
+
+  // Enhanced state for validation and error handling
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
+  const [validationWarnings, setValidationWarnings] = useState<Record<string, string[]>>({});
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
 
   const contacts = useQuery(api.contacts.list, {
     type: filterType === "all" ? undefined : filterType,
@@ -39,12 +56,116 @@ export function ContactsModule() {
     marketingConsent: false,
   });
 
+  // Enhanced form validation configuration
+  const validationConfig = useMemo(() => ({
+    name: {
+      required: true,
+      minLength: 2,
+      maxLength: 100,
+      sanitize: true,
+      accessibility: {
+        label: 'Contact name',
+        description: 'Full name of the contact person'
+      }
+    },
+    email: {
+      required: true,
+      customValidator: validateEmail,
+      accessibility: {
+        label: 'Email address',
+        description: 'Valid email address for contact'
+      }
+    },
+    phone: {
+      required: true,
+      customValidator: validatePolishPhone,
+      accessibility: {
+        label: 'Phone number',
+        description: 'Polish phone number with country code'
+      }
+    },
+    address: {
+      required: true,
+      customValidator: validateWarsawAddress,
+      accessibility: {
+        label: 'Address',
+        description: 'Complete Warsaw address'
+      }
+    },
+    gdprConsent: {
+      required: true,
+      customValidator: (value: boolean) => validateGDPRConsent(value, 'GDPR'),
+      accessibility: {
+        label: 'GDPR consent',
+        description: 'Required consent for data processing'
+      }
+    }
+  }), []);
+
+  // Real-time field validation
+  const validateField = useCallback((fieldName: string, value: any) => {
+    const config = validationConfig[fieldName as keyof typeof validationConfig];
+    if (!config) return;
+
+    const result = validateForm({ [fieldName]: value }, { [fieldName]: config });
+
+    setValidationErrors(prev => ({
+      ...prev,
+      [fieldName]: result.errors[fieldName] || []
+    }));
+
+    setValidationWarnings(prev => ({
+      ...prev,
+      [fieldName]: result.warnings[fieldName] || []
+    }));
+  }, [validationConfig]);
+
+  // Handle field changes with validation
+  const handleFieldChange = useCallback((fieldName: string, value: any) => {
+    setFormData(prev => ({ ...prev, [fieldName]: value }));
+
+    // Mark field as touched
+    setTouchedFields(prev => new Set(prev).add(fieldName));
+
+    // Validate field if it's been touched
+    if (touchedFields.has(fieldName) || value) {
+      validateField(fieldName, value);
+    }
+  }, [validateField, touchedFields]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
     try {
-      await createContact(formData);
-      toast.success("Contact created successfully");
+      // Comprehensive form validation
+      const validationResult = validateForm(formData, validationConfig);
+
+      if (!validationResult.isValid) {
+        setValidationErrors(validationResult.errors);
+        setValidationWarnings(validationResult.warnings);
+
+        // Mark all fields as touched to show errors
+        setTouchedFields(new Set(Object.keys(validationConfig)));
+
+        // Focus on first error field for accessibility
+        const firstErrorField = Object.keys(validationResult.errors)[0];
+        if (firstErrorField) {
+          const element = document.querySelector(`[name="${firstErrorField}"]`) as HTMLElement;
+          element?.focus();
+        }
+
+        toast.error("Please fix the validation errors before submitting");
+        return;
+      }
+
+      // Submit with sanitized data
+      await createContact(validationResult.sanitizedData);
+
+      toast.success("Contact created successfully! 🎉");
       setShowAddForm(false);
+
+      // Reset form state
       setFormData({
         name: "",
         email: "",
@@ -61,8 +182,16 @@ export function ContactsModule() {
         gdprConsent: false,
         marketingConsent: false,
       });
+
+      setValidationErrors({});
+      setValidationWarnings({});
+      setTouchedFields(new Set());
+
     } catch (error) {
-      toast.error("Failed to create contact");
+      console.error("Contact creation failed:", error);
+      toast.error("Failed to create contact. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -88,7 +217,8 @@ export function ContactsModule() {
   };
 
   return (
-    <div className="space-y-6">
+    <ErrorBoundary level="component" enableRetry={true}>
+      <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Contacts & Leads</h1>
@@ -256,38 +386,108 @@ export function ContactsModule() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="contact-name"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Name *
                   </label>
                   <input
+                    id="contact-name"
+                    name="name"
                     type="text"
                     required
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => handleFieldChange('name', e.target.value)}
+                    onBlur={() => setTouchedFields(prev => new Set(prev).add('name'))}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      validationErrors.name?.length ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    aria-describedby={validationErrors.name?.length ? 'name-error' : undefined}
+                    aria-invalid={validationErrors.name?.length ? 'true' : 'false'}
                   />
+                  {validationErrors.name?.length > 0 && (
+                    <div id="name-error" className="mt-1 flex items-center text-sm text-red-600" role="alert">
+                      <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+                      {validationErrors.name[0]}
+                    </div>
+                  )}
+                  {validationWarnings.name?.length > 0 && (
+                    <div className="mt-1 flex items-center text-sm text-orange-600">
+                      <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+                      {validationWarnings.name[0]}
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
+                  <label
+                    htmlFor="contact-email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Email *
                   </label>
                   <input
+                    id="contact-email"
+                    name="email"
                     type="email"
+                    required
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => handleFieldChange('email', e.target.value)}
+                    onBlur={() => setTouchedFields(prev => new Set(prev).add('email'))}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      validationErrors.email?.length ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    aria-describedby={validationErrors.email?.length ? 'email-error' : undefined}
+                    aria-invalid={validationErrors.email?.length ? 'true' : 'false'}
+                    placeholder="contact@example.com"
                   />
+                  {validationErrors.email?.length > 0 && (
+                    <div id="email-error" className="mt-1 flex items-center text-sm text-red-600" role="alert">
+                      <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+                      {validationErrors.email[0]}
+                    </div>
+                  )}
+                  {validationWarnings.email?.length > 0 && (
+                    <div className="mt-1 flex items-center text-sm text-orange-600">
+                      <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+                      {validationWarnings.email[0]}
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
+                  <label
+                    htmlFor="contact-phone"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Phone *
                   </label>
                   <input
+                    id="contact-phone"
+                    name="phone"
                     type="tel"
+                    required
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => handleFieldChange('phone', e.target.value)}
+                    onBlur={() => setTouchedFields(prev => new Set(prev).add('phone'))}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      validationErrors.phone?.length ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    aria-describedby={validationErrors.phone?.length ? 'phone-error' : undefined}
+                    aria-invalid={validationErrors.phone?.length ? 'true' : 'false'}
+                    placeholder="+48 123 456 789"
                   />
+                  {validationErrors.phone?.length > 0 && (
+                    <div id="phone-error" className="mt-1 flex items-center text-sm text-red-600" role="alert">
+                      <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+                      {validationErrors.phone[0]}
+                    </div>
+                  )}
+                  {validationWarnings.phone?.length > 0 && (
+                    <div className="mt-1 flex items-center text-sm text-orange-600">
+                      <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+                      {validationWarnings.phone[0]}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -398,18 +598,45 @@ export function ContactsModule() {
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowAddForm(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setValidationErrors({});
+                    setValidationWarnings({});
+                    setTouchedFields(new Set());
+                  }}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  disabled={isSubmitting}
+                  className={`px-4 py-2 rounded-lg transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2 ${
+                    isSubmitting
+                      ? 'bg-blue-400 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  } text-white`}
+                  aria-describedby="submit-status"
                 >
-                  Create Contact
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4" />
+                      Create Contact
+                    </>
+                  )}
                 </button>
               </div>
+              {isSubmitting && (
+                <div id="submit-status" className="text-sm text-blue-600 text-center mt-2" role="status" aria-live="polite">
+                  Creating contact with validation and geocoding...
+                </div>
+              )}
             </form>
           </div>
         </div>
@@ -424,6 +651,7 @@ export function ContactsModule() {
           toast.success("Contact created from transcription!");
         }}
       />
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }

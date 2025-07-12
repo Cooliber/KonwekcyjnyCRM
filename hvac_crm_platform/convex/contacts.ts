@@ -361,3 +361,57 @@ function generateCoordinatesForAddress(address: string): { lat: number; lng: num
 function isWithinWarsaw(lat: number, lng: number): boolean {
   return lat >= 52.10 && lat <= 52.37 && lng >= 20.85 && lng <= 21.27;
 }
+
+// Search contacts by text query
+export const searchContacts = query({
+  args: {
+    query: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const contacts = await ctx.db
+      .query("contacts")
+      .withSearchIndex("search_contacts", (q) => q.search("name", args.query))
+      .take(args.limit || 20);
+
+    return contacts;
+  },
+});
+
+// Search contacts by NIP (Polish tax number)
+export const searchByNIP = query({
+  args: {
+    nip: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    // Clean NIP format (remove dashes and spaces)
+    const cleanNIP = args.nip.replace(/[-\s]/g, '');
+
+    const contacts = await ctx.db
+      .query("contacts")
+      .filter((q) => {
+        // Search in company field for NIP
+        return q.or(
+          q.eq(q.field("company"), args.nip),
+          q.eq(q.field("company"), cleanNIP),
+          // Also search in notes field where NIP might be stored
+          q.and(
+            q.neq(q.field("notes"), undefined),
+            q.or(
+              q.gte(q.field("notes"), args.nip),
+              q.gte(q.field("notes"), cleanNIP)
+            )
+          )
+        );
+      })
+      .take(10);
+
+    return contacts;
+  },
+});

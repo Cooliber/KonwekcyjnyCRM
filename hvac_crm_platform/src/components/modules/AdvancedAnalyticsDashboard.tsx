@@ -225,13 +225,7 @@ export function AdvancedAnalyticsDashboard() {
     { name: 'Naprawa', value: 5, color: '#E74C3C' }
   ];
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setRefreshing(false);
-    toast.success('Dane zostały odświeżone');
-  };
+
 
   const handleExport = () => {
     toast.success('Eksportowanie raportu...');

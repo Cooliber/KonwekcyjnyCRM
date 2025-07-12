@@ -14,13 +14,27 @@ import {
   Info
 } from 'lucide-react';
 
+
+interface WarsawDistrict {
+  value: string;
+  label: string;
+  affluence?: number;
+}
+
+interface WarsawSettings {
+  districtFilter?: string;
+  affluenceWeighting?: boolean;
+  seasonalAdjustment?: boolean;
+  routeOptimization?: boolean;
+}
+
 interface WarsawSettingsPanelProps {
-  settings: any;
-  onChange: (settings: any) => void;
+  settings: WarsawSettings;
+  onChange: (settings: WarsawSettings) => void;
 }
 
 export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelProps) {
-  const warsawDistricts = [
+  const warsawDistricts: WarsawDistrict[] = [
     { value: '', label: 'All Districts' },
     { value: 'Śródmieście', label: 'Śródmieście', affluence: 1.5 },
     { value: 'Mokotów', label: 'Mokotów', affluence: 1.3 },

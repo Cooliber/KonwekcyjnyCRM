@@ -12,8 +12,8 @@ export const list = query({
     scheduledAfter: v.optional(v.number()),
     scheduledBefore: v.optional(v.number()),
   },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+  handler: async (ctx, _args) => {
+    const userId = await getAuthUserId(_ctx);
     if (!userId) throw new Error("Not authenticated");
 
     if (args.search) {

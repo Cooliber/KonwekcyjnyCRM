@@ -324,7 +324,7 @@ export function EquipmentLifecycleModule() {
     return 'text-red-600';
   };
 
-  const handleCreateEquipment = () => {
+  const handleOpenCreateDialog = () => {
     setIsCreateDialogOpen(true);
   };
 
@@ -341,13 +341,7 @@ export function EquipmentLifecycleModule() {
     toast.success(`Generowanie raportu dla ${item.serialNumber}`);
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pl-PL', {
-      style: 'currency',
-      currency: 'PLN',
-      minimumFractionDigits: 0
-    }).format(value);
-  };
+
 
   return (
     <div className="space-y-6">
@@ -360,7 +354,7 @@ export function EquipmentLifecycleModule() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleCreateEquipment} className="bg-orange-500 hover:bg-orange-600">
+          <Button onClick={handleOpenCreateDialog} className="bg-orange-500 hover:bg-orange-600">
             <Plus className="w-4 h-4 mr-2" />
             Dodaj Urządzenie
           </Button>

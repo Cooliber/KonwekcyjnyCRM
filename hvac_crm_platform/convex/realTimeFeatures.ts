@@ -27,8 +27,8 @@ export const subscribeToDashboardMetrics = query({
     district: v.optional(v.string()),
     timeRange: v.optional(v.string())
   },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+  handler: async (ctx, _args) => {
+    const userId = await getAuthUserId(_ctx);
     if (!userId) throw new Error("Unauthorized");
 
     // Get real-time metrics
@@ -333,7 +333,7 @@ export const getLiveNotifications = query({
 
     const targetUserId = args.userId || authUserId;
 
-    let query = ctx.db.query("notifications")
+    const _query = ctx.db.query("notifications")
       .withIndex("by_user", q => q.eq("userId", targetUserId));
 
     if (args.unreadOnly) {

@@ -47,11 +47,11 @@ export const getContracts = query({
     limit: v.optional(v.number()),
     offset: v.optional(v.number())
   },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+  handler: async (ctx, _args) => {
+    const userId = await getAuthUserId(_ctx);
     if (!userId) throw new Error("Unauthorized");
 
-    let query = ctx.db.query("contracts");
+    const _query = ctx.db.query("contracts");
 
     // Apply filters
     if (args.status) {

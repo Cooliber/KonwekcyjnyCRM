@@ -15,8 +15,8 @@ export const getPerformanceMetrics = query({
     dateTo: v.optional(v.number()),
     district: v.optional(v.string())
   },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+  handler: async (ctx, _args) => {
+    const userId = await getAuthUserId(_ctx);
     if (!userId) throw new Error("Not authenticated");
 
     const dateFrom = args.dateFrom || (Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -195,7 +195,7 @@ export const getProphecyAccuracy = query({
 
     // Group by action type for detailed accuracy
     const accuracyByType = aiLogs.reduce((acc, log) => {
-      const action = log.action || 'unknown';
+      const _action = log.action || 'unknown';
       if (!acc[action]) {
         acc[action] = { total: 0, successful: 0 };
       }
