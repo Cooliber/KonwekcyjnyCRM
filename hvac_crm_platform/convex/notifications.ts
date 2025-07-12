@@ -32,8 +32,8 @@ export const list = query({
     priority: v.optional(v.string()),
     district: v.optional(v.string()),
   },
-  handler: async (ctx, _args) => {
-    const userId = await getAuthUserId(_ctx);
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     let notifications = await ctx.db

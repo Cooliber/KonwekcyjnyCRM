@@ -37,8 +37,8 @@ export const list = query({
     warehouseId: v.optional(v.id("warehouses")),
     search: v.optional(v.string()),
   },
-  handler: async (ctx, _args) => {
-    const userId = await getAuthUserId(_ctx);
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     let inventory: any;

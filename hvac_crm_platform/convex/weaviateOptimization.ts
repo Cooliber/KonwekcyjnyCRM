@@ -105,7 +105,7 @@ export const optimizedVectorSearchPublic = action({
     limit: v.optional(v.number()),
     filters: v.optional(v.object({})),
   },
-  handler: async (_ctx, _args) => {
+  handler: async (ctx, args) => {
     const cacheKey = WEAVIATE_CONFIG.VECTOR_SEARCH_KEY(args.query, {
       type: args.type,
       district: args.district,

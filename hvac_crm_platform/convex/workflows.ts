@@ -409,12 +409,12 @@ export const executeWorkflowActions = internalMutation({
     await ctx.db.patch(args.workflowId, {
       lastTriggered: Date.now(),
       metrics: {
-        executions: (await ctx.db.get(args.workflowId))?.metrics.executions + 1,
+        executions: ((await ctx.db.get(args.workflowId))?.metrics.executions || 0) + 1,
         successes:
-          (await ctx.db.get(args.workflowId))?.metrics.successes +
+          ((await ctx.db.get(args.workflowId))?.metrics.successes || 0) +
           (actionResults.every((r) => r.success) ? 1 : 0),
         failures:
-          (await ctx.db.get(args.workflowId))?.metrics.failures +
+          ((await ctx.db.get(args.workflowId))?.metrics.failures || 0) +
           (actionResults.some((r) => !r.success) ? 1 : 0),
       },
     });

@@ -64,7 +64,7 @@ export const list = query({
     if (args.type) {
       reports = await ctx.db
         .query("reports")
-        .withIndex("by_type", (q) => q.eq("type", args.type))
+        .withIndex("by_type", (q) => q.eq("type", args.type!))
         .order("desc")
         .take(args.limit || 50);
     } else if (args.category) {
@@ -244,8 +244,8 @@ export const create = mutation({
       createdBy: userId,
       category: args.category,
       tags: args.tags,
-      isPublic: args.isPublic,
-      isTemplate: args.isTemplate,
+      isPublic: args.isPublic ?? false,
+      isTemplate: args.isTemplate ?? false,
       isFavorite: false,
       cacheEnabled: true,
       cacheTTL: 300000, // 5 minutes default
@@ -897,7 +897,7 @@ export const getTemplates = query({
     const templates = await query.collect();
 
     if (args.category) {
-      return templates.filter((t) => t.templateCategory === args.category);
+      return templates.filter((t: any) => t.templateCategory === args.category);
     }
 
     return templates;
@@ -1127,7 +1127,7 @@ export const getReportAnalytics = query({
 
     const since = Date.now() - timeRangeMs[args.timeRange || "7d"];
 
-    const _query = ctx.db
+    let query = ctx.db
       .query("reportResults")
       .withIndex("by_executed_by", (q) => q.eq("executedBy", userId));
 
@@ -1137,13 +1137,13 @@ export const getReportAnalytics = query({
         .withIndex("by_report", (q) => q.eq("reportId", args.reportId!));
     }
 
-    const results = await query.filter((q) => q.gte(q.field("_creationTime"), since)).collect();
+    const results = await query.filter((q: any) => q.gte(q.field("_creationTime"), since)).collect();
 
     const analytics = {
       totalExecutions: results.length,
       avgExecutionTime:
         results.length > 0
-          ? results.reduce((sum, r) => sum + r.queryPerformance.totalTime, 0) / results.length
+          ? results.reduce((sum: number, r: any) => sum + r.queryPerformance.totalTime, 0) / results.length
           : 0,
       dataSourceUsage: {} as Record<string, number>,
       warsawMetrics: {
@@ -1154,8 +1154,8 @@ export const getReportAnalytics = query({
     };
 
     // Calculate data source usage
-    results.forEach((result) => {
-      result.results.metadata.dataSourcesUsed.forEach((source) => {
+    results.forEach((result: any) => {
+      result.results.metadata.dataSourcesUsed.forEach((source: any) => {
         analytics.dataSourceUsage[source] = (analytics.dataSourceUsage[source] || 0) + 1;
       });
 
@@ -1167,7 +1167,7 @@ export const getReportAnalytics = query({
         if (result.warsawMetrics.routeEfficiency) {
           analytics.warsawMetrics.avgRouteEfficiency += result.warsawMetrics.routeEfficiency;
         }
-        result.warsawMetrics.districtsAnalyzed.forEach((district) => {
+        result.warsawMetrics.districtsAnalyzed.forEach((district: any) => {
           analytics.warsawMetrics.districtsAnalyzed.add(district);
         });
       }

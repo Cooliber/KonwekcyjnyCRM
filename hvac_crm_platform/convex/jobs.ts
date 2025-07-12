@@ -386,7 +386,7 @@ export const optimizeRoute = mutation({
     const jobs = await Promise.all(
       args.jobIds.map(async (jobId) => {
         const job = await ctx.db.get(jobId);
-        const contact = await ctx.db.get(job?.contactId);
+        const contact = job?.contactId ? await ctx.db.get(job.contactId) : null;
         return { job, contact };
       })
     );
@@ -401,9 +401,11 @@ export const optimizeRoute = mutation({
 
     // Update route order for each job
     for (let i = 0; i < optimizedJobs.length; i++) {
-      await ctx.db.patch(optimizedJobs[i].job?._id, {
-        routeOrder: i + 1,
-      });
+      if (optimizedJobs[i].job?._id) {
+        await ctx.db.patch(optimizedJobs[i].job!._id, {
+          routeOrder: i + 1,
+        });
+      }
     }
 
     return optimizedJobs.map(({ job }) => job?._id);

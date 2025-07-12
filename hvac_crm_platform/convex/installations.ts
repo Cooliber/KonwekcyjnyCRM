@@ -17,7 +17,7 @@ export const list = query({
     if (args.district) {
       installations = await ctx.db
         .query("installations")
-        .withIndex("by_district", (q) => q.eq("district", args.district))
+        .withIndex("by_district", (q) => q.eq("district", args.district!))
         .collect();
     } else if (args.status) {
       installations = await ctx.db
@@ -31,13 +31,13 @@ export const list = query({
     // Filter by contact if specified
     if (args.contactId) {
       installations = installations.filter(
-        (installation) => installation.contactId === args.contactId
+        (installation: any) => installation.contactId === args.contactId
       );
     }
 
     // Add contact and job information
     return await Promise.all(
-      installations.map(async (installation) => {
+      installations.map(async (installation: any) => {
         const contact = await ctx.db.get(installation.contactId);
         const job = await ctx.db.get(installation.jobId);
         const equipment = await ctx.db.get(installation.equipmentId);

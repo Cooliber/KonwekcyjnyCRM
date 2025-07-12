@@ -96,8 +96,8 @@ export const processDocumentWithAdvancedOCR = action({
       })
     ),
   },
-  handler: async (ctx, _args): Promise<any> => {
-    const userId = await getAuthUserId(_ctx);
+  handler: async (ctx, args): Promise<any> => {
+    const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     try {
