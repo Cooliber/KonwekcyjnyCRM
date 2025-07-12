@@ -55,7 +55,7 @@ function getClientTTL(baseKey: string, affluenceScore?: number): number {
   return baseTTL;
 }
 
-function getCachedClientData(cacheKey: string): any | null {
+function getCachedClientData(cacheKey: string): unknown {
   const cached = clientCache.get(cacheKey);
   if (!cached) return null;
 

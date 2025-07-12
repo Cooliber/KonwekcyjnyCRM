@@ -51,7 +51,7 @@ function getTTL(baseKey: string, district?: string): number {
   return CACHE_CONFIG.MESSAGE_LIST_TTL;
 }
 
-function getCachedData(cacheKey: string): any | null {
+function getCachedData(cacheKey: string): unknown {
   const cached = messageCache.get(cacheKey);
   if (!cached) return null;
 

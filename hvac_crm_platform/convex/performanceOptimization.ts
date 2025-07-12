@@ -286,7 +286,7 @@ export const getPerformanceMetrics = query({
 });
 
 // Cache management functions
-function getCachedData(key: string, district?: string): any | null {
+function getCachedData(key: string, district?: string): unknown {
   const cached = performanceCache.get(key);
   
   if (!cached) {

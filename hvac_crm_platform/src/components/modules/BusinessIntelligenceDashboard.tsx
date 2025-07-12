@@ -145,11 +145,15 @@ export function BusinessIntelligenceDashboard() {
   });
 
   // Fallback to regular queries if real-time is disabled
-  const jobs = realTimeEnabled ? (realTimeData?.jobs || []) : (useQuery(api.jobs.list, {}) || []);
-  const contacts = realTimeEnabled ? (realTimeData?.contacts || []) : (useQuery(api.contacts.list, {}) || []);
-  const quotes = realTimeEnabled ? (realTimeData?.quotes || []) : (useQuery(api.quotes.list, {}) || []);
-  const equipment = realTimeEnabled ? (realTimeData?.equipment || []) : (useQuery(api.equipment.list, {}) || []);
+  const fallbackJobs = useQuery(api.jobs.list, realTimeEnabled ? undefined : {});
+  const fallbackContacts = useQuery(api.contacts.list, realTimeEnabled ? undefined : {});
+  const fallbackQuotes = useQuery(api.quotes.list, realTimeEnabled ? undefined : {});
+  const fallbackEquipment = useQuery(api.equipment.list, realTimeEnabled ? undefined : {});
 
+  const jobs = realTimeEnabled ? (realTimeData?.jobs || []) : (fallbackJobs || []);
+  const contacts = realTimeEnabled ? (realTimeData?.contacts || []) : (fallbackContacts || []);
+  const quotes = realTimeEnabled ? (realTimeData?.quotes || []) : (fallbackQuotes || []);
+  const equipment = realTimeEnabled ? (realTimeData?.equipment || []) : (fallbackEquipment || []);
   // Generate prophecy insights
   const prophecyInsights = useMemo((): ProphecyInsight[] => {
     if (!prophecyEnabled) return [];
@@ -343,7 +347,7 @@ export function BusinessIntelligenceDashboard() {
         isRealTime: realTimeEnabled
       }
     ];
-  }, [jobs, contacts, quotes, prophecyEnabled, realTimeEnabled, totalRevenue, activeJobs, completedJobs, totalContacts, revenueProphecy]);
+  }, [jobs, contacts, quotes, prophecyEnabled, realTimeEnabled]);
 
   // Revenue trend data
   const revenueData: ChartData[] = React.useMemo(() => {

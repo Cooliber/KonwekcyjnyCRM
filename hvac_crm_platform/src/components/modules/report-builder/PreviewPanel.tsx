@@ -211,7 +211,7 @@ export function PreviewPanel({ reportId, config, onExecute }: PreviewPanelProps)
           </ResponsiveContainer>
         );
 
-      case 'gauge':
+      case 'gauge': {
         const value = data[0]?.[config.visualization.valueField] || 0;
         const maxValue = config.visualization.maxValue || 100;
         const percentage = (value / maxValue) * 100;
@@ -248,10 +248,11 @@ export function PreviewPanel({ reportId, config, onExecute }: PreviewPanelProps)
             </div>
           </div>
         );
+      }
 
-      case 'kpi_card':
+      case 'kpi_card': {
         const kpiValue = data[0]?.[config.visualization.valueField] || 0;
-        const formattedValue = config.visualization.format === 'currency' 
+        const formattedValue = config.visualization.format === 'currency'
           ? formatCurrency(kpiValue)
           : config.visualization.format === 'percentage'
           ? `${kpiValue}%`
@@ -271,6 +272,7 @@ export function PreviewPanel({ reportId, config, onExecute }: PreviewPanelProps)
             </div>
           </div>
         );
+      }
 
       default:
         return (

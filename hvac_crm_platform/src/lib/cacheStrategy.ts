@@ -56,7 +56,7 @@ class MultiLayerCache {
   private totalMisses = 0;
 
   // Get data from cache with automatic promotion
-  get(key: string): any | null {
+  get(key: string): unknown {
     // Try L1 cache first
     const l1Entry = this.l1Cache.get(key);
     if (l1Entry && !this.isExpired(l1Entry)) {
@@ -282,7 +282,7 @@ export class CacheManager {
   }
 
   // Get cached data
-  get(key: string): any | null {
+  get(key: string): unknown {
     return this.cache.get(key);
   }
 

@@ -584,16 +584,16 @@ export const subscribeToContracts = query({
 
     if (args.district && args.status) {
       contracts = await ctx.db.query("contracts")
-        .withIndex("by_district", q => q.eq("district", args.district!))
-        .filter(q => q.eq(q.field("status"), args.status!))
+        .withIndex("by_district", q => q.eq("district", args.district))
+        .filter(q => q.eq(q.field("status"), args.status))
         .collect();
     } else if (args.district) {
       contracts = await ctx.db.query("contracts")
-        .withIndex("by_district", q => q.eq("district", args.district!))
+        .withIndex("by_district", q => q.eq("district", args.district))
         .collect();
     } else if (args.status) {
       contracts = await ctx.db.query("contracts")
-        .filter(q => q.eq(q.field("status"), args.status!))
+        .filter(q => q.eq(q.field("status"), args.status))
         .collect();
     } else {
       contracts = await ctx.db.query("contracts")

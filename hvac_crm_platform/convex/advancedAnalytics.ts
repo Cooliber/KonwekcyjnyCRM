@@ -162,7 +162,7 @@ export const getCustomerMetrics = query({
     let allContacts;
     if (args.district) {
       allContacts = await ctx.db.query("contacts")
-        .withIndex("by_district", q => q.eq("district", args.district!))
+        .withIndex("by_district", q => q.eq("district", args.district))
         .collect();
     } else {
       allContacts = await ctx.db.query("contacts")
