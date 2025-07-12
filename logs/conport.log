@@ -152,3 +152,11 @@
 2025-07-12 07:19:56,631 - INFO - mcp.server.lowlevel.server - Processing request of type ListToolsRequest
 2025-07-12 07:19:56,974 - INFO - mcp.server.lowlevel.server - Processing request of type ListResourcesRequest
 2025-07-12 07:19:56,978 - INFO - mcp.server.lowlevel.server - Processing request of type ListResourceTemplatesRequest
+2025-07-12 18:43:07,579 - INFO - __main__ - Logging to file: ./logs/conport.log
+2025-07-12 18:43:07,579 - INFO - __main__ - Starting ConPort in STDIO mode using FastMCP for initial CLI arg workspace_id: /home/koldbringer/konwekcja
+2025-07-12 18:43:07,579 - INFO - __main__ - STDIO mode: Using effective_workspace_id '/home/koldbringer/konwekcja'. Database directory will be created on first actual DB use.
+2025-07-12 18:43:07,589 - INFO - FastMCP.fastmcp.server.server - Starting MCP server 'ConPort' with transport 'stdio'
+2025-07-12 18:43:07,595 - INFO - __main__ - ConPort FastMCP server lifespan starting.
+2025-07-12 18:43:07,719 - INFO - mcp.server.lowlevel.server - Processing request of type ListToolsRequest
+2025-07-12 18:43:08,427 - INFO - mcp.server.lowlevel.server - Processing request of type ListResourcesRequest
+2025-07-12 18:43:08,638 - INFO - mcp.server.lowlevel.server - Processing request of type ListResourceTemplatesRequest

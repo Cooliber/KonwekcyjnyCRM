@@ -402,7 +402,7 @@ export const optimizeRoute = mutation({
     // Update route order for each job
     for (let i = 0; i < optimizedJobs.length; i++) {
       if (optimizedJobs[i].job?._id) {
-        await ctx.db.patch(optimizedJobs[i].job!._id, {
+        await ctx.db.patch(optimizedJobs[i].job?._id, {
           routeOrder: i + 1,
         });
       }
@@ -553,5 +553,126 @@ export const getScheduledForDate = query({
         };
       })
     );
+  },
+});
+
+// ============================================================================
+// BULK OPERATIONS API
+// ============================================================================
+
+/**
+ * Bulk update multiple jobs/services
+ */
+export const bulkUpdate = mutation({
+  args: {
+    jobIds: v.array(v.id("jobs")),
+    updates: v.object({
+      status: v.optional(v.string()),
+      priority: v.optional(v.string()),
+      district: v.optional(v.string()),
+      assignedTechnicians: v.optional(v.array(v.id("users"))),
+      scheduledDate: v.optional(v.number()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const results = [];
+    const errors = [];
+
+    // Process each job update
+    for (const jobId of args.jobIds) {
+      try {
+        const job = await ctx.db.get(jobId);
+        if (!job) {
+          errors.push({ jobId, error: "Job not found" });
+          continue;
+        }
+
+        // Apply updates
+        const updateData: any = {};
+        if (args.updates.status) updateData.status = args.updates.status;
+        if (args.updates.priority) updateData.priority = args.updates.priority;
+        if (args.updates.assignedTechnicians)
+          updateData.assignedTechnicians = args.updates.assignedTechnicians;
+        if (args.updates.scheduledDate) updateData.scheduledDate = args.updates.scheduledDate;
+
+        await ctx.db.patch(jobId, updateData);
+        results.push({ jobId, success: true });
+      } catch (error) {
+        errors.push({ jobId, error: (error as Error).message });
+      }
+    }
+
+    return {
+      success: results.length,
+      errors: errors.length,
+      results,
+      errorDetails: errors,
+    };
+  },
+});
+
+/**
+ * Bulk delete multiple jobs/services
+ */
+export const bulkDelete = mutation({
+  args: {
+    jobIds: v.array(v.id("jobs")),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const results = [];
+    const errors = [];
+
+    // Process each job deletion
+    for (const jobId of args.jobIds) {
+      try {
+        const job = await ctx.db.get(jobId);
+        if (!job) {
+          errors.push({ jobId, error: "Job not found" });
+          continue;
+        }
+
+        await ctx.db.delete(jobId);
+        results.push({ jobId, success: true });
+      } catch (error) {
+        errors.push({ jobId, error: (error as Error).message });
+      }
+    }
+
+    return {
+      success: results.length,
+      errors: errors.length,
+      results,
+      errorDetails: errors,
+    };
+  },
+});
+
+/**
+ * Get jobs data for bulk operations (before changes)
+ */
+export const getBulkData = query({
+  args: {
+    jobIds: v.array(v.id("jobs")),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const jobs = [];
+
+    for (const jobId of args.jobIds) {
+      const job = await ctx.db.get(jobId);
+      if (job) {
+        jobs.push(job);
+      }
+    }
+
+    return jobs;
   },
 });

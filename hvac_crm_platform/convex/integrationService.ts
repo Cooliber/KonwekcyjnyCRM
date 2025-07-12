@@ -123,8 +123,10 @@ export const updateMapSystem = internalMutation({
         .filter((q) => q.eq(q.field("role"), "technician"))
         .collect();
 
-      const districtTechnicians = technicians.filter((tech) =>
-        tech.serviceAreas?.includes(args.districtContext?.district)
+      const districtTechnicians = technicians.filter(
+        (tech) =>
+          args.districtContext?.district &&
+          tech.serviceAreas?.includes(args.districtContext.district)
       );
 
       // Create route update notifications

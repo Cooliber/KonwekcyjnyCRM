@@ -4,17 +4,13 @@ type: "always_apply"
 
 Wytyczne dla Augment Code Agent: Integracja Komunikacji poprzez Pliki Markdown
 Aby usprawnić naszą współpracę w kierunku realizacji marzenia o własnym systemie zarządzania firmą HVAC – czyli kompleksowym CRM dla klimatyzacji, który optymalizuje procesy od pierwszego kontaktu z klientem, przez ofertowanie, montaż, aż po serwis i utrzymanie – przygotowałem szczegółowe wytyczne dla Ciebie, Augment Code Agent. Te wytyczne mają na celu skierować Cię na systematyczne zostawianie wiadomości w plikach Markdown (.md), które użytkownik następnie przekaże mi (Grok 4). To pozwoli na budowanie ultra-silnego kontekstu projektu, umożliwiając mi precyzyjne orkiestrowanie Twojej pracy w pętli zadaniowej. Wytyczne są zaprojektowane tak, aby zapewnić ambitne, długoterminowe zadania, prowadzące do magnificent results: skalowalnego, intuicyjnego CRM opartego na najlepszych praktykach branżowych.
-
+/home/koldbringer/konwekcja/Kolebos
 1. Struktura Plików Markdown dla Wiadomości
 Nazewnictwo Plików: Każdy plik MD powinien być nazwany w formacie ACA_Message_[DataYYYYMMDD]_[NumerSekwencyjny]_[KrótkiTemat].md. Na przykład: ACA_Message_20250712_001_ProgressCRMCore.md. To ułatwia śledzenie chronologii i tematów.
 Nagłówek Pliku: Zawsze zaczynaj od sekcji nagłówka z kluczowymi metadanymi:
 text
-
-Zwiń
-
-Zwiń
-
-Kopiuj
+/home/koldbringer/konwekcja/Kolebos
+/home/koldbringer/konwekcja/Kolebos
 # Wiadomość od Augment Code Agent
 - **Data Utworzenia**: [Aktualna data, np. 2025-07-12]
 - **Zadanie Bieżące**: [Krótki opis bieżącego zadania, np. "Implementacja modułu kontaktu z klientem"]
@@ -37,7 +33,7 @@ Formatowanie: Używaj Markdown do czytelności: listy, tabele, code blocks dla s
 Pętla Zadaniowa: Każda wiadomość kończ prośbą o nowe zadanie ode mnie, np. "Czekam na orkiestrację Grok 4: Zaproponuj moduł predykcyjny dla serwisu HVAC."
 Testowanie: Przed zapisem, przetestuj plik MD w podglądzie VS Code – musi być czytelny i kompletny.
 Te wytyczne zapewnią płynny przepływ informacji, pozwalając mi na budowanie ultra-silnego kontekstu i orkiestrowanie Twojej pracy ku magnificent results w CRM dla HVAC.
-
+/home/koldbringer/konwekcja/Kolebos
 Propozycja: Co Dokładnie Potrzebuję z Ultra-Silnego Kontekstu Całego Projektu
 Aby maksymalnie usprawnić CRM dla klimatyzacji – od pierwszego kontaktu (lead generation), przez montaż (harmonogramy, inwentaryzacja), po serwis (predykcja awarii, automatyzacja zgłoszeń) – potrzebuję precyzyjnego, wielowarstwowego kontekstu z Twoich plików MD. Oto dokładnie, co proponuję zbierać i przekazywać (priorytetyzując ambitne elementy dla długiej pętli zadaniowej):
 

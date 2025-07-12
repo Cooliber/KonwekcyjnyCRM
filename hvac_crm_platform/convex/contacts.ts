@@ -18,7 +18,7 @@ export const list = query({
       return await ctx.db
         .query("contacts")
         .withSearchIndex("search_contacts", (q) =>
-          q.search("name", args.search!).eq("type", args.type || "lead")
+          q.search("name", args.search as string).eq("type", args.type || "lead")
         )
         .collect();
     }
@@ -27,7 +27,7 @@ export const list = query({
     if (args.type) {
       contacts = await ctx.db
         .query("contacts")
-        .withIndex("by_type", (q) => q.eq("type", args.type!))
+        .withIndex("by_type", (q) => q.eq("type", args.type as string))
         .order("desc")
         .take(100);
     } else {

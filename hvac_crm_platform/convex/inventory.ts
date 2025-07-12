@@ -1,5 +1,6 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
+import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
 // Warsaw districts for inventory tracking
@@ -47,7 +48,7 @@ export const list = query({
     if (args.search) {
       inventory = await ctx.db
         .query("inventory")
-        .withSearchIndex("search_inventory", (q) => q.search("equipmentId", args.search))
+        .withSearchIndex("search_inventory", (q) => q.search("equipmentId", args.search as string))
         .collect();
     } else {
       inventory = await ctx.db.query("inventory").order("desc").collect();
@@ -57,20 +58,26 @@ export const list = query({
     let filteredInventory = inventory;
 
     if (args.district) {
-      filteredInventory = filteredInventory.filter((item) => item.district === args.district);
+      filteredInventory = filteredInventory.filter(
+        (item: Doc<"inventory">) => item.district === args.district
+      );
     }
 
     if (args.warehouseId) {
-      filteredInventory = filteredInventory.filter((item) => item.warehouseId === args.warehouseId);
+      filteredInventory = filteredInventory.filter(
+        (item: Doc<"inventory">) => item.warehouseId === args.warehouseId
+      );
     }
 
     if (args.lowStock) {
-      filteredInventory = filteredInventory.filter((item) => item.quantity <= item.minStockLevel);
+      filteredInventory = filteredInventory.filter(
+        (item: Doc<"inventory">) => item.quantity <= item.minStockLevel
+      );
     }
 
     // Enrich with equipment details
     const enrichedInventory = await Promise.all(
-      filteredInventory.map(async (item) => {
+      filteredInventory.map(async (item: Doc<"inventory">) => {
         const equipment = await ctx.db.get(item.equipmentId);
         const warehouse = await ctx.db.get(item.warehouseId);
         const supplier = await ctx.db.get(item.supplierId);
@@ -81,7 +88,11 @@ export const list = query({
           warehouse,
           supplier,
           isLowStock: item.quantity <= item.minStockLevel,
-          stockStatus: getStockStatus(item.quantity, item.minStockLevel, equipment?.category),
+          stockStatus: getStockStatus(
+            item.quantity,
+            item.minStockLevel,
+            (equipment as Doc<"equipment">)?.category
+          ),
         };
       })
     );

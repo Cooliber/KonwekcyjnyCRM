@@ -615,18 +615,18 @@ export const subscribeToContracts = query({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Unauthorized");
 
-    let contracts;
+    let contracts: any;
 
     if (args.district && args.status) {
       contracts = await ctx.db
         .query("contracts")
-        .withIndex("by_district", (q) => q.eq("district", args.district!))
+        .withIndex("by_district", (q) => q.eq("district", args.district as string))
         .filter((q) => q.eq(q.field("status"), args.status))
         .collect();
     } else if (args.district) {
       contracts = await ctx.db
         .query("contracts")
-        .withIndex("by_district", (q) => q.eq("district", args.district!))
+        .withIndex("by_district", (q) => q.eq("district", args.district as string))
         .collect();
     } else if (args.status) {
       contracts = await ctx.db

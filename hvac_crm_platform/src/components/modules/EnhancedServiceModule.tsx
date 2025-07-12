@@ -13,15 +13,12 @@ import {
   Edit,
   Eye,
   Filter,
-  MapPin,
-  MessageSquare,
   Plus,
   Search,
   Settings,
   Star,
   Wrench as Tool,
   Upload,
-  Users,
 } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
@@ -36,6 +33,11 @@ import type {
 } from "../../types/service";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { EnhancedKanban } from "./service/EnhancedKanban";
+import { KeyboardShortcutsHelp, useKeyboardShortcutsHelp } from "./service/KeyboardShortcutsHelp";
+import { QuoteCalculator } from "./service/QuoteCalculator";
+import { ServiceCalendar } from "./service/ServiceCalendar";
+import { ServiceMap } from "./service/ServiceMap";
 
 // Default service statuses (RRUP-inspired)
 const DEFAULT_SERVICE_STATUSES: ServiceStatus[] = [
@@ -154,14 +156,17 @@ const _CATEGORY_CONFIG = {
 
 export function EnhancedServiceModule() {
   // State management
-  const [selectedView, setSelectedView] = useState<"list" | "kanban" | "calendar" | "map">(
-    "kanban"
-  );
+  const [selectedView, setSelectedView] = useState<
+    "list" | "kanban" | "calendar" | "map" | "calculator"
+  >("kanban");
   const [filters, _setFilters] = useState<ServiceFilters>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [_selectedService, setSelectedService] = useState<string | null>(null);
   const [showStatusConfig, setShowStatusConfig] = useState(false);
   const [statuses, _setStatuses] = useState<ServiceStatus[]>(DEFAULT_SERVICE_STATUSES);
+
+  // Keyboard shortcuts help
+  const keyboardHelp = useKeyboardShortcutsHelp();
 
   // Data queries (using existing jobs as services for now)
   const services = useQuery(api.jobs.list, {}) || [];
@@ -244,7 +249,7 @@ export function EnhancedServiceModule() {
   }, [services, searchQuery, filters]);
 
   // Group services by status for Kanban view
-  const servicesByStatus = React.useMemo(() => {
+  const _servicesByStatus = React.useMemo(() => {
     const grouped = statuses.reduce(
       (acc, status) => {
         acc[status.id] = filteredServices.filter((service) => service.status === status.id);
@@ -255,31 +260,37 @@ export function EnhancedServiceModule() {
     return grouped;
   }, [filteredServices, statuses]);
 
-  // Handle status change with automatic actions
-  const _handleStatusChange = async (serviceId: string, newStatusId: string) => {
+  // Handle service update
+  const handleServiceUpdate = async (serviceId: string, updates: any) => {
     try {
-      const newStatus = statuses.find((s) => s.id === newStatusId);
-
-      // Update service status
       await updateService({
         id: serviceId,
-        status: newStatusId,
+        ...updates,
       });
 
-      // Execute automatic actions
-      if (newStatus?.automaticActions && newStatus.automaticActions.length > 0) {
-        for (const action of newStatus.automaticActions) {
-          // Here you would implement the actual action execution
-          console.log(`Executing ${action.type} action:`, action.template);
-
-          // Show notification about automatic action
-          toast.info(`Automatyczna akcja: ${action.type} wysłany do ${action.recipient}`);
-        }
-      }
-
-      toast.success("Status serwisu zaktualizowany");
+      toast.success("Serwis zaktualizowany");
     } catch (_error) {
-      toast.error("Błąd podczas aktualizacji statusu");
+      toast.error("Błąd podczas aktualizacji serwisu");
+    }
+  };
+
+  // Handle service actions
+  const handleServiceAction = (action: string, serviceId: string) => {
+    switch (action) {
+      case "edit":
+        setSelectedService(serviceId);
+        // Open edit modal/form
+        break;
+      case "view":
+        setSelectedService(serviceId);
+        // Open view modal/details
+        break;
+      case "call":
+        // Initiate call to client
+        toast.info("Funkcja dzwonienia w przygotowaniu");
+        break;
+      default:
+        console.log(`Action ${action} for service ${serviceId}`);
     }
   };
 
@@ -289,7 +300,7 @@ export function EnhancedServiceModule() {
   };
 
   // Get priority configuration
-  const getPriorityConfig = (priority: string) => {
+  const _getPriorityConfig = (priority: string) => {
     return PRIORITY_CONFIG[priority as keyof typeof PRIORITY_CONFIG] || PRIORITY_CONFIG.normal;
   };
 
@@ -406,6 +417,7 @@ export function EnhancedServiceModule() {
             <option value="kanban">Kanban</option>
             <option value="list">Lista</option>
             <option value="calendar">Kalendarz</option>
+            <option value="calculator">Kalkulator</option>
             <option value="map">Mapa</option>
           </select>
 
@@ -413,118 +425,60 @@ export function EnhancedServiceModule() {
             <Filter className="w-4 h-4 mr-2" />
             Filtry
           </Button>
+          <Button variant="outline" size="sm" onClick={keyboardHelp.toggle}>
+            <Settings className="w-4 h-4 mr-2" />
+            Skróty (F1)
+          </Button>
         </div>
       </div>
 
-      {/* Main Content - Kanban View */}
+      {/* Enhanced Kanban View */}
       {selectedView === "kanban" && (
-        <div className="grid grid-cols-1 lg:grid-cols-6 gap-4 overflow-x-auto">
-          {statuses
-            .filter((status) => status.isActive)
-            .map((status) => (
-              <Card key={status.id} className="min-w-80">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center justify-between text-sm">
-                    <div className="flex items-center">
-                      <div
-                        className="w-3 h-3 rounded-full mr-2"
-                        style={{ backgroundColor: status.color }}
-                      />
-                      {status.name}
-                      {status.requiresDate && (
-                        <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-1 py-0.5 rounded">
-                          Data
-                        </span>
-                      )}
-                    </div>
-                    <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
-                      {servicesByStatus[status.id]?.length || 0}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {servicesByStatus[status.id]?.map((service) => {
-                    const priorityConfig = getPriorityConfig(service.priority);
-                    const PriorityIcon = priorityConfig.icon;
+        <EnhancedKanban
+          services={filteredServices}
+          onServiceUpdate={handleServiceUpdate}
+          onServiceAction={handleServiceAction}
+        />
+      )}
 
-                    return (
-                      <div
-                        key={service._id}
-                        className="p-3 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
-                        onClick={() => setSelectedService(service._id)}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <h4 className="font-medium text-sm text-gray-900 line-clamp-2">
-                            {service.title}
-                          </h4>
-                          <div className="flex items-center space-x-1">
-                            <PriorityIcon
-                              className="w-3 h-3"
-                              style={{ color: priorityConfig.color }}
-                            />
-                            <span
-                              className="px-2 py-1 rounded-full text-xs font-medium"
-                              style={{
-                                backgroundColor: `${priorityConfig.color}20`,
-                                color: priorityConfig.color,
-                              }}
-                            >
-                              {priorityConfig.label}
-                            </span>
-                          </div>
-                        </div>
+      {/* Calendar View */}
+      {selectedView === "calendar" && (
+        <ServiceCalendar
+          onServiceSelect={(serviceId) => setSelectedService(serviceId)}
+          onDateSelect={(date) => console.log("Selected date:", date)}
+        />
+      )}
 
-                        <div className="space-y-1 text-xs text-gray-600">
-                          <div className="flex items-center">
-                            <MapPin className="w-3 h-3 mr-1" />
-                            {service.district || "Brak lokalizacji"}
-                          </div>
-                          {service.scheduledDate && (
-                            <div className="flex items-center">
-                              <Calendar className="w-3 h-3 mr-1" />
-                              {new Date(service.scheduledDate).toLocaleDateString("pl-PL")}
-                            </div>
-                          )}
-                          {service.assignedTechnicians.length > 0 && (
-                            <div className="flex items-center">
-                              <Users className="w-3 h-3 mr-1" />
-                              {service.assignedTechnicians.length} technik(ów)
-                            </div>
-                          )}
-                        </div>
+      {/* Quote Calculator View */}
+      {selectedView === "calculator" && (
+        <QuoteCalculator
+          onSave={(quote) => {
+            console.log("Quote saved:", quote);
+            toast.success("Oferta została zapisana");
+          }}
+        />
+      )}
 
-                        <div className="mt-2 pt-2 border-t border-gray-100">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-500">#{service._id.slice(-6)}</span>
-                            <div className="flex items-center space-x-1">
-                              {service.priority === "emergency" && (
-                                <span className="text-xs bg-red-100 text-red-700 px-1 py-0.5 rounded">
-                                  AWARIA
-                                </span>
-                              )}
-                              {status.automaticActions.length > 0 && (
-                                <MessageSquare
-                                  className="w-3 h-3 text-blue-500"
-                                  title="Automatyczne akcje"
-                                />
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+      {/* List View */}
+      {selectedView === "list" && (
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center py-8 text-gray-500">
+              <Tool className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p>Widok listy w przygotowaniu...</p>
+              <p className="text-sm">Użyj widoku Kanban lub Kalendarz</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-                  {servicesByStatus[status.id]?.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      <Tool className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Brak serwisów</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-        </div>
+      {/* Enhanced Map View */}
+      {selectedView === "map" && (
+        <ServiceMap
+          services={filteredServices}
+          onServiceSelect={(serviceId) => setSelectedService(serviceId)}
+          onServiceEdit={(serviceId) => handleServiceAction("edit", serviceId)}
+        />
       )}
 
       {/* Status Configuration Modal */}
@@ -597,6 +551,13 @@ export function EnhancedServiceModule() {
           </Card>
         </div>
       )}
+
+      {/* Keyboard Shortcuts Help */}
+      <KeyboardShortcutsHelp
+        isOpen={keyboardHelp.isOpen}
+        onClose={keyboardHelp.close}
+        context="service_management"
+      />
     </div>
   );
 }

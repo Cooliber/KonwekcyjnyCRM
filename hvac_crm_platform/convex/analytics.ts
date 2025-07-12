@@ -216,7 +216,7 @@ export const getProphecyAccuracy = query({
     // Group by action type for detailed accuracy
     const accuracyByType = aiLogs.reduce(
       (acc, log) => {
-        const _action = log.action || "unknown";
+        const action = log.action || "unknown";
         if (!acc[action]) {
           acc[action] = { total: 0, successful: 0 };
         }
@@ -494,7 +494,7 @@ export const getRealtimeMetrics = query({
 
     // Filter by district if specified
     const filteredEquipment = args.district
-      ? equipment.filter((eq) => eq.location?.includes(args.district!))
+      ? equipment.filter((eq) => eq.location?.includes(args.district as string))
       : equipment;
 
     return filteredEquipment.map((eq) => ({

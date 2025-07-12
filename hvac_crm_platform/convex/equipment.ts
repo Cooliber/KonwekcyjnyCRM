@@ -16,7 +16,7 @@ export const list = query({
     if (args.search) {
       return await ctx.db
         .query("equipment")
-        .withSearchIndex("search_equipment", (q) => q.search("name", args.search!))
+        .withSearchIndex("search_equipment", (q) => q.search("name", args.search as string))
         .collect();
     }
 

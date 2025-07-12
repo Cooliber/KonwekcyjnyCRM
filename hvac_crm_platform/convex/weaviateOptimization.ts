@@ -105,7 +105,7 @@ export const optimizedVectorSearchPublic = action({
     limit: v.optional(v.number()),
     filters: v.optional(v.object({})),
   },
-  handler: async (ctx, args) => {
+  handler: async (_ctx, args) => {
     const cacheKey = WEAVIATE_CONFIG.VECTOR_SEARCH_KEY(args.query, {
       type: args.type,
       district: args.district,
@@ -139,7 +139,7 @@ export const optimizedVectorSearchPublic = action({
 
       return weightedResults;
     } catch (_error) {
-      console.error("Vector search failed:", error);
+      console.error("Vector search failed:", _error);
       throw new Error("Vector search optimization failed");
     }
   },

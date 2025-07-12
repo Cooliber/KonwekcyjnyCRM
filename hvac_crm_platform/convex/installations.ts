@@ -17,7 +17,7 @@ export const list = query({
     if (args.district) {
       installations = await ctx.db
         .query("installations")
-        .withIndex("by_district", (q) => q.eq("district", args.district!))
+        .withIndex("by_district", (q) => q.eq("district", args.district as string))
         .collect();
     } else if (args.status) {
       installations = await ctx.db

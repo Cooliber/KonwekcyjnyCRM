@@ -894,7 +894,7 @@ export const getTemplates = query({
       .query("reports")
       .withIndex("by_template", (q) => q.eq("isTemplate", true));
 
-    const templates = await query.collect();
+    const templates = await _query.collect();
 
     if (args.category) {
       return templates.filter((t: any) => t.templateCategory === args.category);
@@ -1137,13 +1137,16 @@ export const getReportAnalytics = query({
         .withIndex("by_report", (q) => q.eq("reportId", args.reportId!));
     }
 
-    const results = await query.filter((q: any) => q.gte(q.field("_creationTime"), since)).collect();
+    const results = await query
+      .filter((q: any) => q.gte(q.field("_creationTime"), since))
+      .collect();
 
     const analytics = {
       totalExecutions: results.length,
       avgExecutionTime:
         results.length > 0
-          ? results.reduce((sum: number, r: any) => sum + r.queryPerformance.totalTime, 0) / results.length
+          ? results.reduce((sum: number, r: any) => sum + r.queryPerformance.totalTime, 0) /
+            results.length
           : 0,
       dataSourceUsage: {} as Record<string, number>,
       warsawMetrics: {

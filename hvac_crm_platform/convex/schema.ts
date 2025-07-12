@@ -315,7 +315,7 @@ const applicationTables = {
       filterFields: ["district"],
     }),
 
-  // Dynamic Quotes with AI Integration
+  // Enhanced HVAC Quotes with Calculator Integration
   quotes: defineTable({
     quoteNumber: v.string(),
     contactId: v.id("contacts"),
@@ -328,30 +328,65 @@ const applicationTables = {
       v.literal("viewed"),
       v.literal("accepted"),
       v.literal("rejected"),
-      v.literal("expired")
+      v.literal("expired"),
+      v.literal("converted")
+    ),
+    priority: v.optional(
+      v.union(v.literal("low"), v.literal("normal"), v.literal("high"), v.literal("urgent"))
     ),
     validUntil: v.number(),
-    // Dynamic Proposals
-    proposals: v.array(
-      v.object({
-        id: v.string(),
-        title: v.string(),
-        description: v.string(),
-        lineItems: v.array(
-          v.object({
-            description: v.string(),
-            quantity: v.number(),
-            unitPrice: v.number(),
-            total: v.number(),
-            type: v.union(v.literal("labor"), v.literal("material"), v.literal("equipment")),
-          })
-        ),
-        subtotal: v.number(),
-        tax: v.optional(v.number()),
-        total: v.number(),
-        recommended: v.boolean(),
-      })
+
+    // Enhanced Calculator Items
+    items: v.optional(
+      v.array(
+        v.object({
+          id: v.string(),
+          productId: v.string(),
+          productName: v.string(),
+          quantity: v.number(),
+          unitPrice: v.number(),
+          selectedOptions: v.array(v.string()),
+          customPrice: v.optional(v.number()),
+          discount: v.optional(v.number()),
+          notes: v.optional(v.string()),
+          totalPrice: v.number(),
+        })
+      )
     ),
+
+    // Enhanced Calculations
+    subtotal: v.optional(v.number()),
+    globalDiscount: v.optional(v.number()), // percentage
+    discountAmount: v.optional(v.number()),
+    additionalCosts: v.optional(v.number()),
+    netAmount: v.optional(v.number()),
+    vatAmount: v.optional(v.number()),
+    totalAmount: v.optional(v.number()),
+
+    // Legacy Dynamic Proposals (for backward compatibility)
+    proposals: v.optional(
+      v.array(
+        v.object({
+          id: v.string(),
+          title: v.string(),
+          description: v.string(),
+          lineItems: v.array(
+            v.object({
+              description: v.string(),
+              quantity: v.number(),
+              unitPrice: v.number(),
+              total: v.number(),
+              type: v.union(v.literal("labor"), v.literal("material"), v.literal("equipment")),
+            })
+          ),
+          subtotal: v.number(),
+          tax: v.optional(v.number()),
+          total: v.number(),
+          recommended: v.boolean(),
+        })
+      )
+    ),
+
     // Dynamic Link Features
     dynamicLink: v.optional(v.string()),
     linkViews: v.optional(v.number()),
@@ -364,6 +399,7 @@ const applicationTables = {
         })
       )
     ),
+
     // Virtual Signing
     digitalSignature: v.optional(
       v.object({
@@ -372,11 +408,41 @@ const applicationTables = {
         ipAddress: v.string(),
       })
     ),
+
     // AI Features
     aiGenerated: v.optional(v.boolean()),
     transcriptionSource: v.optional(v.id("transcriptions")),
     terms: v.optional(v.string()),
+
+    // Enhanced Tracking
     createdBy: v.id("users"),
+    createdAt: v.optional(v.number()),
+    lastModified: v.optional(v.number()),
+    sentAt: v.optional(v.number()),
+    viewedAt: v.optional(v.number()),
+    acceptedAt: v.optional(v.number()),
+    rejectedAt: v.optional(v.number()),
+
+    // Follow-up
+    followUpDate: v.optional(v.number()),
+    reminderSent: v.optional(v.boolean()),
+
+    // Conversion tracking
+    convertedToJobId: v.optional(v.id("jobs")),
+    convertedAt: v.optional(v.number()),
+
+    // Document management
+    pdfUrl: v.optional(v.string()),
+    attachments: v.optional(v.array(v.id("_storage"))),
+
+    // Version control
+    version: v.optional(v.number()),
+    previousVersionId: v.optional(v.id("quotes")),
+    isLatestVersion: v.optional(v.boolean()),
+
+    // Warsaw district optimization
+    district: v.optional(v.string()),
+    districtPricing: v.optional(v.number()), // multiplier
   })
     .index("by_status", ["status"])
     .index("by_contact", ["contactId"])
@@ -1338,6 +1404,47 @@ const applicationTables = {
     .searchIndex("search_contracts", {
       searchField: "title",
       filterFields: ["status", "type", "district", "serviceLevel"],
+    }),
+
+  // Quote Templates for HVAC Calculator
+  quoteTemplates: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    category: v.union(
+      v.literal("klimatyzacja"),
+      v.literal("wentylacja"),
+      v.literal("rekuperacja"),
+      v.literal("pompy_ciepla"),
+      v.literal("automatyka"),
+      v.literal("serwis"),
+      v.literal("czesci")
+    ),
+    items: v.array(
+      v.object({
+        productId: v.string(),
+        productName: v.string(),
+        quantity: v.number(),
+        unitPrice: v.number(),
+        selectedOptions: v.array(v.string()),
+        customPrice: v.optional(v.number()),
+        discount: v.optional(v.number()),
+        notes: v.optional(v.string()),
+      })
+    ),
+    defaultDiscount: v.number(),
+    defaultValidityDays: v.number(),
+    defaultPaymentTerms: v.string(),
+    isActive: v.boolean(),
+    createdBy: v.id("users"),
+    createdAt: v.number(),
+    usageCount: v.number(),
+  })
+    .index("by_category", ["category"])
+    .index("by_created_by", ["createdBy"])
+    .index("by_is_active", ["isActive"])
+    .searchIndex("search_quote_templates", {
+      searchField: "name",
+      filterFields: ["category", "isActive"],
     }),
 
   // Service Agreements with SLA Monitoring

@@ -148,7 +148,7 @@ export const getClientAccess = query({
       if (userProfile.role === "technician" && args.contactId) {
         const jobs = await ctx.db
           .query("jobs")
-          .withIndex("by_contact", (q) => q.eq("contactId", args.contactId!))
+          .withIndex("by_contact", (q) => q.eq("contactId", args.contactId as string))
           .filter((q) => q.eq(q.field("assignedTechnicians"), [userId]))
           .collect();
 
@@ -496,10 +496,10 @@ function getEstimatedDuration(serviceType: string): number {
 }
 
 async function generateServiceRecommendations(
-  ctx: any,
+  _ctx: any,
   contact: any,
   installations: any[],
-  jobs: any[]
+  _jobs: any[]
 ) {
   const recommendations = [];
 

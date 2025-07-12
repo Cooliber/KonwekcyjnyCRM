@@ -63,11 +63,11 @@ export const list = query({
     }
 
     if (args.dateFrom !== undefined) {
-      dbQuery = dbQuery.filter((q) => q.gte(q.field("issueDate"), args.dateFrom!));
+      dbQuery = dbQuery.filter((q) => q.gte(q.field("issueDate"), args.dateFrom as number));
     }
 
     if (args.dateTo !== undefined) {
-      dbQuery = dbQuery.filter((q) => q.lte(q.field("issueDate"), args.dateTo!));
+      dbQuery = dbQuery.filter((q) => q.lte(q.field("issueDate"), args.dateTo as number));
     }
 
     const invoices = await dbQuery.order("desc").take(args.limit || 50);

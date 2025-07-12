@@ -101,7 +101,7 @@ export const getRevenueMetrics = query({
     if (args.district) {
       contracts = await ctx.db
         .query("contracts")
-        .withIndex("by_district", (q) => q.eq("district", args.district!))
+        .withIndex("by_district", (q) => q.eq("district", args.district as string))
         .filter((q) => q.gte(q.field("createdAt"), startDate))
         .collect();
     } else {
@@ -118,7 +118,10 @@ export const getRevenueMetrics = query({
 
     // Calculate revenue metrics
     const totalRevenue = invoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
-    const contractValue = contracts.reduce((sum: number, contract: any) => sum + contract.totalValue, 0);
+    const contractValue = contracts.reduce(
+      (sum: number, contract: any) => sum + contract.totalValue,
+      0
+    );
     const paidInvoices = invoices.filter((inv) => inv.status === "paid");
     const paidRevenue = paidInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
 
@@ -166,11 +169,11 @@ export const getCustomerMetrics = query({
     const timeRangeMs = getTimeRangeMs(args.timeRange);
     const startDate = Date.now() - timeRangeMs;
 
-    let allContacts;
+    let allContacts: any;
     if (args.district) {
       allContacts = await ctx.db
         .query("contacts")
-        .withIndex("by_district", (q) => q.eq("district", args.district))
+        .withIndex("by_district", (q) => q.eq("district", args.district as string))
         .collect();
     } else {
       allContacts = await ctx.db.query("contacts").collect();
@@ -190,11 +193,11 @@ export const getCustomerMetrics = query({
       customers.length > 0 ? (activeCustomerIds.size / customers.length) * 100 : 0;
 
     // Calculate satisfaction from service agreements
-    let serviceAgreements;
+    let serviceAgreements: any;
     if (args.district) {
       serviceAgreements = await ctx.db
         .query("serviceAgreements")
-        .filter((q) => q.eq(q.field("district"), args.district!))
+        .filter((q) => q.eq(q.field("district"), args.district as string))
         .collect();
     } else {
       serviceAgreements = await ctx.db.query("serviceAgreements").collect();
@@ -258,7 +261,7 @@ export const getServiceMetrics = query({
     const efficiency =
       jobsWithTime.length > 0
         ? jobsWithTime.reduce((sum, job) => {
-            const eff = (job.estimatedHours! / job.actualHours!) * 100;
+            const eff = ((job.estimatedHours || 0) / (job.actualHours || 1)) * 100;
             return sum + Math.min(eff, 200); // Cap at 200% efficiency
           }, 0) / jobsWithTime.length
         : 100;
@@ -268,7 +271,7 @@ export const getServiceMetrics = query({
     const avgResponseTime =
       jobsWithSchedule.length > 0
         ? jobsWithSchedule.reduce((sum, job) => {
-            const responseTime = (job.scheduledDate! - job._creationTime) / (1000 * 60 * 60); // hours
+            const responseTime = ((job.scheduledDate || 0) - job._creationTime) / (1000 * 60 * 60); // hours
             return sum + responseTime;
           }, 0) / jobsWithSchedule.length
         : 0;
@@ -298,11 +301,11 @@ export const getEquipmentMetrics = query({
     if (!userId) throw new Error("Unauthorized");
 
     // Get equipment lifecycle data
-    let equipment;
+    let equipment: any;
     if (args.district) {
       equipment = await ctx.db
         .query("equipmentLifecycle")
-        .filter((q) => q.eq(q.field("location.district"), args.district!))
+        .filter((q) => q.eq(q.field("location.district"), args.district as string))
         .collect();
     } else {
       equipment = await ctx.db.query("equipmentLifecycle").collect();
