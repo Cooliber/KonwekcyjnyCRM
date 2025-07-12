@@ -1,7 +1,7 @@
-import { query, mutation, action } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
 import { api } from "./_generated/api";
+import { action, mutation, query } from "./_generated/server";
 
 export const list = query({
   args: {
@@ -17,14 +17,13 @@ export const list = query({
     if (args.search) {
       return await ctx.db
         .query("contacts")
-        .withSearchIndex("search_contacts", (q) => 
-          q.search("name", args.search!)
-            .eq("type", args.type || "lead")
+        .withSearchIndex("search_contacts", (q) =>
+          q.search("name", args.search!).eq("type", args.type || "lead")
         )
         .collect();
     }
 
-    let contacts;
+    let contacts: any;
     if (args.type) {
       contacts = await ctx.db
         .query("contacts")
@@ -34,10 +33,11 @@ export const list = query({
     } else {
       contacts = await ctx.db.query("contacts").order("desc").take(100);
     }
-    
-    return contacts.filter(contact => 
-      (!args.status || contact.status === args.status) &&
-      (!args.district || contact.district === args.district)
+
+    return contacts.filter(
+      (contact: any) =>
+        (!args.status || contact.status === args.status) &&
+        (!args.district || contact.district === args.district)
     );
   },
 });
@@ -86,23 +86,27 @@ export const create = mutation({
     city: v.string(),
     district: v.optional(v.string()),
     zipCode: v.optional(v.string()),
-    coordinates: v.optional(v.object({
-      lat: v.number(),
-      lng: v.number()
-    })),
+    coordinates: v.optional(
+      v.object({
+        lat: v.number(),
+        lng: v.number(),
+      })
+    ),
     type: v.union(v.literal("lead"), v.literal("customer"), v.literal("vip")),
     source: v.optional(v.string()),
     notes: v.optional(v.string()),
-    transcriptionData: v.optional(v.object({
-      originalText: v.string(),
-      extractedData: v.object({
-        deviceCount: v.optional(v.number()),
-        roomCount: v.optional(v.number()),
-        budget: v.optional(v.number()),
-        urgency: v.optional(v.string()),
-        preferredDate: v.optional(v.string())
+    transcriptionData: v.optional(
+      v.object({
+        originalText: v.string(),
+        extractedData: v.object({
+          deviceCount: v.optional(v.number()),
+          roomCount: v.optional(v.number()),
+          budget: v.optional(v.number()),
+          urgency: v.optional(v.string()),
+          preferredDate: v.optional(v.string()),
+        }),
       })
-    })),
+    ),
     gdprConsent: v.boolean(),
     marketingConsent: v.boolean(),
   },
@@ -134,19 +138,23 @@ export const update = mutation({
     city: v.optional(v.string()),
     district: v.optional(v.string()),
     zipCode: v.optional(v.string()),
-    coordinates: v.optional(v.object({
-      lat: v.number(),
-      lng: v.number()
-    })),
-    status: v.optional(v.union(
-      v.literal("new"),
-      v.literal("contacted"),
-      v.literal("qualified"),
-      v.literal("proposal_sent"),
-      v.literal("negotiation"),
-      v.literal("won"),
-      v.literal("lost")
-    )),
+    coordinates: v.optional(
+      v.object({
+        lat: v.number(),
+        lng: v.number(),
+      })
+    ),
+    status: v.optional(
+      v.union(
+        v.literal("new"),
+        v.literal("contacted"),
+        v.literal("qualified"),
+        v.literal("proposal_sent"),
+        v.literal("negotiation"),
+        v.literal("won"),
+        v.literal("lost")
+      )
+    ),
     notes: v.optional(v.string()),
     assignedTo: v.optional(v.id("users")),
     affluenceScore: v.optional(v.number()),
@@ -175,10 +183,10 @@ export const updateFromTranscription = mutation({
     if (!transcription) throw new Error("Transcription not found");
 
     const extractedData = transcription.extractedData;
-    
+
     // Check if contact already exists
     let contactId = transcription.contactId;
-    
+
     if (!contactId && extractedData.customerName) {
       // Create new contact from transcription
       contactId = await ctx.db.insert("contacts", {
@@ -191,7 +199,7 @@ export const updateFromTranscription = mutation({
         source: "phone_call",
         transcriptionData: {
           originalText: transcription.originalText,
-          extractedData: extractedData
+          extractedData: extractedData,
         },
         gdprConsent: false, // Will need to be confirmed
         marketingConsent: false,
@@ -300,7 +308,11 @@ export const createWithGeocoding = action({
 });
 
 // Utility functions for geocoding (server-side implementations)
-function parseWarsawAddress(address: string): { district?: string; street?: string; zipCode?: string } {
+function parseWarsawAddress(address: string): {
+  district?: string;
+  street?: string;
+  zipCode?: string;
+} {
   if (!address) return {};
 
   const components: any = {};
@@ -313,9 +325,23 @@ function parseWarsawAddress(address: string): { district?: string; street?: stri
 
   // Extract district using pattern matching
   const districts = [
-    "Śródmieście", "Wilanów", "Mokotów", "Żoliborz", "Ursynów", "Wola",
-    "Bemowo", "Bielany", "Ochota", "Praga-Południe", "Praga-Północ",
-    "Targówek", "Białołęka", "Rembertów", "Wawer", "Wesoła", "Włochy"
+    "Śródmieście",
+    "Wilanów",
+    "Mokotów",
+    "Żoliborz",
+    "Ursynów",
+    "Wola",
+    "Bemowo",
+    "Bielany",
+    "Ochota",
+    "Praga-Południe",
+    "Praga-Północ",
+    "Targówek",
+    "Białołęka",
+    "Rembertów",
+    "Wawer",
+    "Wesoła",
+    "Włochy",
   ];
 
   for (const district of districts) {
@@ -333,33 +359,33 @@ function generateCoordinatesForAddress(address: string): { lat: number; lng: num
 
   // District centers with small random offset
   const districtCenters: Record<string, { lat: number; lng: number }> = {
-    "Śródmieście": { lat: 52.2297, lng: 21.0122 },
-    "Wilanów": { lat: 52.1700, lng: 21.1000 },
-    "Mokotów": { lat: 52.1850, lng: 21.0250 },
-    "Żoliborz": { lat: 52.2700, lng: 21.0000 },
-    "Ursynów": { lat: 52.1500, lng: 21.0600 },
-    "Wola": { lat: 52.2300, lng: 20.9800 },
-    "Praga-Południe": { lat: 52.2200, lng: 21.0700 },
-    "Targówek": { lat: 52.2900, lng: 21.0650 },
+    Śródmieście: { lat: 52.2297, lng: 21.0122 },
+    Wilanów: { lat: 52.17, lng: 21.1 },
+    Mokotów: { lat: 52.185, lng: 21.025 },
+    Żoliborz: { lat: 52.27, lng: 21.0 },
+    Ursynów: { lat: 52.15, lng: 21.06 },
+    Wola: { lat: 52.23, lng: 20.98 },
+    "Praga-Południe": { lat: 52.22, lng: 21.07 },
+    Targówek: { lat: 52.29, lng: 21.065 },
   };
 
   if (components.district && districtCenters[components.district]) {
     const center = districtCenters[components.district];
     return {
       lat: center.lat + (Math.random() - 0.5) * 0.01,
-      lng: center.lng + (Math.random() - 0.5) * 0.01
+      lng: center.lng + (Math.random() - 0.5) * 0.01,
     };
   }
 
   // Default to Warsaw center with offset
   return {
     lat: 52.2297 + (Math.random() - 0.5) * 0.02,
-    lng: 21.0122 + (Math.random() - 0.5) * 0.02
+    lng: 21.0122 + (Math.random() - 0.5) * 0.02,
   };
 }
 
 function isWithinWarsaw(lat: number, lng: number): boolean {
-  return lat >= 52.10 && lat <= 52.37 && lng >= 20.85 && lng <= 21.27;
+  return lat >= 52.1 && lat <= 52.37 && lng >= 20.85 && lng <= 21.27;
 }
 
 // Search contacts by text query
@@ -391,7 +417,7 @@ export const searchByNIP = query({
     if (!userId) throw new Error("Not authenticated");
 
     // Clean NIP format (remove dashes and spaces)
-    const cleanNIP = args.nip.replace(/[-\s]/g, '');
+    const cleanNIP = args.nip.replace(/[-\s]/g, "");
 
     const contacts = await ctx.db
       .query("contacts")
@@ -403,10 +429,7 @@ export const searchByNIP = query({
           // Also search in notes field where NIP might be stored
           q.and(
             q.neq(q.field("notes"), undefined),
-            q.or(
-              q.gte(q.field("notes"), args.nip),
-              q.gte(q.field("notes"), cleanNIP)
-            )
+            q.or(q.gte(q.field("notes"), args.nip), q.gte(q.field("notes"), cleanNIP))
           )
         );
       })

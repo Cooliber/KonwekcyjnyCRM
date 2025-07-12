@@ -1,8 +1,8 @@
+import { useMutation, useQuery } from "convex/react";
+import { CheckCircle, Clock, Eye, FileText, Plus, Search, Send, XCircle } from "lucide-react";
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { Plus, Search, FileText, Eye, CheckCircle, XCircle, Clock, Send } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
 
 export function QuotesModule() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,22 +23,26 @@ export function QuotesModule() {
     description: "",
     contactId: "",
     validUntil: "",
-    proposals: [{
-      id: "1",
-      title: "Standard Installation",
-      description: "",
-      lineItems: [{
+    proposals: [
+      {
+        id: "1",
+        title: "Standard Installation",
         description: "",
-        quantity: 1,
-        unitPrice: 0,
+        lineItems: [
+          {
+            description: "",
+            quantity: 1,
+            unitPrice: 0,
+            total: 0,
+            type: "labor" as "labor" | "material" | "equipment",
+          },
+        ],
+        subtotal: 0,
+        tax: 0,
         total: 0,
-        type: "labor" as "labor" | "material" | "equipment"
-      }],
-      subtotal: 0,
-      tax: 0,
-      total: 0,
-      recommended: true
-    }]
+        recommended: true,
+      },
+    ],
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,19 +58,19 @@ export function QuotesModule() {
       toast.success("Quote created successfully");
       setShowAddForm(false);
       // Reset form
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to create quote");
     }
   };
 
   const handleStatusChange = async (quoteId: string, status: string) => {
     try {
-      await updateQuote({ 
-        id: quoteId as any, 
-        status: status as any 
+      await updateQuote({
+        id: quoteId as any,
+        status: status as any,
       });
       toast.success("Quote status updated");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to update quote");
     }
   };
@@ -154,8 +158,11 @@ export function QuotesModule() {
               <tbody className="divide-y divide-gray-200">
                 {quotes.map((quote) => {
                   const StatusIcon = statusIcons[quote.status];
-                  const totalAmount = quote.proposals.reduce((sum, proposal) => sum + proposal.total, 0);
-                  
+                  const totalAmount = quote.proposals.reduce(
+                    (sum, proposal) => sum + proposal.total,
+                    0
+                  );
+
                   return (
                     <tr key={quote._id} className="hover:bg-gray-50">
                       <td className="py-4 px-6">
@@ -191,7 +198,10 @@ export function QuotesModule() {
                       </td>
                       <td className="py-4 px-6">
                         <div className="text-sm font-medium text-gray-900">
-                          {totalAmount.toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' })}
+                          {totalAmount.toLocaleString("pl-PL", {
+                            style: "currency",
+                            currency: "PLN",
+                          })}
                         </div>
                       </td>
                       <td className="py-4 px-6">
@@ -240,9 +250,7 @@ export function QuotesModule() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Customer *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
                   <select
                     required
                     value={formData.contactId}
@@ -260,9 +268,7 @@ export function QuotesModule() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -345,9 +351,10 @@ export function QuotesModule() {
                         value={formData.proposals[0].lineItems[0].quantity}
                         onChange={(e) => {
                           const newProposals = [...formData.proposals];
-                          const quantity = parseInt(e.target.value) || 1;
+                          const quantity = Number.parseInt(e.target.value) || 1;
                           newProposals[0].lineItems[0].quantity = quantity;
-                          newProposals[0].lineItems[0].total = quantity * newProposals[0].lineItems[0].unitPrice;
+                          newProposals[0].lineItems[0].total =
+                            quantity * newProposals[0].lineItems[0].unitPrice;
                           setFormData({ ...formData, proposals: newProposals });
                         }}
                         className="col-span-2 px-2 py-1 border border-gray-300 rounded text-sm"
@@ -359,9 +366,10 @@ export function QuotesModule() {
                         value={formData.proposals[0].lineItems[0].unitPrice}
                         onChange={(e) => {
                           const newProposals = [...formData.proposals];
-                          const unitPrice = parseFloat(e.target.value) || 0;
+                          const unitPrice = Number.parseFloat(e.target.value) || 0;
                           newProposals[0].lineItems[0].unitPrice = unitPrice;
-                          newProposals[0].lineItems[0].total = newProposals[0].lineItems[0].quantity * unitPrice;
+                          newProposals[0].lineItems[0].total =
+                            newProposals[0].lineItems[0].quantity * unitPrice;
                           setFormData({ ...formData, proposals: newProposals });
                         }}
                         className="col-span-2 px-2 py-1 border border-gray-300 rounded text-sm"
@@ -380,7 +388,10 @@ export function QuotesModule() {
                         <option value="equipment">Equipment</option>
                       </select>
                       <div className="col-span-2 px-2 py-1 text-sm font-medium">
-                        {formData.proposals[0].lineItems[0].total.toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' })}
+                        {formData.proposals[0].lineItems[0].total.toLocaleString("pl-PL", {
+                          style: "currency",
+                          currency: "PLN",
+                        })}
                       </div>
                     </div>
                   </div>

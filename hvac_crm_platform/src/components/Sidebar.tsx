@@ -1,24 +1,23 @@
 import {
-  Home,
-  Users,
-  Calendar,
-  Package,
-  FileText,
-  MessageSquare,
-  Settings,
-  Wrench,
-  DollarSign,
-  Smartphone,
-  BarChart3,
-  TrendingUp,
-  PieChart,
-  Upload,
-  Radio,
-  Zap,
-  FileSignature,
-  Shield,
   Activity,
-  Globe
+  BarChart3,
+  Calendar,
+  DollarSign,
+  FileSignature,
+  FileText,
+  Globe,
+  Home,
+  MessageSquare,
+  Package,
+  PieChart,
+  Radio,
+  Settings,
+  Shield,
+  Smartphone,
+  TrendingUp,
+  Upload,
+  Users,
+  Wrench,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -61,7 +60,7 @@ export function Sidebar({ activeModule, onModuleChange }: SidebarProps) {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeModule === item.id;
-            
+
             return (
               <li key={item.id}>
                 <button
@@ -93,14 +92,10 @@ export function Sidebar({ activeModule, onModuleChange }: SidebarProps) {
             <Smartphone className="w-4 h-4 mr-3" />
             <span>Mobile App</span>
           </div>
-          <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full">
-            PWA
-          </span>
+          <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full">PWA</span>
         </a>
 
-        <div className="text-xs text-blue-300">
-          © 2024 HVAC Pro CRM
-        </div>
+        <div className="text-xs text-blue-300">© 2024 HVAC Pro CRM</div>
       </div>
     </div>
   );

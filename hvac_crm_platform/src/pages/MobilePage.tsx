@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
 import { useQuery } from "convex/react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Download,
+  Settings,
+  Smartphone,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
 import { MobileMapInterface } from "../components/modules/MobileMapInterface";
-import { 
-  Smartphone, 
-  Wifi, 
-  WifiOff, 
-  Download, 
-  CheckCircle,
-  AlertTriangle,
-  Settings
-} from "lucide-react";
 
 export function MobilePage() {
   const [isInstalled, setIsInstalled] = useState(false);
@@ -24,7 +24,7 @@ export function MobilePage() {
   // PWA installation handling
   useEffect(() => {
     // Check if app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (window.matchMedia("(display-mode: standalone)").matches) {
       setIsInstalled(true);
     }
 
@@ -44,35 +44,36 @@ export function MobilePage() {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
   // Register service worker
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js")
         .then((registration) => {
-          console.log('Service Worker registered:', registration);
+          console.log("Service Worker registered:", registration);
         })
         .catch((error) => {
-          console.log('Service Worker registration failed:', error);
+          console.log("Service Worker registration failed:", error);
         });
     }
   }, []);
 
   // Show install prompt after a delay if not installed
   useEffect(() => {
-    if (!isInstalled && !installPromptShown && deferredPrompt) {
+    if (!(isInstalled || installPromptShown) && deferredPrompt) {
       const timer = setTimeout(() => {
         setInstallPromptShown(true);
       }, 5000); // Show after 5 seconds
@@ -85,20 +86,20 @@ export function MobilePage() {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      
-      if (outcome === 'accepted') {
-        console.log('User accepted the install prompt');
+
+      if (outcome === "accepted") {
+        console.log("User accepted the install prompt");
       } else {
-        console.log('User dismissed the install prompt');
+        console.log("User dismissed the install prompt");
       }
-      
+
       setDeferredPrompt(null);
       setInstallPromptShown(false);
     }
   };
 
   // Check if user is a technician
-  const isTechnician = userProfile?.role === 'technician';
+  const isTechnician = userProfile?.role === "technician";
 
   if (!isTechnician) {
     return (
@@ -107,7 +108,8 @@ export function MobilePage() {
           <Smartphone className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">HVAC Mobile</h1>
           <p className="text-gray-600 mb-6">
-            This mobile interface is designed for technicians. Please log in with a technician account to access mobile features.
+            This mobile interface is designed for technicians. Please log in with a technician
+            account to access mobile features.
           </p>
           <a
             href="/"
@@ -124,11 +126,11 @@ export function MobilePage() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Connection Status Bar */}
-      <div className={`w-full py-2 px-4 text-center text-sm font-medium ${
-        isOnline 
-          ? 'bg-green-500 text-white' 
-          : 'bg-red-500 text-white'
-      }`}>
+      <div
+        className={`w-full py-2 px-4 text-center text-sm font-medium ${
+          isOnline ? "bg-green-500 text-white" : "bg-red-500 text-white"
+        }`}
+      >
         <div className="flex items-center justify-center space-x-2">
           {isOnline ? (
             <>
@@ -187,7 +189,7 @@ export function MobilePage() {
       <MobileMapInterface
         technicianId={userProfile?.userId}
         onJobComplete={(jobId) => {
-          console.log('Job completed:', jobId);
+          console.log("Job completed:", jobId);
           // Handle job completion
         }}
       />

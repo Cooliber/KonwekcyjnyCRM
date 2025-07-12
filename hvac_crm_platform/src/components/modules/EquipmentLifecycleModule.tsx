@@ -1,62 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Input } from '../ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Progress } from '../ui/progress';
-import { 
-  Package, 
-  Plus, 
-  Search, 
-  Calendar, 
-  Clock, 
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  TrendingUp,
-  TrendingDown,
-  MapPin,
-  Building,
-  Wrench,
-  Settings,
-  BarChart3,
-  RefreshCw,
-  Bell,
-  Star,
-  DollarSign,
-  FileText,
+import { useMutation, useQuery } from "convex/react";
+import {
   Activity,
-  Thermometer,
-  Gauge,
-  Zap,
-  Shield,
-  History,
+  AlertTriangle,
+  BarChart3,
+  Building,
+  Calendar,
+  CheckCircle,
   Eye,
-  Edit,
-  Trash2
-} from 'lucide-react';
-import { 
-  LineChart, 
-  Line, 
-  AreaChart, 
-  Area, 
-  BarChart, 
-  Bar,
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer 
-} from 'recharts';
-import { toast } from 'sonner';
-import type { WarsawDistrict } from '../../types/hvac';
-import { Id } from '../../../convex/_generated/dataModel';
+  FileText,
+  MapPin,
+  Package,
+  Plus,
+  RefreshCw,
+  Search,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
+import { useState } from "react";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
+import type { WarsawDistrict } from "../../types/hvac";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Input } from "../ui/input";
+import { Progress } from "../ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 interface Equipment {
   _id: Id<"equipmentLifecycle">;
@@ -64,8 +46,20 @@ interface Equipment {
   serialNumber: string;
   model: string;
   manufacturer: string;
-  type: 'split_ac' | 'multi_split' | 'vrf_system' | 'heat_pump' | 'thermostat' | 'ductwork' | 'ventilation';
-  status: 'operational' | 'maintenance_required' | 'repair_needed' | 'end_of_life' | 'decommissioned';
+  type:
+    | "split_ac"
+    | "multi_split"
+    | "vrf_system"
+    | "heat_pump"
+    | "thermostat"
+    | "ductwork"
+    | "ventilation";
+  status:
+    | "operational"
+    | "maintenance_required"
+    | "repair_needed"
+    | "end_of_life"
+    | "decommissioned";
   location: {
     clientId: Id<"contacts">;
     clientName: string;
@@ -111,7 +105,7 @@ interface Equipment {
   };
   maintenanceHistory: Array<{
     date: number;
-    type: 'routine' | 'preventive' | 'corrective' | 'emergency';
+    type: "routine" | "preventive" | "corrective" | "emergency";
     technicianId: Id<"users">;
     description: string;
     cost: number;
@@ -119,8 +113,13 @@ interface Equipment {
     nextMaintenanceDue?: number;
   }>;
   alerts: Array<{
-    type: 'maintenance_due' | 'warranty_expiring' | 'efficiency_drop' | 'fault_detected' | 'end_of_life_approaching';
-    severity: 'low' | 'medium' | 'high' | 'critical';
+    type:
+      | "maintenance_due"
+      | "warranty_expiring"
+      | "efficiency_drop"
+      | "fault_detected"
+      | "end_of_life_approaching";
+    severity: "low" | "medium" | "high" | "critical";
     message: string;
     createdAt: number;
     acknowledged: boolean;
@@ -144,7 +143,7 @@ interface MaintenanceRecord {
   _id: string;
   equipmentId: string;
   date: string;
-  type: 'preventive' | 'corrective' | 'emergency' | 'inspection';
+  type: "preventive" | "corrective" | "emergency" | "inspection";
   technicianId: string;
   technicianName: string;
   description: string;
@@ -165,65 +164,109 @@ interface PerformanceMetrics {
 }
 
 export function EquipmentLifecycleModule() {
-  const [activeTab, setActiveTab] = useState('equipment');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [districtFilter, setDistrictFilter] = useState<string>('all');
-  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("equipment");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [districtFilter, setDistrictFilter] = useState<string>("all");
+  const [_selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
+  const [_isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Real Convex queries
-  const equipment = useQuery(api.equipmentLifecycle.getEquipmentLifecycle, {
-    status: statusFilter !== 'all' ? statusFilter as any : undefined,
-    district: districtFilter !== 'all' ? districtFilter : undefined,
-    type: typeFilter !== 'all' ? typeFilter as any : undefined,
-    limit: 50
-  }) || [];
+  const equipment =
+    useQuery(api.equipmentLifecycle.getEquipmentLifecycle, {
+      status: statusFilter !== "all" ? (statusFilter as any) : undefined,
+      district: districtFilter !== "all" ? districtFilter : undefined,
+      type: typeFilter !== "all" ? (typeFilter as any) : undefined,
+      limit: 50,
+    }) || [];
 
   const createEquipmentLifecycle = useMutation(api.equipmentLifecycle.createEquipmentLifecycle);
   const updateEquipmentLifecycle = useMutation(api.equipmentLifecycle.updateEquipmentLifecycle);
 
   // Get equipment requiring maintenance
-  const equipmentRequiringMaintenance = useQuery(api.equipmentLifecycle.getEquipmentRequiringMaintenance, {
-    daysAhead: 30
-  }) || [];
+  const _equipmentRequiringMaintenance =
+    useQuery(api.equipmentLifecycle.getEquipmentRequiringMaintenance, {
+      daysAhead: 30,
+    }) || [];
 
   // Get performance analytics
-  const performanceAnalytics = useQuery(api.equipmentLifecycle.getEquipmentPerformanceAnalytics, {
-    timeRange: '30d',
-    district: districtFilter !== 'all' ? districtFilter : undefined
+  const _performanceAnalytics = useQuery(api.equipmentLifecycle.getEquipmentPerformanceAnalytics, {
+    timeRange: "30d",
+    district: districtFilter !== "all" ? districtFilter : undefined,
   });
 
   // Mock performance metrics data - this could also be moved to Convex
   const performanceData: PerformanceMetrics[] = [
-    { date: '2024-01', efficiency: 92.1, energyConsumption: 2100, uptime: 98.2, temperature: 22.5, pressure: 1.2 },
-    { date: '2024-02', efficiency: 93.5, energyConsumption: 2050, uptime: 98.8, temperature: 22.3, pressure: 1.1 },
-    { date: '2024-03', efficiency: 94.2, energyConsumption: 2000, uptime: 99.1, temperature: 22.1, pressure: 1.0 },
-    { date: '2024-04', efficiency: 93.8, energyConsumption: 2080, uptime: 98.5, temperature: 22.4, pressure: 1.1 },
-    { date: '2024-05', efficiency: 94.5, energyConsumption: 1980, uptime: 99.3, temperature: 22.0, pressure: 1.0 },
-    { date: '2024-06', efficiency: 95.1, energyConsumption: 1950, uptime: 99.5, temperature: 21.8, pressure: 0.9 }
+    {
+      date: "2024-01",
+      efficiency: 92.1,
+      energyConsumption: 2100,
+      uptime: 98.2,
+      temperature: 22.5,
+      pressure: 1.2,
+    },
+    {
+      date: "2024-02",
+      efficiency: 93.5,
+      energyConsumption: 2050,
+      uptime: 98.8,
+      temperature: 22.3,
+      pressure: 1.1,
+    },
+    {
+      date: "2024-03",
+      efficiency: 94.2,
+      energyConsumption: 2000,
+      uptime: 99.1,
+      temperature: 22.1,
+      pressure: 1.0,
+    },
+    {
+      date: "2024-04",
+      efficiency: 93.8,
+      energyConsumption: 2080,
+      uptime: 98.5,
+      temperature: 22.4,
+      pressure: 1.1,
+    },
+    {
+      date: "2024-05",
+      efficiency: 94.5,
+      energyConsumption: 1980,
+      uptime: 99.3,
+      temperature: 22.0,
+      pressure: 1.0,
+    },
+    {
+      date: "2024-06",
+      efficiency: 95.1,
+      energyConsumption: 1950,
+      uptime: 99.5,
+      temperature: 21.8,
+      pressure: 0.9,
+    },
   ];
 
   // No need for additional filtering since we're using Convex queries with filters
   const filteredEquipment = equipment;
 
   // Helper functions
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('pl-PL');
+  const _formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString("pl-PL");
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('pl-PL', {
-      style: 'currency',
-      currency: 'PLN'
+  const _formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("pl-PL", {
+      style: "currency",
+      currency: "PLN",
     }).format(amount);
   };
 
   // Event handlers
-  const handleCreateEquipment = async (equipmentData: any) => {
+  const _handleCreateEquipment = async (equipmentData: any) => {
     try {
-      const equipmentId = await createEquipmentLifecycle({
+      const _equipmentId = await createEquipmentLifecycle({
         equipmentId: equipmentData.equipmentId,
         serialNumber: equipmentData.serialNumber,
         model: equipmentData.model,
@@ -236,16 +279,16 @@ export function EquipmentLifecycleModule() {
           district: equipmentData.location.district,
           building: equipmentData.location.building,
           floor: equipmentData.location.floor,
-          room: equipmentData.location.room
+          room: equipmentData.location.room,
         },
         installation: {
           date: new Date(equipmentData.installation.date).getTime(),
           technicianId: equipmentData.installation.technicianId,
           warrantyExpiry: new Date(equipmentData.installation.warrantyExpiry).getTime(),
-          cost: equipmentData.installation.cost
+          cost: equipmentData.installation.cost,
         },
         specifications: equipmentData.specifications,
-        expectedLifespan: equipmentData.expectedLifespan || 180 // 15 years default
+        expectedLifespan: equipmentData.expectedLifespan || 180, // 15 years default
       });
 
       toast.success(`Sprzęt ${equipmentData.serialNumber} został dodany do systemu`);
@@ -255,11 +298,11 @@ export function EquipmentLifecycleModule() {
     }
   };
 
-  const handleUpdateEquipment = async (equipment: Equipment, updates: any) => {
+  const _handleUpdateEquipment = async (equipment: Equipment, updates: any) => {
     try {
       await updateEquipmentLifecycle({
         equipmentLifecycleId: equipment._id,
-        updates
+        updates,
       });
 
       toast.success(`Sprzęt ${equipment.serialNumber} został zaktualizowany`);
@@ -268,60 +311,52 @@ export function EquipmentLifecycleModule() {
     }
   };
 
-  const getStatusBadge = (status: Equipment['status']) => {
+  const getStatusBadge = (status: Equipment["status"]) => {
     const variants = {
-      operational: 'success',
-      maintenance_required: 'warning',
-      repair_needed: 'destructive',
-      end_of_life: 'secondary',
-      decommissioned: 'destructive'
+      operational: "success",
+      maintenance_required: "warning",
+      repair_needed: "destructive",
+      end_of_life: "secondary",
+      decommissioned: "destructive",
     } as const;
 
     const labels = {
-      operational: 'Operacyjny',
-      maintenance_required: 'Wymaga serwisu',
-      repair_needed: 'Wymaga naprawy',
-      end_of_life: 'Koniec żywotności',
-      decommissioned: 'Wycofany'
+      operational: "Operacyjny",
+      maintenance_required: "Wymaga serwisu",
+      repair_needed: "Wymaga naprawy",
+      end_of_life: "Koniec żywotności",
+      decommissioned: "Wycofany",
     };
 
-    return (
-      <Badge variant={variants[status]}>
-        {labels[status]}
-      </Badge>
-    );
+    return <Badge variant={variants[status]}>{labels[status]}</Badge>;
   };
 
-  const getTypeBadge = (type: Equipment['type']) => {
+  const getTypeBadge = (type: Equipment["type"]) => {
     const labels = {
-      split_ac: 'Split AC',
-      multi_split: 'Multi Split',
-      vrf_system: 'VRF',
-      heat_pump: 'Pompa ciepła',
-      thermostat: 'Termostat',
-      ductwork: 'Kanały',
-      ventilation: 'Wentylacja',
-      other: 'Inne'
+      split_ac: "Split AC",
+      multi_split: "Multi Split",
+      vrf_system: "VRF",
+      heat_pump: "Pompa ciepła",
+      thermostat: "Termostat",
+      ductwork: "Kanały",
+      ventilation: "Wentylacja",
+      other: "Inne",
     };
 
-    return (
-      <Badge variant="outline">
-        {labels[type]}
-      </Badge>
-    );
+    return <Badge variant="outline">{labels[type]}</Badge>;
   };
 
   const getLifecycleColor = (remainingLife: number, expectedLifespan: number) => {
     const percentage = (remainingLife / expectedLifespan) * 100;
-    if (percentage > 70) return 'text-green-600';
-    if (percentage > 30) return 'text-yellow-600';
-    return 'text-red-600';
+    if (percentage > 70) return "text-green-600";
+    if (percentage > 30) return "text-yellow-600";
+    return "text-red-600";
   };
 
   const getEfficiencyColor = (efficiency: number) => {
-    if (efficiency >= 95) return 'text-green-600';
-    if (efficiency >= 90) return 'text-yellow-600';
-    return 'text-red-600';
+    if (efficiency >= 95) return "text-green-600";
+    if (efficiency >= 90) return "text-yellow-600";
+    return "text-red-600";
   };
 
   const handleOpenCreateDialog = () => {
@@ -340,8 +375,6 @@ export function EquipmentLifecycleModule() {
   const handleGenerateReport = (item: Equipment) => {
     toast.success(`Generowanie raportu dla ${item.serialNumber}`);
   };
-
-
 
   return (
     <div className="space-y-6">
@@ -373,14 +406,14 @@ export function EquipmentLifecycleModule() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Urządzenia Aktywne</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {equipment.filter(e => e.status === 'operational').length}
+                  {equipment.filter((e) => e.status === "operational").length}
                 </p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -392,7 +425,7 @@ export function EquipmentLifecycleModule() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -406,7 +439,7 @@ export function EquipmentLifecycleModule() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -503,11 +536,11 @@ export function EquipmentLifecycleModule() {
                         {getTypeBadge(item.type)}
                         {item.alerts.active > 0 && (
                           <Badge variant="destructive">
-                            {item.alerts.active} alert{item.alerts.active > 1 ? 'y' : ''}
+                            {item.alerts.active} alert{item.alerts.active > 1 ? "y" : ""}
                           </Badge>
                         )}
                       </div>
-                      
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-4">
                         <div className="flex items-center gap-2">
                           <Package className="w-4 h-4" />
@@ -530,7 +563,9 @@ export function EquipmentLifecycleModule() {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
                         <div>
                           <p className="text-gray-500">Efektywność</p>
-                          <p className={`font-semibold ${getEfficiencyColor(item.performance.efficiency)}`}>
+                          <p
+                            className={`font-semibold ${getEfficiencyColor(item.performance.efficiency)}`}
+                          >
                             {item.performance.efficiency}%
                           </p>
                         </div>
@@ -544,7 +579,9 @@ export function EquipmentLifecycleModule() {
                         </div>
                         <div>
                           <p className="text-gray-500">Pozostały czas życia</p>
-                          <p className={`font-semibold ${getLifecycleColor(item.lifecycle.remainingLife, item.lifecycle.expectedLifespan)}`}>
+                          <p
+                            className={`font-semibold ${getLifecycleColor(item.lifecycle.remainingLife, item.lifecycle.expectedLifespan)}`}
+                          >
                             {Math.round(item.lifecycle.remainingLife / 12)} lat
                           </p>
                         </div>
@@ -552,22 +589,26 @@ export function EquipmentLifecycleModule() {
 
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                          <span>Cykl życia ({item.lifecycle.age}/{item.lifecycle.expectedLifespan} miesięcy)</span>
-                          <span>{Math.round((item.lifecycle.age / item.lifecycle.expectedLifespan) * 100)}%</span>
+                          <span>
+                            Cykl życia ({item.lifecycle.age}/{item.lifecycle.expectedLifespan}{" "}
+                            miesięcy)
+                          </span>
+                          <span>
+                            {Math.round(
+                              (item.lifecycle.age / item.lifecycle.expectedLifespan) * 100
+                            )}
+                            %
+                          </span>
                         </div>
-                        <Progress 
-                          value={(item.lifecycle.age / item.lifecycle.expectedLifespan) * 100} 
+                        <Progress
+                          value={(item.lifecycle.age / item.lifecycle.expectedLifespan) * 100}
                           className="h-2"
                         />
                       </div>
                     </div>
-                    
+
                     <div className="flex flex-col gap-2 ml-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewEquipment(item)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleViewEquipment(item)}>
                         <Eye className="w-4 h-4 mr-2" />
                         Szczegóły
                       </Button>
@@ -619,12 +660,12 @@ export function EquipmentLifecycleModule() {
                     <XAxis dataKey="date" />
                     <YAxis domain={[85, 100]} />
                     <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="efficiency" 
-                      stroke="#1A3E7C" 
+                    <Line
+                      type="monotone"
+                      dataKey="efficiency"
+                      stroke="#1A3E7C"
                       strokeWidth={2}
-                      dot={{ fill: '#1A3E7C' }}
+                      dot={{ fill: "#1A3E7C" }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -642,11 +683,11 @@ export function EquipmentLifecycleModule() {
                     <XAxis dataKey="date" />
                     <YAxis />
                     <Tooltip />
-                    <Area 
-                      type="monotone" 
-                      dataKey="energyConsumption" 
-                      stroke="#F2994A" 
-                      fill="#F2994A" 
+                    <Area
+                      type="monotone"
+                      dataKey="energyConsumption"
+                      stroke="#F2994A"
+                      fill="#F2994A"
                       fillOpacity={0.3}
                     />
                   </AreaChart>

@@ -1,69 +1,54 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useQuery } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Progress } from '../ui/progress';
+import { useQuery } from "convex/react";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
+  Activity,
+  BarChart3,
+  Brain,
+  DollarSign,
+  Download,
+  Lightbulb,
+  MapPin,
+  PieChart as PieChartIcon,
+  RefreshCw,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  TrendingUp as TrendingUpIcon,
+  Users,
+  Wifi,
+  Wrench,
+  Zap,
+} from "lucide-react";
+import React, { useMemo, useState } from "react";
+import {
   Area,
   AreaChart,
-  ComposedChart,
-  Scatter,
-  ScatterChart
-} from 'recharts';
-import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Users,
-  Calendar,
-  Wrench,
-  Target,
-  BarChart3,
-  PieChart as PieChartIcon,
-  Activity,
-  Clock,
-  MapPin,
-  Zap,
-  Settings,
-  Download,
-  Filter,
-  RefreshCw,
-  Brain,
-  Eye,
-  AlertTriangle,
-  CheckCircle,
-  Star,
-  Lightbulb,
-  TrendingUp as TrendingUpIcon,
-  Database,
-  Wifi,
-  Globe
-} from 'lucide-react';
-import { formatCurrency, formatDate, getDistrictColor } from '../../lib/utils';
-import { useConvexRealTime } from '../../hooks/useConvexRealTime';
-import type { WarsawDistrict } from '../../types/hvac';
-import { toast } from 'sonner';
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { api } from "../../../convex/_generated/api";
+import { useConvexRealTime } from "../../hooks/useConvexRealTime";
+import { formatCurrency } from "../../lib/utils";
+import type { WarsawDistrict } from "../../types/hvac";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface KPIWidget {
   id: string;
   title: string;
   value: string | number;
   change: number;
-  changeType: 'increase' | 'decrease';
+  changeType: "increase" | "decrease";
   icon: React.ComponentType<{ className?: string }>;
   color: string;
   description: string;
@@ -71,7 +56,7 @@ interface KPIWidget {
   prophecy?: {
     prediction: string;
     confidence: number; // 0-100
-    trend: 'up' | 'down' | 'stable';
+    trend: "up" | "down" | "stable";
     timeframe: string;
     factors: string[];
   };
@@ -92,17 +77,17 @@ interface ChartData {
 
 interface ProphecyInsight {
   id: string;
-  type: 'opportunity' | 'risk' | 'trend' | 'anomaly';
+  type: "opportunity" | "risk" | "trend" | "anomaly";
   title: string;
   description: string;
   confidence: number;
-  impact: 'high' | 'medium' | 'low';
+  impact: "high" | "medium" | "low";
   actionable: boolean;
   recommendedActions?: string[];
   dataPoints: Array<{
     metric: string;
     value: number;
-    trend: 'up' | 'down' | 'stable';
+    trend: "up" | "down" | "stable";
   }>;
   warsawSpecific?: {
     districts: WarsawDistrict[];
@@ -121,27 +106,27 @@ interface RealTimeMetrics {
 }
 
 export function BusinessIntelligenceDashboard() {
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
-  const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
+  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "1y">("30d");
+  const [_selectedDistrict, _setSelectedDistrict] = useState<string>("all");
   const [refreshing, setRefreshing] = useState(false);
   const [prophecyEnabled, setProphecyEnabled] = useState(true);
   const [realTimeEnabled, setRealTimeEnabled] = useState(true);
-  const [showInsights, setShowInsights] = useState(false);
+  const [_showInsights, _setShowInsights] = useState(false);
 
   // Real-time data subscriptions
   const {
     data: realTimeData,
     isConnected,
     lastUpdate,
-    refresh
+    refresh,
   } = useConvexRealTime({
     queries: [
-      { name: 'jobs', query: api.jobs.list, args: {} },
-      { name: 'contacts', query: api.contacts.list, args: {} },
-      { name: 'quotes', query: api.quotes.list, args: {} },
-      { name: 'equipment', query: api.equipment.list, args: {} }
+      { name: "jobs", query: api.jobs.list, args: {} },
+      { name: "contacts", query: api.contacts.list, args: {} },
+      { name: "quotes", query: api.quotes.list, args: {} },
+      { name: "equipment", query: api.equipment.list, args: {} },
     ],
-    refreshInterval: realTimeEnabled ? 5000 : 30000 // 5s when real-time, 30s otherwise
+    refreshInterval: realTimeEnabled ? 5000 : 30000, // 5s when real-time, 30s otherwise
   });
 
   // Fallback to regular queries if real-time is disabled
@@ -150,10 +135,10 @@ export function BusinessIntelligenceDashboard() {
   const fallbackQuotes = useQuery(api.quotes.list, realTimeEnabled ? undefined : {});
   const fallbackEquipment = useQuery(api.equipment.list, realTimeEnabled ? undefined : {});
 
-  const jobs = realTimeEnabled ? (realTimeData?.jobs || []) : (fallbackJobs || []);
-  const contacts = realTimeEnabled ? (realTimeData?.contacts || []) : (fallbackContacts || []);
-  const quotes = realTimeEnabled ? (realTimeData?.quotes || []) : (fallbackQuotes || []);
-  const equipment = realTimeEnabled ? (realTimeData?.equipment || []) : (fallbackEquipment || []);
+  const jobs = realTimeEnabled ? realTimeData?.jobs || [] : fallbackJobs || [];
+  const contacts = realTimeEnabled ? realTimeData?.contacts || [] : fallbackContacts || [];
+  const quotes = realTimeEnabled ? realTimeData?.quotes || [] : fallbackQuotes || [];
+  const _equipment = realTimeEnabled ? realTimeData?.equipment || [] : fallbackEquipment || [];
   // Generate prophecy insights
   const prophecyInsights = useMemo((): ProphecyInsight[] => {
     if (!prophecyEnabled) return [];
@@ -162,95 +147,100 @@ export function BusinessIntelligenceDashboard() {
 
     // Revenue trend analysis
     const recentRevenue = quotes
-      .filter(q => q.status === 'accepted' && q._creationTime > Date.now() - 30 * 24 * 60 * 60 * 1000)
+      .filter(
+        (q) => q.status === "accepted" && q._creationTime > Date.now() - 30 * 24 * 60 * 60 * 1000
+      )
       .reduce((sum, q) => sum + (q.totalAmount || 0), 0);
 
     const previousRevenue = quotes
-      .filter(q => q.status === 'accepted' &&
-        q._creationTime > Date.now() - 60 * 24 * 60 * 60 * 1000 &&
-        q._creationTime <= Date.now() - 30 * 24 * 60 * 60 * 1000)
+      .filter(
+        (q) =>
+          q.status === "accepted" &&
+          q._creationTime > Date.now() - 60 * 24 * 60 * 60 * 1000 &&
+          q._creationTime <= Date.now() - 30 * 24 * 60 * 60 * 1000
+      )
       .reduce((sum, q) => sum + (q.totalAmount || 0), 0);
 
     if (recentRevenue > previousRevenue * 1.2) {
       insights.push({
-        id: 'revenue-surge',
-        type: 'opportunity',
-        title: 'Revenue Surge Detected',
+        id: "revenue-surge",
+        type: "opportunity",
+        title: "Revenue Surge Detected",
         description: `Revenue increased by ${((recentRevenue / previousRevenue - 1) * 100).toFixed(1)}% this month`,
         confidence: 85,
-        impact: 'high',
+        impact: "high",
         actionable: true,
         recommendedActions: [
-          'Scale marketing efforts in high-performing districts',
-          'Increase inventory for popular equipment',
-          'Hire additional technicians for peak demand'
+          "Scale marketing efforts in high-performing districts",
+          "Increase inventory for popular equipment",
+          "Hire additional technicians for peak demand",
         ],
         dataPoints: [
-          { metric: 'Current Month Revenue', value: recentRevenue, trend: 'up' },
-          { metric: 'Previous Month Revenue', value: previousRevenue, trend: 'stable' }
-        ]
+          { metric: "Current Month Revenue", value: recentRevenue, trend: "up" },
+          { metric: "Previous Month Revenue", value: previousRevenue, trend: "stable" },
+        ],
       });
     }
 
     // Job completion rate analysis
-    const completionRate = jobs.length > 0 ?
-      jobs.filter(j => j.status === 'completed').length / jobs.length : 0;
+    const completionRate =
+      jobs.length > 0 ? jobs.filter((j) => j.status === "completed").length / jobs.length : 0;
 
     if (completionRate < 0.8) {
       insights.push({
-        id: 'completion-risk',
-        type: 'risk',
-        title: 'Low Job Completion Rate',
+        id: "completion-risk",
+        type: "risk",
+        title: "Low Job Completion Rate",
         description: `Only ${(completionRate * 100).toFixed(1)}% of jobs are completed`,
         confidence: 90,
-        impact: 'high',
+        impact: "high",
         actionable: true,
         recommendedActions: [
-          'Review workflow bottlenecks',
-          'Provide additional training to technicians',
-          'Implement better project management tools'
+          "Review workflow bottlenecks",
+          "Provide additional training to technicians",
+          "Implement better project management tools",
         ],
         dataPoints: [
-          { metric: 'Completion Rate', value: completionRate * 100, trend: 'down' },
-          { metric: 'Target Rate', value: 85, trend: 'stable' }
-        ]
+          { metric: "Completion Rate", value: completionRate * 100, trend: "down" },
+          { metric: "Target Rate", value: 85, trend: "stable" },
+        ],
       });
     }
 
     // Warsaw district analysis
-    const districtPerformance = contacts.reduce((acc, contact) => {
-      const district = contact.address?.district as WarsawDistrict;
-      if (district) {
-        acc[district] = (acc[district] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<WarsawDistrict, number>);
+    const districtPerformance = contacts.reduce(
+      (acc, contact) => {
+        const district = contact.address?.district as WarsawDistrict;
+        if (district) {
+          acc[district] = (acc[district] || 0) + 1;
+        }
+        return acc;
+      },
+      {} as Record<WarsawDistrict, number>
+    );
 
-    const topDistrict = Object.entries(districtPerformance)
-      .sort(([,a], [,b]) => b - a)[0];
+    const topDistrict = Object.entries(districtPerformance).sort(([, a], [, b]) => b - a)[0];
 
     if (topDistrict && topDistrict[1] > 10) {
       insights.push({
-        id: 'district-opportunity',
-        type: 'opportunity',
+        id: "district-opportunity",
+        type: "opportunity",
         title: `${topDistrict[0]} District Dominance`,
         description: `${topDistrict[0]} represents ${topDistrict[1]} clients - consider focused expansion`,
         confidence: 75,
-        impact: 'medium',
+        impact: "medium",
         actionable: true,
         recommendedActions: [
           `Increase marketing presence in ${topDistrict[0]}`,
-          'Establish local partnerships',
-          'Optimize service routes for the district'
+          "Establish local partnerships",
+          "Optimize service routes for the district",
         ],
-        dataPoints: [
-          { metric: 'Client Count', value: topDistrict[1], trend: 'up' }
-        ],
+        dataPoints: [{ metric: "Client Count", value: topDistrict[1], trend: "up" }],
         warsawSpecific: {
           districts: [topDistrict[0] as WarsawDistrict],
           seasonalFactor: 1.1,
-          competitionImpact: 0.8
-        }
+          competitionImpact: 0.8,
+        },
       });
     }
 
@@ -260,92 +250,104 @@ export function BusinessIntelligenceDashboard() {
   // Calculate enhanced KPIs with prophecy
   const kpis: KPIWidget[] = useMemo(() => {
     const totalRevenue = quotes
-      .filter(q => q.status === 'accepted')
+      .filter((q) => q.status === "accepted")
       .reduce((sum, q) => sum + (q.totalAmount || 0), 0);
 
-    const activeJobs = jobs.filter(j => j.status === 'in_progress').length;
-    const completedJobs = jobs.filter(j => j.status === 'completed').length;
+    const activeJobs = jobs.filter((j) => j.status === "in_progress").length;
+    const completedJobs = jobs.filter((j) => j.status === "completed").length;
     const totalContacts = contacts.length;
 
     // Prophecy predictions
-    const revenueProphecy = prophecyEnabled ? {
-      prediction: `Expected to reach ${formatCurrency(totalRevenue * 1.15)} next month`,
-      confidence: 78,
-      trend: 'up' as const,
-      timeframe: '30 days',
-      factors: ['Seasonal demand increase', 'New client acquisitions', 'Warsaw market expansion']
-    } : undefined;
+    const revenueProphecy = prophecyEnabled
+      ? {
+          prediction: `Expected to reach ${formatCurrency(totalRevenue * 1.15)} next month`,
+          confidence: 78,
+          trend: "up" as const,
+          timeframe: "30 days",
+          factors: [
+            "Seasonal demand increase",
+            "New client acquisitions",
+            "Warsaw market expansion",
+          ],
+        }
+      : undefined;
 
     return [
       {
-        id: 'revenue',
-        title: 'Total Revenue',
+        id: "revenue",
+        title: "Total Revenue",
         value: formatCurrency(totalRevenue),
         change: 12.5,
-        changeType: 'increase' as const,
+        changeType: "increase" as const,
         icon: DollarSign,
-        color: '#10b981',
-        description: 'Monthly recurring revenue',
+        color: "#10b981",
+        description: "Monthly recurring revenue",
         prophecy: revenueProphecy,
         realTimeValue: realTimeEnabled ? totalRevenue : undefined,
-        isRealTime: realTimeEnabled
+        isRealTime: realTimeEnabled,
       },
       {
-        id: 'active_jobs',
-        title: 'Active Jobs',
+        id: "active_jobs",
+        title: "Active Jobs",
         value: activeJobs,
         change: 8.2,
-        changeType: 'increase' as const,
+        changeType: "increase" as const,
         icon: Wrench,
-        color: '#f59e0b',
-        description: 'Currently in progress',
-        prophecy: prophecyEnabled ? {
-          prediction: `${Math.round(activeJobs * 1.1)} jobs expected next week`,
-          confidence: 72,
-          trend: 'up' as const,
-          timeframe: '7 days',
-          factors: ['Seasonal demand', 'New client onboarding']
-        } : undefined,
+        color: "#f59e0b",
+        description: "Currently in progress",
+        prophecy: prophecyEnabled
+          ? {
+              prediction: `${Math.round(activeJobs * 1.1)} jobs expected next week`,
+              confidence: 72,
+              trend: "up" as const,
+              timeframe: "7 days",
+              factors: ["Seasonal demand", "New client onboarding"],
+            }
+          : undefined,
         realTimeValue: realTimeEnabled ? activeJobs : undefined,
-        isRealTime: realTimeEnabled
+        isRealTime: realTimeEnabled,
       },
       {
-        id: 'completion_rate',
-        title: 'Completion Rate',
+        id: "completion_rate",
+        title: "Completion Rate",
         value: `${((completedJobs / jobs.length) * 100 || 0).toFixed(1)}%`,
         change: 5.1,
-        changeType: 'increase' as const,
+        changeType: "increase" as const,
         icon: Target,
-        color: '#3b82f6',
-        description: 'Jobs completed successfully',
-        prophecy: prophecyEnabled ? {
-          prediction: 'Rate expected to improve to 88%',
-          confidence: 65,
-          trend: 'up' as const,
-          timeframe: '2 weeks',
-          factors: ['Process optimization', 'Team training']
-        } : undefined,
-        isRealTime: realTimeEnabled
+        color: "#3b82f6",
+        description: "Jobs completed successfully",
+        prophecy: prophecyEnabled
+          ? {
+              prediction: "Rate expected to improve to 88%",
+              confidence: 65,
+              trend: "up" as const,
+              timeframe: "2 weeks",
+              factors: ["Process optimization", "Team training"],
+            }
+          : undefined,
+        isRealTime: realTimeEnabled,
       },
       {
-        id: 'customers',
-        title: 'Total Customers',
+        id: "customers",
+        title: "Total Customers",
         value: totalContacts,
         change: 15.3,
-        changeType: 'increase' as const,
+        changeType: "increase" as const,
         icon: Users,
-        color: '#8b5cf6',
-        description: 'Active customer base',
-        prophecy: prophecyEnabled ? {
-          prediction: `${Math.round(totalContacts * 1.08)} customers by month end`,
-          confidence: 80,
-          trend: 'up' as const,
-          timeframe: '30 days',
-          factors: ['Warsaw expansion', 'Referral program', 'Digital marketing']
-        } : undefined,
+        color: "#8b5cf6",
+        description: "Active customer base",
+        prophecy: prophecyEnabled
+          ? {
+              prediction: `${Math.round(totalContacts * 1.08)} customers by month end`,
+              confidence: 80,
+              trend: "up" as const,
+              timeframe: "30 days",
+              factors: ["Warsaw expansion", "Referral program", "Digital marketing"],
+            }
+          : undefined,
         realTimeValue: realTimeEnabled ? totalContacts : undefined,
-        isRealTime: realTimeEnabled
-      }
+        isRealTime: realTimeEnabled,
+      },
     ];
   }, [jobs, contacts, quotes, prophecyEnabled, realTimeEnabled]);
 
@@ -355,10 +357,10 @@ export function BusinessIntelligenceDashboard() {
       const date = new Date();
       date.setDate(date.getDate() - (29 - i));
       return {
-        name: date.toLocaleDateString('pl-PL', { month: 'short', day: 'numeric' }),
-        date: date.toISOString().split('T')[0],
+        name: date.toLocaleDateString("pl-PL", { month: "short", day: "numeric" }),
+        date: date.toISOString().split("T")[0],
         revenue: Math.floor(Math.random() * 5000) + 2000, // Mock data
-        jobs: Math.floor(Math.random() * 10) + 5
+        jobs: Math.floor(Math.random() * 10) + 5,
       };
     });
     return last30Days;
@@ -366,30 +368,30 @@ export function BusinessIntelligenceDashboard() {
 
   // District performance data
   const districtData: ChartData[] = React.useMemo(() => {
-    const districts = ['Śródmieście', 'Mokotów', 'Ochota', 'Wola', 'Żoliborz', 'Praga-Północ'];
-    return districts.map(district => ({
+    const districts = ["Śródmieście", "Mokotów", "Ochota", "Wola", "Żoliborz", "Praga-Północ"];
+    return districts.map((district) => ({
       name: district,
       value: Math.floor(Math.random() * 50000) + 10000, // Mock revenue
       jobs: Math.floor(Math.random() * 20) + 5,
-      district
+      district,
     }));
   }, []);
 
   // Service type distribution
   const serviceTypeData: ChartData[] = React.useMemo(() => {
-    const types = ['Installation', 'Repair', 'Maintenance', 'Inspection', 'Emergency'];
-    return types.map(type => ({
+    const types = ["Installation", "Repair", "Maintenance", "Inspection", "Emergency"];
+    return types.map((type) => ({
       name: type,
-      value: Math.floor(Math.random() * 30) + 10
+      value: Math.floor(Math.random() * 30) + 10,
     }));
   }, []);
 
-  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
   const handleRefresh = async () => {
     setRefreshing(true);
     // Simulate data refresh
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     setRefreshing(false);
   };
 
@@ -447,14 +449,14 @@ export function BusinessIntelligenceDashboard() {
 
             {/* Time Range */}
             <div className="flex bg-gray-100 rounded-lg p-1">
-              {(['7d', '30d', '90d', '1y'] as const).map(range => (
+              {(["7d", "30d", "90d", "1y"] as const).map((range) => (
                 <button
                   key={range}
                   onClick={() => setTimeRange(range)}
                   className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
                     timeRange === range
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
                   }`}
                 >
                   {range}
@@ -464,7 +466,7 @@ export function BusinessIntelligenceDashboard() {
 
             {/* Refresh */}
             <Button variant="outline" onClick={handleRefresh} disabled={refreshing}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
               Refresh
             </Button>
 
@@ -486,13 +488,18 @@ export function BusinessIntelligenceDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {prophecyInsights.slice(0, 3).map(insight => (
+                {prophecyInsights.slice(0, 3).map((insight) => (
                   <div key={insight.id} className="bg-white p-4 rounded-lg border">
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="font-medium text-gray-900">{insight.title}</h4>
                       <Badge
-                        variant={insight.type === 'opportunity' ? 'default' :
-                                insight.type === 'risk' ? 'destructive' : 'secondary'}
+                        variant={
+                          insight.type === "opportunity"
+                            ? "default"
+                            : insight.type === "risk"
+                              ? "destructive"
+                              : "secondary"
+                        }
                         className="text-xs"
                       >
                         {insight.type}
@@ -500,9 +507,7 @@ export function BusinessIntelligenceDashboard() {
                     </div>
                     <p className="text-sm text-gray-600 mb-3">{insight.description}</p>
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-500">
-                        Confidence: {insight.confidence}%
-                      </span>
+                      <span className="text-gray-500">Confidence: {insight.confidence}%</span>
                       <Badge variant="outline" className="text-xs">
                         {insight.impact} impact
                       </Badge>
@@ -520,7 +525,7 @@ export function BusinessIntelligenceDashboard() {
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <Card key={kpi.id} className={kpi.isRealTime ? 'border-green-200 bg-green-50' : ''}>
+            <Card key={kpi.id} className={kpi.isRealTime ? "border-green-200 bg-green-50" : ""}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium flex items-center">
                   {kpi.title}
@@ -530,20 +535,20 @@ export function BusinessIntelligenceDashboard() {
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   <Icon className="h-4 w-4 text-muted-foreground" />
-                  {kpi.prophecy && (
-                    <Brain className="h-3 w-3 text-blue-500" />
-                  )}
+                  {kpi.prophecy && <Brain className="h-3 w-3 text-blue-500" />}
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{kpi.value}</div>
                 <div className="flex items-center text-xs text-muted-foreground">
-                  {kpi.changeType === 'increase' ? (
+                  {kpi.changeType === "increase" ? (
                     <TrendingUp className="w-3 h-3 mr-1 text-green-500" />
                   ) : (
                     <TrendingDown className="w-3 h-3 mr-1 text-red-500" />
                   )}
-                  <span className={kpi.changeType === 'increase' ? 'text-green-600' : 'text-red-600'}>
+                  <span
+                    className={kpi.changeType === "increase" ? "text-green-600" : "text-red-600"}
+                  >
                     {kpi.change}%
                   </span>
                   <span className="ml-1">from last month</span>
@@ -561,10 +566,8 @@ export function BusinessIntelligenceDashboard() {
                     </div>
                     <p className="text-xs text-blue-800">{kpi.prophecy.prediction}</p>
                     <div className="flex items-center mt-1">
-                      <span className="text-xs text-blue-600">
-                        {kpi.prophecy.timeframe}
-                      </span>
-                      {kpi.prophecy.trend === 'up' && (
+                      <span className="text-xs text-blue-600">{kpi.prophecy.timeframe}</span>
+                      {kpi.prophecy.trend === "up" && (
                         <TrendingUpIcon className="w-3 h-3 ml-1 text-green-500" />
                       )}
                     </div>
@@ -592,15 +595,15 @@ export function BusinessIntelligenceDashboard() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                <Tooltip 
-                  formatter={(value: number) => [formatCurrency(value), 'Revenue']}
+                <Tooltip
+                  formatter={(value: number) => [formatCurrency(value), "Revenue"]}
                   labelFormatter={(label) => `Date: ${label}`}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#3b82f6" 
-                  fill="#3b82f6" 
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#3b82f6"
+                  fill="#3b82f6"
                   fillOpacity={0.1}
                 />
               </AreaChart>
@@ -622,9 +625,7 @@ export function BusinessIntelligenceDashboard() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                <Tooltip 
-                  formatter={(value: number) => [formatCurrency(value), 'Revenue']}
-                />
+                <Tooltip formatter={(value: number) => [formatCurrency(value), "Revenue"]} />
                 <Bar dataKey="value" fill="#10b981" />
               </BarChart>
             </ResponsiveContainer>
@@ -652,7 +653,7 @@ export function BusinessIntelligenceDashboard() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {serviceTypeData.map((entry, index) => (
+                  {serviceTypeData.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -677,12 +678,12 @@ export function BusinessIntelligenceDashboard() {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Line 
-                  type="monotone" 
-                  dataKey="jobs" 
-                  stroke="#f59e0b" 
+                <Line
+                  type="monotone"
+                  dataKey="jobs"
+                  stroke="#f59e0b"
                   strokeWidth={2}
-                  dot={{ fill: '#f59e0b' }}
+                  dot={{ fill: "#f59e0b" }}
                 />
               </LineChart>
             </ResponsiveContainer>

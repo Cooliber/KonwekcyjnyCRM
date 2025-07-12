@@ -1,17 +1,7 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
-import { 
-  Filter, 
-  Plus, 
-  Trash2, 
-  Edit3,
-  ChevronDown,
-  Calendar,
-  Hash,
-  Type,
-  ToggleLeft
-} from 'lucide-react';
+import { Calendar, Filter, Hash, Plus, ToggleLeft, Trash2, Type } from "lucide-react";
+import { useState } from "react";
+import { Button } from "../../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 
 interface FilterPanelProps {
   filters: any[];
@@ -19,38 +9,38 @@ interface FilterPanelProps {
 }
 
 export function FilterPanel({ filters, onChange }: FilterPanelProps) {
-  const [showAddFilter, setShowAddFilter] = useState(false);
+  const [_showAddFilter, setShowAddFilter] = useState(false);
 
   const filterOperators = [
-    { value: 'equals', label: 'Equals', types: ['string', 'number', 'date'] },
-    { value: 'not_equals', label: 'Not Equals', types: ['string', 'number', 'date'] },
-    { value: 'greater_than', label: 'Greater Than', types: ['number', 'date'] },
-    { value: 'less_than', label: 'Less Than', types: ['number', 'date'] },
-    { value: 'contains', label: 'Contains', types: ['string'] },
-    { value: 'starts_with', label: 'Starts With', types: ['string'] },
-    { value: 'in', label: 'In List', types: ['string', 'number'] },
-    { value: 'between', label: 'Between', types: ['number', 'date'] }
+    { value: "equals", label: "Equals", types: ["string", "number", "date"] },
+    { value: "not_equals", label: "Not Equals", types: ["string", "number", "date"] },
+    { value: "greater_than", label: "Greater Than", types: ["number", "date"] },
+    { value: "less_than", label: "Less Than", types: ["number", "date"] },
+    { value: "contains", label: "Contains", types: ["string"] },
+    { value: "starts_with", label: "Starts With", types: ["string"] },
+    { value: "in", label: "In List", types: ["string", "number"] },
+    { value: "between", label: "Between", types: ["number", "date"] },
   ];
 
   const logicalOperators = [
-    { value: 'AND', label: 'AND' },
-    { value: 'OR', label: 'OR' }
+    { value: "AND", label: "AND" },
+    { value: "OR", label: "OR" },
   ];
 
   const addFilter = () => {
     const newFilter = {
       id: `filter_${Date.now()}`,
-      field: '',
-      operator: 'equals',
-      value: '',
-      logicalOperator: 'AND'
+      field: "",
+      operator: "equals",
+      value: "",
+      logicalOperator: "AND",
     };
     onChange([...filters, newFilter]);
     setShowAddFilter(false);
   };
 
   const updateFilter = (index: number, updates: any) => {
-    const updatedFilters = filters.map((filter, i) => 
+    const updatedFilters = filters.map((filter, i) =>
       i === index ? { ...filter, ...updates } : filter
     );
     onChange(updatedFilters);
@@ -61,13 +51,18 @@ export function FilterPanel({ filters, onChange }: FilterPanelProps) {
     onChange(updatedFilters);
   };
 
-  const getFieldIcon = (fieldType: string) => {
+  const _getFieldIcon = (fieldType: string) => {
     switch (fieldType) {
-      case 'string': return Type;
-      case 'number': return Hash;
-      case 'date': return Calendar;
-      case 'boolean': return ToggleLeft;
-      default: return Type;
+      case "string":
+        return Type;
+      case "number":
+        return Hash;
+      case "date":
+        return Calendar;
+      case "boolean":
+        return ToggleLeft;
+      default:
+        return Type;
     }
   };
 
@@ -79,11 +74,7 @@ export function FilterPanel({ filters, onChange }: FilterPanelProps) {
             <Filter className="w-5 h-5 mr-2" />
             Filters ({filters.length})
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={addFilter}
-          >
+          <Button variant="outline" size="sm" onClick={addFilter}>
             <Plus className="w-4 h-4 mr-1" />
             Add
           </Button>
@@ -104,11 +95,11 @@ export function FilterPanel({ filters, onChange }: FilterPanelProps) {
                 {index > 0 && (
                   <div className="mb-2">
                     <select
-                      value={filter.logicalOperator || 'AND'}
+                      value={filter.logicalOperator || "AND"}
                       onChange={(e) => updateFilter(index, { logicalOperator: e.target.value })}
                       className="text-xs px-2 py-1 border border-gray-300 rounded bg-gray-50"
                     >
-                      {logicalOperators.map(op => (
+                      {logicalOperators.map((op) => (
                         <option key={op.value} value={op.value}>
                           {op.label}
                         </option>
@@ -119,9 +110,7 @@ export function FilterPanel({ filters, onChange }: FilterPanelProps) {
 
                 {/* Field Name */}
                 <div className="mb-2">
-                  <label className="text-xs font-medium text-gray-700 block mb-1">
-                    Field
-                  </label>
+                  <label className="text-xs font-medium text-gray-700 block mb-1">Field</label>
                   <input
                     type="text"
                     value={filter.field}
@@ -133,15 +122,13 @@ export function FilterPanel({ filters, onChange }: FilterPanelProps) {
 
                 {/* Operator */}
                 <div className="mb-2">
-                  <label className="text-xs font-medium text-gray-700 block mb-1">
-                    Operator
-                  </label>
+                  <label className="text-xs font-medium text-gray-700 block mb-1">Operator</label>
                   <select
                     value={filter.operator}
                     onChange={(e) => updateFilter(index, { operator: e.target.value })}
                     className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                   >
-                    {filterOperators.map(op => (
+                    {filterOperators.map((op) => (
                       <option key={op.value} value={op.value}>
                         {op.label}
                       </option>
@@ -151,36 +138,46 @@ export function FilterPanel({ filters, onChange }: FilterPanelProps) {
 
                 {/* Value */}
                 <div className="mb-2">
-                  <label className="text-xs font-medium text-gray-700 block mb-1">
-                    Value
-                  </label>
-                  {filter.operator === 'in' ? (
+                  <label className="text-xs font-medium text-gray-700 block mb-1">Value</label>
+                  {filter.operator === "in" ? (
                     <textarea
-                      value={Array.isArray(filter.value) ? filter.value.join(', ') : filter.value}
-                      onChange={(e) => updateFilter(index, { 
-                        value: e.target.value.split(',').map(v => v.trim()) 
-                      })}
+                      value={Array.isArray(filter.value) ? filter.value.join(", ") : filter.value}
+                      onChange={(e) =>
+                        updateFilter(index, {
+                          value: e.target.value.split(",").map((v) => v.trim()),
+                        })
+                      }
                       placeholder="value1, value2, value3"
                       className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                       rows={2}
                     />
-                  ) : filter.operator === 'between' ? (
+                  ) : filter.operator === "between" ? (
                     <div className="grid grid-cols-2 gap-1">
                       <input
                         type="text"
-                        value={Array.isArray(filter.value) ? filter.value[0] || '' : ''}
-                        onChange={(e) => updateFilter(index, { 
-                          value: [e.target.value, (Array.isArray(filter.value) ? filter.value[1] : '') || ''] 
-                        })}
+                        value={Array.isArray(filter.value) ? filter.value[0] || "" : ""}
+                        onChange={(e) =>
+                          updateFilter(index, {
+                            value: [
+                              e.target.value,
+                              (Array.isArray(filter.value) ? filter.value[1] : "") || "",
+                            ],
+                          })
+                        }
                         placeholder="Min"
                         className="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                       />
                       <input
                         type="text"
-                        value={Array.isArray(filter.value) ? filter.value[1] || '' : ''}
-                        onChange={(e) => updateFilter(index, { 
-                          value: [(Array.isArray(filter.value) ? filter.value[0] : '') || '', e.target.value] 
-                        })}
+                        value={Array.isArray(filter.value) ? filter.value[1] || "" : ""}
+                        onChange={(e) =>
+                          updateFilter(index, {
+                            value: [
+                              (Array.isArray(filter.value) ? filter.value[0] : "") || "",
+                              e.target.value,
+                            ],
+                          })
+                        }
                         placeholder="Max"
                         className="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                       />
@@ -188,7 +185,7 @@ export function FilterPanel({ filters, onChange }: FilterPanelProps) {
                   ) : (
                     <input
                       type="text"
-                      value={Array.isArray(filter.value) ? filter.value.join(', ') : filter.value}
+                      value={Array.isArray(filter.value) ? filter.value.join(", ") : filter.value}
                       onChange={(e) => updateFilter(index, { value: e.target.value })}
                       placeholder="Enter value"
                       className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
@@ -198,11 +195,7 @@ export function FilterPanel({ filters, onChange }: FilterPanelProps) {
 
                 {/* Actions */}
                 <div className="flex justify-end space-x-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeFilter(index)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => removeFilter(index)}>
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>
@@ -221,10 +214,10 @@ export function FilterPanel({ filters, onChange }: FilterPanelProps) {
               onClick={() => {
                 const quickFilter = {
                   id: `filter_${Date.now()}`,
-                  field: 'district',
-                  operator: 'equals',
-                  value: 'Śródmieście',
-                  logicalOperator: 'AND'
+                  field: "district",
+                  operator: "equals",
+                  value: "Śródmieście",
+                  logicalOperator: "AND",
                 };
                 onChange([...filters, quickFilter]);
               }}
@@ -238,10 +231,10 @@ export function FilterPanel({ filters, onChange }: FilterPanelProps) {
               onClick={() => {
                 const quickFilter = {
                   id: `filter_${Date.now()}`,
-                  field: 'status',
-                  operator: 'equals',
-                  value: 'completed',
-                  logicalOperator: 'AND'
+                  field: "status",
+                  operator: "equals",
+                  value: "completed",
+                  logicalOperator: "AND",
                 };
                 onChange([...filters, quickFilter]);
               }}
@@ -255,10 +248,10 @@ export function FilterPanel({ filters, onChange }: FilterPanelProps) {
               onClick={() => {
                 const quickFilter = {
                   id: `filter_${Date.now()}`,
-                  field: 'type',
-                  operator: 'equals',
-                  value: 'installation',
-                  logicalOperator: 'AND'
+                  field: "type",
+                  operator: "equals",
+                  value: "installation",
+                  logicalOperator: "AND",
                 };
                 onChange([...filters, quickFilter]);
               }}
@@ -272,10 +265,10 @@ export function FilterPanel({ filters, onChange }: FilterPanelProps) {
               onClick={() => {
                 const quickFilter = {
                   id: `filter_${Date.now()}`,
-                  field: 'priority',
-                  operator: 'equals',
-                  value: 'urgent',
-                  logicalOperator: 'AND'
+                  field: "priority",
+                  operator: "equals",
+                  value: "urgent",
+                  logicalOperator: "AND",
                 };
                 onChange([...filters, quickFilter]);
               }}
@@ -294,15 +287,10 @@ export function FilterPanel({ filters, onChange }: FilterPanelProps) {
               {filters.map((filter, index) => (
                 <span key={index}>
                   {index > 0 && ` ${filter.logicalOperator} `}
-                  <span className="font-medium">{filter.field}</span>
-                  {' '}
-                  <span className="text-gray-500">{filter.operator}</span>
-                  {' '}
+                  <span className="font-medium">{filter.field}</span>{" "}
+                  <span className="text-gray-500">{filter.operator}</span>{" "}
                   <span className="font-medium">
-                    {Array.isArray(filter.value) 
-                      ? filter.value.join(', ') 
-                      : filter.value
-                    }
+                    {Array.isArray(filter.value) ? filter.value.join(", ") : filter.value}
                   </span>
                 </span>
               ))}

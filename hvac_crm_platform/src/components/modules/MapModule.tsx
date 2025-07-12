@@ -1,27 +1,39 @@
-import { useState, useEffect } from "react";
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { MapContainer, TileLayer, Marker, Popup, Polygon, Polyline, useMap } from "react-leaflet";
-import { MapPin, Filter, Wrench, Clock, CheckCircle, AlertTriangle, DollarSign, TrendingUp, Users, Calendar } from "lucide-react";
 import L from "leaflet";
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  MapPin,
+  TrendingUp,
+  Users,
+  Wrench,
+} from "lucide-react";
+import { useState } from "react";
+import { MapContainer, Marker, Polygon, Polyline, Popup, TileLayer } from "react-leaflet";
+import { api } from "../../../convex/_generated/api";
 import "leaflet/dist/leaflet.css";
-import { RoutePlanningPanel } from "./RoutePlanningPanel";
 import { ProphecyHotspotsPanel } from "./ProphecyHotspotsPanel";
+import { RoutePlanningPanel } from "./RoutePlanningPanel";
 
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
 export function MapModule() {
   const [filterDistrict, setFilterDistrict] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
-  const [mapView, setMapView] = useState<"installations" | "affluence" | "routes" | "prophecy">("installations");
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [mapView, setMapView] = useState<"installations" | "affluence" | "routes" | "prophecy">(
+    "installations"
+  );
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [optimizedRoutes, setOptimizedRoutes] = useState<any[]>([]);
   const [hotspots, setHotspots] = useState<any[]>([]);
 
@@ -31,7 +43,7 @@ export function MapModule() {
     status: filterStatus || undefined,
   });
 
-  const contacts = useQuery(api.contacts.list, {});
+  const _contacts = useQuery(api.contacts.list, {});
 
   // Warsaw districts with affluence data (from ProphecyDashboard)
   const warsawDistrictsData = [
@@ -42,8 +54,11 @@ export function MapModule() {
       jobs: 15,
       trend: "+12%",
       coordinates: [
-        [52.2297, 21.0122], [52.2400, 21.0122], [52.2400, 21.0300], [52.2297, 21.0300]
-      ]
+        [52.2297, 21.0122],
+        [52.24, 21.0122],
+        [52.24, 21.03],
+        [52.2297, 21.03],
+      ],
     },
     {
       name: "Wilanów",
@@ -52,8 +67,11 @@ export function MapModule() {
       jobs: 8,
       trend: "+8%",
       coordinates: [
-        [52.1650, 21.0900], [52.1750, 21.0900], [52.1750, 21.1100], [52.1650, 21.1100]
-      ]
+        [52.165, 21.09],
+        [52.175, 21.09],
+        [52.175, 21.11],
+        [52.165, 21.11],
+      ],
     },
     {
       name: "Mokotów",
@@ -62,8 +80,11 @@ export function MapModule() {
       jobs: 12,
       trend: "+5%",
       coordinates: [
-        [52.1800, 21.0000], [52.2000, 21.0000], [52.2000, 21.0400], [52.1800, 21.0400]
-      ]
+        [52.18, 21.0],
+        [52.2, 21.0],
+        [52.2, 21.04],
+        [52.18, 21.04],
+      ],
     },
     {
       name: "Żoliborz",
@@ -72,8 +93,11 @@ export function MapModule() {
       jobs: 10,
       trend: "+3%",
       coordinates: [
-        [52.2600, 20.9800], [52.2800, 20.9800], [52.2800, 21.0200], [52.2600, 21.0200]
-      ]
+        [52.26, 20.98],
+        [52.28, 20.98],
+        [52.28, 21.02],
+        [52.26, 21.02],
+      ],
     },
     {
       name: "Ursynów",
@@ -82,8 +106,11 @@ export function MapModule() {
       jobs: 14,
       trend: "+7%",
       coordinates: [
-        [52.1400, 21.0400], [52.1600, 21.0400], [52.1600, 21.0800], [52.1400, 21.0800]
-      ]
+        [52.14, 21.04],
+        [52.16, 21.04],
+        [52.16, 21.08],
+        [52.14, 21.08],
+      ],
     },
     {
       name: "Wola",
@@ -92,8 +119,11 @@ export function MapModule() {
       jobs: 11,
       trend: "-2%",
       coordinates: [
-        [52.2200, 20.9600], [52.2400, 20.9600], [52.2400, 21.0000], [52.2200, 21.0000]
-      ]
+        [52.22, 20.96],
+        [52.24, 20.96],
+        [52.24, 21.0],
+        [52.22, 21.0],
+      ],
     },
     {
       name: "Praga-Południe",
@@ -102,8 +132,11 @@ export function MapModule() {
       jobs: 9,
       trend: "+1%",
       coordinates: [
-        [52.2200, 21.0400], [52.2400, 21.0400], [52.2400, 21.0800], [52.2200, 21.0800]
-      ]
+        [52.22, 21.04],
+        [52.24, 21.04],
+        [52.24, 21.08],
+        [52.22, 21.08],
+      ],
     },
     {
       name: "Targówek",
@@ -112,8 +145,11 @@ export function MapModule() {
       jobs: 7,
       trend: "-1%",
       coordinates: [
-        [52.2800, 21.0400], [52.3000, 21.0400], [52.3000, 21.0800], [52.2800, 21.0800]
-      ]
+        [52.28, 21.04],
+        [52.3, 21.04],
+        [52.3, 21.08],
+        [52.28, 21.08],
+      ],
     },
   ];
 
@@ -126,7 +162,7 @@ export function MapModule() {
 
   // Get opacity based on affluence score
   const getDistrictOpacity = (affluence: number) => {
-    return 0.3 + (affluence * 0.4); // 0.3 to 0.7 opacity range
+    return 0.3 + affluence * 0.4; // 0.3 to 0.7 opacity range
   };
 
   const statusColors = {
@@ -146,17 +182,17 @@ export function MapModule() {
   // Create custom icons for different installation statuses
   const createCustomIcon = (status: string) => {
     const colors = {
-      active: '#10B981',
-      needs_service: '#F59E0B',
-      warranty_expired: '#EF4444',
-      removed: '#6B7280'
+      active: "#10B981",
+      needs_service: "#F59E0B",
+      warranty_expired: "#EF4444",
+      removed: "#6B7280",
     };
 
     return L.divIcon({
       html: `<div style="background-color: ${colors[status as keyof typeof colors]}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
-      className: 'custom-marker',
+      className: "custom-marker",
       iconSize: [20, 20],
-      iconAnchor: [10, 10]
+      iconAnchor: [10, 10],
     });
   };
 
@@ -257,167 +293,186 @@ export function MapModule() {
             />
 
             {/* District Polygons for Affluence View */}
-            {mapView === "affluence" && warsawDistrictsData.map((district) => (
-              <Polygon
-                key={district.name}
-                positions={district.coordinates as any}
-                pathOptions={{
-                  fillColor: getDistrictColor(district.affluence),
-                  fillOpacity: getDistrictOpacity(district.affluence),
-                  color: getDistrictColor(district.affluence),
-                  weight: 2,
-                }}
-                eventHandlers={{
-                  click: () => setSelectedDistrict(district.name),
-                  mouseover: (e) => {
-                    e.target.setStyle({ weight: 4 });
-                  },
-                  mouseout: (e) => {
-                    e.target.setStyle({ weight: 2 });
-                  },
-                }}
-              >
-                <Popup>
-                  <div className="p-2">
-                    <h3 className="font-semibold text-lg">{district.name}</h3>
-                    <div className="space-y-1 text-sm">
-                      <div className="flex items-center space-x-2">
-                        <DollarSign className="w-4 h-4 text-green-600" />
-                        <span>Affluence: {(district.affluence * 100).toFixed(0)}%</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <TrendingUp className="w-4 h-4 text-blue-600" />
-                        <span>Avg Quote: {district.avgQuote.toLocaleString()} PLN</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Users className="w-4 h-4 text-purple-600" />
-                        <span>Jobs: {district.jobs} ({district.trend})</span>
-                      </div>
-                    </div>
-                  </div>
-                </Popup>
-              </Polygon>
-            ))}
-
-            {/* Installation Markers */}
-            {(mapView === "installations" || mapView === "routes") && installations?.map((installation) => (
-              installation.coordinates && (
-                <Marker
-                  key={installation._id}
-                  position={[installation.coordinates.lat, installation.coordinates.lng]}
-                  icon={createCustomIcon(installation.status)}
-                >
-                  <Popup>
-                    <div className="p-2">
-                      <h3 className="font-semibold">{installation.address}</h3>
-                      <p className="text-sm text-gray-600">{installation.district}</p>
-                      <div className="mt-2">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusColors[installation.status]}`}>
-                          {installation.status.replace('_', ' ')}
-                        </span>
-                      </div>
-                      {installation.lastServiceDate && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Last service: {new Date(installation.lastServiceDate).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                  </Popup>
-                </Marker>
-              )
-            ))}
-
-            {/* Optimized Route Lines */}
-            {mapView === "routes" && optimizedRoutes.map((route, routeIndex) => {
-              const routeColors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6'];
-              const color = routeColors[routeIndex % routeColors.length];
-
-              if (route.points.length < 2) return null;
-
-              const routeCoordinates = route.points.map((point: any) => [point.lat, point.lng]);
-
-              return (
-                <Polyline
-                  key={`route-${routeIndex}`}
-                  positions={routeCoordinates}
+            {mapView === "affluence" &&
+              warsawDistrictsData.map((district) => (
+                <Polygon
+                  key={district.name}
+                  positions={district.coordinates as any}
                   pathOptions={{
-                    color,
-                    weight: 4,
-                    opacity: 0.8,
-                    dashArray: routeIndex === 0 ? undefined : '10, 10' // First route solid, others dashed
+                    fillColor: getDistrictColor(district.affluence),
+                    fillOpacity: getDistrictOpacity(district.affluence),
+                    color: getDistrictColor(district.affluence),
+                    weight: 2,
+                  }}
+                  eventHandlers={{
+                    click: () => setSelectedDistrict(district.name),
+                    mouseover: (e) => {
+                      e.target.setStyle({ weight: 4 });
+                    },
+                    mouseout: (e) => {
+                      e.target.setStyle({ weight: 2 });
+                    },
                   }}
                 >
                   <Popup>
                     <div className="p-2">
-                      <h3 className="font-semibold">Route {routeIndex + 1}</h3>
+                      <h3 className="font-semibold text-lg">{district.name}</h3>
                       <div className="space-y-1 text-sm">
-                        <p>Jobs: {route.points.length}</p>
-                        <p>Distance: {route.totalDistance}km</p>
-                        <p>Duration: {Math.round(route.totalDuration/60)}h {route.totalDuration%60}m</p>
-                        <p>Efficiency: {Math.round(route.efficiency * 100)}%</p>
-                        <p>Cost: {route.estimatedCost} PLN</p>
+                        <div className="flex items-center space-x-2">
+                          <DollarSign className="w-4 h-4 text-green-600" />
+                          <span>Affluence: {(district.affluence * 100).toFixed(0)}%</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <TrendingUp className="w-4 h-4 text-blue-600" />
+                          <span>Avg Quote: {district.avgQuote.toLocaleString()} PLN</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Users className="w-4 h-4 text-purple-600" />
+                          <span>
+                            Jobs: {district.jobs} ({district.trend})
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </Popup>
-                </Polyline>
-              );
-            })}
+                </Polygon>
+              ))}
 
-            {/* Route Job Markers */}
-            {mapView === "routes" && optimizedRoutes.flatMap((route, routeIndex) =>
-              route.points.map((point: any, pointIndex: number) => {
-                const routeColors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6'];
+            {/* Installation Markers */}
+            {(mapView === "installations" || mapView === "routes") &&
+              installations?.map(
+                (installation) =>
+                  installation.coordinates && (
+                    <Marker
+                      key={installation._id}
+                      position={[installation.coordinates.lat, installation.coordinates.lng]}
+                      icon={createCustomIcon(installation.status)}
+                    >
+                      <Popup>
+                        <div className="p-2">
+                          <h3 className="font-semibold">{installation.address}</h3>
+                          <p className="text-sm text-gray-600">{installation.district}</p>
+                          <div className="mt-2">
+                            <span
+                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusColors[installation.status]}`}
+                            >
+                              {installation.status.replace("_", " ")}
+                            </span>
+                          </div>
+                          {installation.lastServiceDate && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              Last service:{" "}
+                              {new Date(installation.lastServiceDate).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                      </Popup>
+                    </Marker>
+                  )
+              )}
+
+            {/* Optimized Route Lines */}
+            {mapView === "routes" &&
+              optimizedRoutes.map((route, routeIndex) => {
+                const routeColors = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6"];
                 const color = routeColors[routeIndex % routeColors.length];
 
-                const routeIcon = L.divIcon({
-                  html: `<div style="background-color: ${color}; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${pointIndex + 1}</div>`,
-                  className: 'custom-route-marker',
-                  iconSize: [24, 24],
-                  iconAnchor: [12, 12]
-                });
+                if (route.points.length < 2) return null;
+
+                const routeCoordinates = route.points.map((point: any) => [point.lat, point.lng]);
 
                 return (
-                  <Marker
-                    key={`route-${routeIndex}-point-${pointIndex}`}
-                    position={[point.lat, point.lng]}
-                    icon={routeIcon}
+                  <Polyline
+                    key={`route-${routeIndex}`}
+                    positions={routeCoordinates}
+                    pathOptions={{
+                      color,
+                      weight: 4,
+                      opacity: 0.8,
+                      dashArray: routeIndex === 0 ? undefined : "10, 10", // First route solid, others dashed
+                    }}
                   >
                     <Popup>
                       <div className="p-2">
-                        <h3 className="font-semibold">Stop {pointIndex + 1}</h3>
-                        <p className="text-sm text-gray-600">{point.address}</p>
-                        <p className="text-sm text-gray-600">{point.district}</p>
-                        <div className="mt-2">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            point.priority === 'urgent' ? 'bg-red-100 text-red-800' :
-                            point.priority === 'high' ? 'bg-orange-100 text-orange-800' :
-                            point.priority === 'medium' ? 'bg-blue-100 text-blue-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {point.priority} • {point.jobType}
-                          </span>
+                        <h3 className="font-semibold">Route {routeIndex + 1}</h3>
+                        <div className="space-y-1 text-sm">
+                          <p>Jobs: {route.points.length}</p>
+                          <p>Distance: {route.totalDistance}km</p>
+                          <p>
+                            Duration: {Math.round(route.totalDuration / 60)}h{" "}
+                            {route.totalDuration % 60}m
+                          </p>
+                          <p>Efficiency: {Math.round(route.efficiency * 100)}%</p>
+                          <p>Cost: {route.estimatedCost} PLN</p>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Est. duration: {point.estimatedDuration} min
-                        </p>
                       </div>
                     </Popup>
-                  </Marker>
+                  </Polyline>
                 );
-              })
-            )}
+              })}
+
+            {/* Route Job Markers */}
+            {mapView === "routes" &&
+              optimizedRoutes.flatMap((route, routeIndex) =>
+                route.points.map((point: any, pointIndex: number) => {
+                  const routeColors = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6"];
+                  const color = routeColors[routeIndex % routeColors.length];
+
+                  const routeIcon = L.divIcon({
+                    html: `<div style="background-color: ${color}; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${pointIndex + 1}</div>`,
+                    className: "custom-route-marker",
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12],
+                  });
+
+                  return (
+                    <Marker
+                      key={`route-${routeIndex}-point-${pointIndex}`}
+                      position={[point.lat, point.lng]}
+                      icon={routeIcon}
+                    >
+                      <Popup>
+                        <div className="p-2">
+                          <h3 className="font-semibold">Stop {pointIndex + 1}</h3>
+                          <p className="text-sm text-gray-600">{point.address}</p>
+                          <p className="text-sm text-gray-600">{point.district}</p>
+                          <div className="mt-2">
+                            <span
+                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                point.priority === "urgent"
+                                  ? "bg-red-100 text-red-800"
+                                  : point.priority === "high"
+                                    ? "bg-orange-100 text-orange-800"
+                                    : point.priority === "medium"
+                                      ? "bg-blue-100 text-blue-800"
+                                      : "bg-gray-100 text-gray-800"
+                              }`}
+                            >
+                              {point.priority} • {point.jobType}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Est. duration: {point.estimatedDuration} min
+                          </p>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  );
+                })
+              )}
 
             {/* Prophecy Hotspot Markers */}
-            {mapView === "prophecy" && hotspots.map((hotspot, index) => {
-              const getDemandColor = (demand: number) => {
-                if (demand >= 0.8) return '#EF4444'; // Red for very high
-                if (demand >= 0.6) return '#F59E0B'; // Orange for high
-                if (demand >= 0.4) return '#EAB308'; // Yellow for medium
-                return '#10B981'; // Green for low
-              };
+            {mapView === "prophecy" &&
+              hotspots.map((hotspot, index) => {
+                const getDemandColor = (demand: number) => {
+                  if (demand >= 0.8) return "#EF4444"; // Red for very high
+                  if (demand >= 0.6) return "#F59E0B"; // Orange for high
+                  if (demand >= 0.4) return "#EAB308"; // Yellow for medium
+                  return "#10B981"; // Green for low
+                };
 
-              const hotspotIcon = L.divIcon({
-                html: `
+                const hotspotIcon = L.divIcon({
+                  html: `
                   <div style="
                     background: linear-gradient(45deg, ${getDemandColor(hotspot.predictedDemand)}, ${getDemandColor(hotspot.predictedDemand)}aa);
                     width: 40px;
@@ -445,81 +500,89 @@ export function MapModule() {
                     }
                   </style>
                 `,
-                className: 'prophecy-hotspot-marker',
-                iconSize: [40, 40],
-                iconAnchor: [20, 20]
-              });
+                  className: "prophecy-hotspot-marker",
+                  iconSize: [40, 40],
+                  iconAnchor: [20, 20],
+                });
 
-              return (
-                <Marker
-                  key={`hotspot-${index}`}
-                  position={[hotspot.coordinates.lat, hotspot.coordinates.lng]}
-                  icon={hotspotIcon}
-                >
-                  <Popup>
-                    <div className="p-3 min-w-[250px]">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-lg">🔮</span>
-                        <h3 className="font-semibold text-lg">{hotspot.district} Hotspot</h3>
-                      </div>
-
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Predicted Demand:</span>
-                          <span className="font-medium" style={{ color: getDemandColor(hotspot.predictedDemand) }}>
-                            {Math.round(hotspot.predictedDemand * 100)}%
-                          </span>
+                return (
+                  <Marker
+                    key={`hotspot-${index}`}
+                    position={[hotspot.coordinates.lat, hotspot.coordinates.lng]}
+                    icon={hotspotIcon}
+                  >
+                    <Popup>
+                      <div className="p-3 min-w-[250px]">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-lg">🔮</span>
+                          <h3 className="font-semibold text-lg">{hotspot.district} Hotspot</h3>
                         </div>
 
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Confidence:</span>
-                          <span className="font-medium text-green-600">
-                            {Math.round(hotspot.confidence * 100)}%
-                          </span>
-                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Predicted Demand:</span>
+                            <span
+                              className="font-medium"
+                              style={{ color: getDemandColor(hotspot.predictedDemand) }}
+                            >
+                              {Math.round(hotspot.predictedDemand * 100)}%
+                            </span>
+                          </div>
 
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Seasonal Factor:</span>
-                          <span className="font-medium">
-                            {Math.round(hotspot.seasonalFactor * 100)}%
-                          </span>
-                        </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Confidence:</span>
+                            <span className="font-medium text-green-600">
+                              {Math.round(hotspot.confidence * 100)}%
+                            </span>
+                          </div>
 
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Affluence:</span>
-                          <span className="font-medium">
-                            {Math.round(hotspot.affluenceFactor * 100)}%
-                          </span>
-                        </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Seasonal Factor:</span>
+                            <span className="font-medium">
+                              {Math.round(hotspot.seasonalFactor * 100)}%
+                            </span>
+                          </div>
 
-                        <div className="mt-3 pt-2 border-t border-gray-200">
-                          <p className="text-gray-600 text-xs mb-1">Top Services:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {hotspot.serviceTypes.slice(0, 3).map((service: string, idx: number) => (
-                              <span key={idx} className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
-                                {service}
-                              </span>
-                            ))}
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Affluence:</span>
+                            <span className="font-medium">
+                              {Math.round(hotspot.affluenceFactor * 100)}%
+                            </span>
+                          </div>
+
+                          <div className="mt-3 pt-2 border-t border-gray-200">
+                            <p className="text-gray-600 text-xs mb-1">Top Services:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {hotspot.serviceTypes
+                                .slice(0, 3)
+                                .map((service: string, idx: number) => (
+                                  <span
+                                    key={idx}
+                                    className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full"
+                                  >
+                                    {service}
+                                  </span>
+                                ))}
+                            </div>
+                          </div>
+
+                          <div className="mt-3 pt-2 border-t border-gray-200">
+                            <p className="text-gray-600 text-xs mb-1">AI Reasoning:</p>
+                            <ul className="text-xs text-gray-600 space-y-1">
+                              {hotspot.reasoning.slice(0, 2).map((reason: string, idx: number) => (
+                                <li key={idx} className="flex items-start space-x-1">
+                                  <span className="text-purple-400 mt-0.5">•</span>
+                                  <span>{reason}</span>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
                         </div>
-
-                        <div className="mt-3 pt-2 border-t border-gray-200">
-                          <p className="text-gray-600 text-xs mb-1">AI Reasoning:</p>
-                          <ul className="text-xs text-gray-600 space-y-1">
-                            {hotspot.reasoning.slice(0, 2).map((reason: string, idx: number) => (
-                              <li key={idx} className="flex items-start space-x-1">
-                                <span className="text-purple-400 mt-0.5">•</span>
-                                <span>{reason}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
                       </div>
-                    </div>
-                  </Popup>
-                </Marker>
-              );
-            })}
+                    </Popup>
+                  </Marker>
+                );
+              })}
           </MapContainer>
         </div>
       </div>
@@ -540,7 +603,7 @@ export function MapModule() {
           </div>
 
           {(() => {
-            const district = warsawDistrictsData.find(d => d.name === selectedDistrict);
+            const district = warsawDistrictsData.find((d) => d.name === selectedDistrict);
             if (!district) return null;
 
             return (
@@ -593,9 +656,7 @@ export function MapModule() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center space-x-4">
               <Calendar className="w-5 h-5 text-blue-600" />
-              <label className="text-sm font-medium text-gray-700">
-                Planning Date:
-              </label>
+              <label className="text-sm font-medium text-gray-700">Planning Date:</label>
               <input
                 type="date"
                 value={selectedDate}
@@ -625,7 +686,7 @@ export function MapModule() {
         <div className="p-6 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Installation List</h3>
         </div>
-        
+
         {installations && installations.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -634,7 +695,9 @@ export function MapModule() {
                   <th className="text-left py-3 px-6 font-medium text-gray-900">Location</th>
                   <th className="text-left py-3 px-6 font-medium text-gray-900">District</th>
                   <th className="text-left py-3 px-6 font-medium text-gray-900">Status</th>
-                  <th className="text-left py-3 px-6 font-medium text-gray-900">Installation Date</th>
+                  <th className="text-left py-3 px-6 font-medium text-gray-900">
+                    Installation Date
+                  </th>
                   <th className="text-left py-3 px-6 font-medium text-gray-900">Next Service</th>
                   <th className="text-left py-3 px-6 font-medium text-gray-900">Actions</th>
                 </tr>
@@ -642,7 +705,7 @@ export function MapModule() {
               <tbody className="divide-y divide-gray-200">
                 {installations.map((installation) => {
                   const StatusIcon = statusIcons[installation.status];
-                  
+
                   return (
                     <tr key={installation._id} className="hover:bg-gray-50">
                       <td className="py-4 px-6">
@@ -651,9 +714,8 @@ export function MapModule() {
                           <div>
                             <p className="font-medium text-gray-900">{installation.address}</p>
                             <p className="text-sm text-gray-500">
-                              {installation.coordinates && 
-                                `${installation.coordinates.lat.toFixed(4)}, ${installation.coordinates.lng.toFixed(4)}`
-                              }
+                              {installation.coordinates &&
+                                `${installation.coordinates.lat.toFixed(4)}, ${installation.coordinates.lng.toFixed(4)}`}
                             </p>
                           </div>
                         </div>
@@ -664,22 +726,23 @@ export function MapModule() {
                       <td className="py-4 px-6">
                         <div className="flex items-center space-x-2">
                           <StatusIcon className="w-4 h-4 text-gray-400" />
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[installation.status as keyof typeof statusColors]}`}>
-                            {installation.status.replace('_', ' ')}
+                          <span
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[installation.status as keyof typeof statusColors]}`}
+                          >
+                            {installation.status.replace("_", " ")}
                           </span>
                         </div>
                       </td>
                       <td className="py-4 px-6">
                         <div className="text-sm text-gray-900">
-                          {new Date(installation.installationDate).toLocaleDateString('pl-PL')}
+                          {new Date(installation.installationDate).toLocaleDateString("pl-PL")}
                         </div>
                       </td>
                       <td className="py-4 px-6">
                         <div className="text-sm text-gray-900">
-                          {installation.nextServiceDue 
-                            ? new Date(installation.nextServiceDue).toLocaleDateString('pl-PL')
-                            : "Not scheduled"
-                          }
+                          {installation.nextServiceDue
+                            ? new Date(installation.nextServiceDue).toLocaleDateString("pl-PL")
+                            : "Not scheduled"}
                         </div>
                       </td>
                       <td className="py-4 px-6">
@@ -714,7 +777,7 @@ export function MapModule() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Active Installations</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {installations?.filter(i => i.status === 'active').length || 0}
+                {installations?.filter((i) => i.status === "active").length || 0}
               </p>
             </div>
           </div>
@@ -728,7 +791,7 @@ export function MapModule() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Need Service</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {installations?.filter(i => i.status === 'needs_service').length || 0}
+                {installations?.filter((i) => i.status === "needs_service").length || 0}
               </p>
             </div>
           </div>
@@ -742,7 +805,7 @@ export function MapModule() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Warranty Expired</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {installations?.filter(i => i.status === 'warranty_expired').length || 0}
+                {installations?.filter((i) => i.status === "warranty_expired").length || 0}
               </p>
             </div>
           </div>
@@ -756,7 +819,7 @@ export function MapModule() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Districts</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {new Set(installations?.map(i => i.district)).size || 0}
+                {new Set(installations?.map((i) => i.district)).size || 0}
               </p>
             </div>
           </div>

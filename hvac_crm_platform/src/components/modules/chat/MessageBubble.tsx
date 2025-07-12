@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
-import { 
-  Reply, 
-  MessageCircle, 
-  Download, 
-  Play, 
-  Pause, 
-  MapPin, 
+import { formatDistanceToNow } from "date-fns";
+import {
   AlertTriangle,
-  Clock,
+  Check,
   CheckCheck,
-  Check
-} from 'lucide-react';
+  Clock,
+  Download,
+  MapPin,
+  MessageCircle,
+  Pause,
+  Play,
+  Reply,
+} from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 
 // Type definitions for message data
 interface MessageMetadata {
@@ -37,10 +38,10 @@ interface Message {
   senderId: string;
   senderName?: string;
   timestamp: number;
-  type: 'text' | 'image' | 'file' | 'audio' | 'location' | 'system';
+  type: "text" | "image" | "file" | "audio" | "location" | "system";
   metadata?: MessageMetadata;
   location?: MessageLocation;
-  priority?: 'low' | 'high' | 'urgent' | 'normal';
+  priority?: "low" | "high" | "urgent" | "normal";
   threadId?: string;
   threadCount?: number;
   isThreadStarter?: boolean;
@@ -58,20 +59,20 @@ interface MessageBubbleProps {
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   onStartThread,
-  onOpenThread
+  onOpenThread,
 }) => {
   const [showReplyInput, setShowReplyInput] = useState(false);
-  const [replyText, setReplyText] = useState('');
+  const [replyText, setReplyText] = useState("");
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
 
   const isCurrentUser = false; // Would check against current user ID
-  const isUrgent = message.priority === 'urgent' || message.type === 'urgent_alert';
-  const isEmergency = message.districtContext?.urgencyLevel === 'emergency';
+  const isUrgent = message.priority === "urgent" || message.type === "urgent_alert";
+  const isEmergency = message.districtContext?.urgencyLevel === "emergency";
 
   const handleStartThread = () => {
     if (replyText.trim()) {
       onStartThread(replyText.trim());
-      setReplyText('');
+      setReplyText("");
       setShowReplyInput(false);
     }
   };
@@ -82,13 +83,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   const getMessageIcon = () => {
     switch (message.type) {
-      case 'urgent_alert':
+      case "urgent_alert":
         return <AlertTriangle className="w-4 h-4 text-red-500" />;
-      case 'system':
+      case "system":
         return <Clock className="w-4 h-4 text-gray-500" />;
-      case 'voice_note':
+      case "voice_note":
         return isPlayingVoice ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />;
-      case 'location':
+      case "location":
         return <MapPin className="w-4 h-4 text-blue-500" />;
       default:
         return null;
@@ -105,21 +106,22 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   };
 
   return (
-    <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} group`}>
-      <div className={`max-w-xs lg:max-w-md ${isCurrentUser ? 'order-2' : 'order-1'}`}>
+    <div className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} group`}>
+      <div className={`max-w-xs lg:max-w-md ${isCurrentUser ? "order-2" : "order-1"}`}>
         {/* Message Container */}
         <div
           className={`
             relative px-4 py-2 rounded-lg shadow-sm
-            ${isCurrentUser 
-              ? 'bg-blue-600 text-white' 
-              : isEmergency 
-                ? 'bg-red-100 border-2 border-red-300 text-red-900'
-                : isUrgent
-                  ? 'bg-orange-100 border border-orange-300 text-orange-900'
-                  : 'bg-gray-100 text-gray-900'
+            ${
+              isCurrentUser
+                ? "bg-blue-600 text-white"
+                : isEmergency
+                  ? "bg-red-100 border-2 border-red-300 text-red-900"
+                  : isUrgent
+                    ? "bg-orange-100 border border-orange-300 text-orange-900"
+                    : "bg-gray-100 text-gray-900"
             }
-            ${message.threadId ? 'border-l-4 border-blue-500 ml-4' : ''}
+            ${message.threadId ? "border-l-4 border-blue-500 ml-4" : ""}
           `}
         >
           {/* Sender Info */}
@@ -148,21 +150,17 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
           {/* Message Content */}
           <div className="flex items-start">
-            {getMessageIcon() && (
-              <div className="mr-2 mt-0.5">
-                {getMessageIcon()}
-              </div>
-            )}
+            {getMessageIcon() && <div className="mr-2 mt-0.5">{getMessageIcon()}</div>}
             <div className="flex-1">
               {/* Text Content */}
               <p className="text-sm whitespace-pre-wrap">{message.content}</p>
 
               {/* File Attachment */}
-              {message.fileUrl && message.type === 'file' && (
+              {message.fileUrl && message.type === "file" && (
                 <div className="mt-2 p-2 bg-black bg-opacity-10 rounded flex items-center">
                   <Download className="w-4 h-4 mr-2" />
-                  <a 
-                    href={message.fileUrl} 
+                  <a
+                    href={message.fileUrl}
                     download={message.fileName}
                     className="text-sm underline hover:no-underline"
                   >
@@ -172,10 +170,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               )}
 
               {/* Image Attachment */}
-              {message.fileUrl && message.type === 'image' && (
+              {message.fileUrl && message.type === "image" && (
                 <div className="mt-2">
-                  <img 
-                    src={message.fileUrl} 
+                  <img
+                    src={message.fileUrl}
                     alt={message.fileName}
                     className="max-w-full h-auto rounded"
                   />
@@ -183,7 +181,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               )}
 
               {/* Voice Note */}
-              {message.type === 'voice_note' && (
+              {message.type === "voice_note" && (
                 <div className="mt-2 flex items-center space-x-2">
                   <button
                     onClick={() => setIsPlayingVoice(!isPlayingVoice)}
@@ -192,11 +190,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                     {isPlayingVoice ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                   </button>
                   <div className="flex-1 h-2 bg-black bg-opacity-10 rounded">
-                    <div className="h-full bg-current rounded" style={{ width: '30%' }}></div>
+                    <div className="h-full bg-current rounded" style={{ width: "30%" }} />
                   </div>
-                  <span className="text-xs">
-                    {message.metadata?.duration || 0}s
-                  </span>
+                  <span className="text-xs">{message.metadata?.duration || 0}s</span>
                 </div>
               )}
 
@@ -295,7 +291,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       {!isCurrentUser && (
         <div className="order-1 mr-3">
           <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs font-medium">
-            {message.sender?.profile?.firstName?.[0]}{message.sender?.profile?.lastName?.[0]}
+            {message.sender?.profile?.firstName?.[0]}
+            {message.sender?.profile?.lastName?.[0]}
           </div>
         </div>
       )}

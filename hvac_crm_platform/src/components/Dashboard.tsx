@@ -1,24 +1,24 @@
-import { DashboardOverview } from "./modules/DashboardOverview";
-import { ContactsModule } from "./modules/ContactsModule";
-import { JobsModule } from "./modules/JobsModule";
-import { EquipmentModule } from "./modules/EquipmentModule";
-import { QuotesModule } from "./modules/QuotesModule";
-import { ScheduleModule } from "./modules/ScheduleModule";
-import { MapModule } from "./modules/MapModule";
-import { ProphecyDashboard } from "./modules/ProphecyDashboard";
-import { SalesPipelineModule } from "./modules/SalesPipelineModule";
-import { BusinessIntelligenceDashboard } from "./modules/BusinessIntelligenceDashboard";
-import { CustomReportBuilder } from "./modules/CustomReportBuilder";
-import { FileUploadManager } from "./modules/FileUploadManager";
-import { ContractManagementModule } from "./modules/ContractManagementModule";
-import { ServiceAgreementModule } from "./modules/ServiceAgreementModule";
 import { AdvancedAnalyticsDashboard } from "./modules/AdvancedAnalyticsDashboard";
-import { EquipmentLifecycleModule } from "./modules/EquipmentLifecycleModule";
+import { BusinessIntelligenceDashboard } from "./modules/BusinessIntelligenceDashboard";
+import { ContactsModule } from "./modules/ContactsModule";
+import { ContractManagementModule } from "./modules/ContractManagementModule";
 import { CustomerPortalModule } from "./modules/CustomerPortalModule";
-import { RealTimeSubscriptionManager } from "./modules/RealTimeSubscriptionManager";
-import { HVACDashboard } from "./modules/HVACDashboard";
+import { CustomReportBuilder } from "./modules/CustomReportBuilder";
+import { DashboardOverview } from "./modules/DashboardOverview";
 import { EnhancedInstallationModule } from "./modules/EnhancedInstallationModule";
 import { EnhancedServiceModule } from "./modules/EnhancedServiceModule";
+import { EquipmentLifecycleModule } from "./modules/EquipmentLifecycleModule";
+import { EquipmentModule } from "./modules/EquipmentModule";
+import { FileUploadManager } from "./modules/FileUploadManager";
+import { HVACDashboard } from "./modules/HVACDashboard";
+import { JobsModule } from "./modules/JobsModule";
+import { MapModule } from "./modules/MapModule";
+import { ProphecyDashboard } from "./modules/ProphecyDashboard";
+import { QuotesModule } from "./modules/QuotesModule";
+import { RealTimeSubscriptionManager } from "./modules/RealTimeSubscriptionManager";
+import { SalesPipelineModule } from "./modules/SalesPipelineModule";
+import { ScheduleModule } from "./modules/ScheduleModule";
+import { ServiceAgreementModule } from "./modules/ServiceAgreementModule";
 
 interface DashboardProps {
   activeModule: string;
@@ -40,17 +40,37 @@ export function Dashboard({ activeModule }: DashboardProps) {
       case "quotes":
         return <QuotesModule />;
       case "documents":
-        return <div className="card"><p>Documents module coming soon...</p></div>;
+        return (
+          <div className="card">
+            <p>Documents module coming soon...</p>
+          </div>
+        );
       case "chat":
-        return <div className="card"><p>Chat module coming soon...</p></div>;
+        return (
+          <div className="card">
+            <p>Chat module coming soon...</p>
+          </div>
+        );
       case "settings":
-        return <div className="card"><p>Settings module coming soon...</p></div>;
+        return (
+          <div className="card">
+            <p>Settings module coming soon...</p>
+          </div>
+        );
       case "map":
         return <MapModule />;
       case "suppliers":
-        return <div className="card"><p>Suppliers module coming soon...</p></div>;
+        return (
+          <div className="card">
+            <p>Suppliers module coming soon...</p>
+          </div>
+        );
       case "transcriptions":
-        return <div className="card"><p>AI Transcriptions coming soon...</p></div>;
+        return (
+          <div className="card">
+            <p>AI Transcriptions coming soon...</p>
+          </div>
+        );
       case "analytics":
         return <ProphecyDashboard />;
       case "sales_pipeline":

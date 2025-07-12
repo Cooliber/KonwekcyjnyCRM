@@ -1,8 +1,17 @@
+import { useMutation, useQuery } from "convex/react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Columns,
+  List,
+  Plus,
+  Search,
+  Wrench,
+} from "lucide-react";
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { Plus, Search, Wrench, Clock, CheckCircle, AlertTriangle, List, Columns } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
 import { JobsKanban } from "./JobsKanban";
 
 export function JobsModule() {
@@ -39,8 +48,12 @@ export function JobsModule() {
       await createJob({
         ...formData,
         contactId: formData.contactId as any,
-        scheduledDate: formData.scheduledDate ? new Date(formData.scheduledDate).getTime() : undefined,
-        estimatedHours: formData.estimatedHours ? parseFloat(formData.estimatedHours) : undefined,
+        scheduledDate: formData.scheduledDate
+          ? new Date(formData.scheduledDate).getTime()
+          : undefined,
+        estimatedHours: formData.estimatedHours
+          ? Number.parseFloat(formData.estimatedHours)
+          : undefined,
         assignedTechnicians: formData.assignedTechnicians as any[],
       });
       toast.success("Job created successfully");
@@ -55,20 +68,20 @@ export function JobsModule() {
         estimatedHours: "",
         assignedTechnicians: [],
       });
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to create job");
     }
   };
 
   const handleStatusChange = async (jobId: string, status: string) => {
     try {
-      await updateJob({ 
-        id: jobId as any, 
+      await updateJob({
+        id: jobId as any,
         status: status as any,
         completedDate: status === "completed" ? Date.now() : undefined,
       });
       toast.success("Job status updated");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to update job");
     }
   };
@@ -189,92 +202,108 @@ export function JobsModule() {
         <JobsKanban jobs={jobs || []} />
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        {jobs && jobs.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="text-left py-3 px-6 font-medium text-gray-900">Job</th>
-                  <th className="text-left py-3 px-6 font-medium text-gray-900">Type</th>
-                  <th className="text-left py-3 px-6 font-medium text-gray-900">Priority</th>
-                  <th className="text-left py-3 px-6 font-medium text-gray-900">Status</th>
-                  <th className="text-left py-3 px-6 font-medium text-gray-900">Scheduled</th>
-                  <th className="text-left py-3 px-6 font-medium text-gray-900">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {jobs.map((job) => {
-                  const TypeIcon = typeIcons[job.type];
-                  return (
-                    <tr key={job._id} className="hover:bg-gray-50">
-                      <td className="py-4 px-6">
-                        <div className="flex items-center space-x-3">
-                          <div className={`p-2 rounded-lg ${
-                            job.priority === "urgent" ? "bg-red-100" :
-                            job.priority === "high" ? "bg-orange-100" :
-                            job.priority === "medium" ? "bg-yellow-100" : "bg-green-100"
-                          }`}>
-                            <TypeIcon className={`w-4 h-4 ${
-                              job.priority === "urgent" ? "text-red-600" :
-                              job.priority === "high" ? "text-orange-600" :
-                              job.priority === "medium" ? "text-yellow-600" : "text-green-600"
-                            }`} />
+          {jobs && jobs.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="text-left py-3 px-6 font-medium text-gray-900">Job</th>
+                    <th className="text-left py-3 px-6 font-medium text-gray-900">Type</th>
+                    <th className="text-left py-3 px-6 font-medium text-gray-900">Priority</th>
+                    <th className="text-left py-3 px-6 font-medium text-gray-900">Status</th>
+                    <th className="text-left py-3 px-6 font-medium text-gray-900">Scheduled</th>
+                    <th className="text-left py-3 px-6 font-medium text-gray-900">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {jobs.map((job) => {
+                    const TypeIcon = typeIcons[job.type];
+                    return (
+                      <tr key={job._id} className="hover:bg-gray-50">
+                        <td className="py-4 px-6">
+                          <div className="flex items-center space-x-3">
+                            <div
+                              className={`p-2 rounded-lg ${
+                                job.priority === "urgent"
+                                  ? "bg-red-100"
+                                  : job.priority === "high"
+                                    ? "bg-orange-100"
+                                    : job.priority === "medium"
+                                      ? "bg-yellow-100"
+                                      : "bg-green-100"
+                              }`}
+                            >
+                              <TypeIcon
+                                className={`w-4 h-4 ${
+                                  job.priority === "urgent"
+                                    ? "text-red-600"
+                                    : job.priority === "high"
+                                      ? "text-orange-600"
+                                      : job.priority === "medium"
+                                        ? "text-yellow-600"
+                                        : "text-green-600"
+                                }`}
+                              />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">{job.title}</p>
+                              <p className="text-sm text-gray-500">
+                                {job.description.substring(0, 50)}...
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-gray-900">{job.title}</p>
-                            <p className="text-sm text-gray-500">{job.description.substring(0, 50)}...</p>
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className="text-sm text-gray-900 capitalize">
+                            {job.type.replace("_", " ")}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6">
+                          <span
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColors[job.priority]}`}
+                          >
+                            {job.priority}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6">
+                          <select
+                            value={job.status}
+                            onChange={(e) => handleStatusChange(job._id, e.target.value)}
+                            className={`px-2 py-1 text-xs font-medium rounded-full border-0 ${statusColors[job.status]}`}
+                          >
+                            <option value="scheduled">Scheduled</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="text-sm text-gray-900">
+                            {job.scheduledDate
+                              ? new Date(job.scheduledDate).toLocaleDateString()
+                              : "Not scheduled"}
                           </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="text-sm text-gray-900 capitalize">
-                          {job.type.replace("_", " ")}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColors[job.priority]}`}>
-                          {job.priority}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6">
-                        <select
-                          value={job.status}
-                          onChange={(e) => handleStatusChange(job._id, e.target.value)}
-                          className={`px-2 py-1 text-xs font-medium rounded-full border-0 ${statusColors[job.status]}`}
-                        >
-                          <option value="scheduled">Scheduled</option>
-                          <option value="in_progress">In Progress</option>
-                          <option value="completed">Completed</option>
-                          <option value="cancelled">Cancelled</option>
-                        </select>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="text-sm text-gray-900">
-                          {job.scheduledDate ? new Date(job.scheduledDate).toLocaleDateString() : "Not scheduled"}
-                        </div>
-                        {job.estimatedHours && (
-                          <div className="text-xs text-gray-500">
-                            Est. {job.estimatedHours}h
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-4 px-6">
-                        <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                          View Details
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <Wrench className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No jobs found</p>
-          </div>
-        )}
+                          {job.estimatedHours && (
+                            <div className="text-xs text-gray-500">Est. {job.estimatedHours}h</div>
+                          )}
+                        </td>
+                        <td className="py-4 px-6">
+                          <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            View Details
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Wrench className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No jobs found</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -287,9 +316,7 @@ export function JobsModule() {
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Job Title *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
                 <input
                   type="text"
                   required
@@ -314,9 +341,7 @@ export function JobsModule() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Customer *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
                   <select
                     required
                     value={formData.contactId}
@@ -333,9 +358,7 @@ export function JobsModule() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Job Type *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Job Type *</label>
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
@@ -350,9 +373,7 @@ export function JobsModule() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Priority
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
                   <select
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}

@@ -1,19 +1,22 @@
-import { useState, useEffect } from "react";
-import { MapPin, CheckCircle, AlertTriangle, Info } from "lucide-react";
-import { 
-  parseWarsawAddress, 
-  validateWarsawAddress, 
+import { AlertTriangle, CheckCircle, Info, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
   generateCoordinatesForAddress,
-  WARSAW_DISTRICTS 
+  parseWarsawAddress,
+  validateWarsawAddress,
+  WARSAW_DISTRICTS,
 } from "../../lib/geocoding";
 
 interface AddressInputProps {
   value: string;
-  onChange: (value: string, metadata?: {
-    district?: string;
-    coordinates?: { lat: number; lng: number };
-    isValid: boolean;
-  }) => void;
+  onChange: (
+    value: string,
+    metadata?: {
+      district?: string;
+      coordinates?: { lat: number; lng: number };
+      isValid: boolean;
+    }
+  ) => void;
   placeholder?: string;
   className?: string;
   showValidation?: boolean;
@@ -26,14 +29,14 @@ export function AddressInput({
   placeholder = "Enter Warsaw address (e.g., ul. Marszałkowska 1, Śródmieście)",
   className = "",
   showValidation = true,
-  showDistrictSuggestions = true
+  showDistrictSuggestions = true,
 }: AddressInputProps) {
   const [validation, setValidation] = useState<{
     isValid: boolean;
     errors: string[];
     suggestions?: string[];
   }>({ isValid: true, errors: [] });
-  
+
   const [detectedDistrict, setDetectedDistrict] = useState<string | undefined>();
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | undefined>();
 
@@ -61,7 +64,7 @@ export function AddressInput({
     onChange(value, {
       district: components.district,
       coordinates: coords,
-      isValid: validationResult.isValid
+      isValid: validationResult.isValid,
     });
   }, [value, onChange]);
 
@@ -71,7 +74,7 @@ export function AddressInput({
 
   const getValidationIcon = () => {
     if (!value.trim()) return null;
-    
+
     if (validation.isValid) {
       return <CheckCircle className="w-5 h-5 text-green-500" />;
     } else {
@@ -133,7 +136,7 @@ export function AddressInput({
               <span>{error}</span>
             </div>
           ))}
-          
+
           {validation.suggestions?.map((suggestion, index) => (
             <div key={index} className="flex items-center space-x-2 text-sm text-blue-600">
               <Info className="w-4 h-4" />
@@ -169,7 +172,7 @@ export function SimpleAddressInput({
   value,
   onChange,
   placeholder,
-  className
+  className,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -190,11 +193,5 @@ export function SimpleAddressInput({
 
 // Enhanced version with full features
 export function EnhancedAddressInput(props: AddressInputProps) {
-  return (
-    <AddressInput
-      {...props}
-      showValidation={true}
-      showDistrictSuggestions={true}
-    />
-  );
+  return <AddressInput {...props} showValidation={true} showDistrictSuggestions={true} />;
 }

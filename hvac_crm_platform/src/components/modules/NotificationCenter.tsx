@@ -1,37 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { 
-  Bell, 
-  BellOff, 
-  Filter, 
-  Check, 
-  CheckCheck, 
-  AlertTriangle, 
-  MessageSquare,
-  MapPin,
+import { useMutation, useQuery } from "convex/react";
+import { formatDistanceToNow } from "date-fns";
+import {
+  AlertTriangle,
+  Bell,
+  BellOff,
+  CheckCheck,
   Clock,
+  Filter,
+  MapPin,
+  MessageSquare,
   Settings,
-  X
-} from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+  X,
+} from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { api } from "../../../convex/_generated/api";
 
 interface NotificationCenterProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const NotificationCenter: React.FC<NotificationCenterProps> = ({
-  isOpen,
-  onClose
-}) => {
+export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, onClose }) => {
   const [filter, setFilter] = useState<{
     priority?: string;
     type?: string;
     district?: string;
     unreadOnly: boolean;
   }>({
-    unreadOnly: false
+    unreadOnly: false,
   });
 
   // Queries
@@ -40,7 +37,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     priority: filter.priority as any,
     type: filter.type,
     district: filter.district,
-    limit: 50
+    limit: 50,
   });
 
   // Mutations
@@ -49,7 +46,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
   // Auto-request notification permission
   useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
+    if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
   }, []);
@@ -58,7 +55,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     try {
       await markAsRead({ id: notificationId });
     } catch (error) {
-      console.error('Failed to mark notification as read:', error);
+      console.error("Failed to mark notification as read:", error);
     }
   };
 
@@ -66,23 +63,23 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     try {
       await markAllAsRead({});
     } catch (error) {
-      console.error('Failed to mark all notifications as read:', error);
+      console.error("Failed to mark all notifications as read:", error);
     }
   };
 
   const getNotificationIcon = (type: string, priority: string) => {
-    if (priority === 'urgent' || type === 'emergency') {
+    if (priority === "urgent" || type === "emergency") {
       return <AlertTriangle className="w-5 h-5 text-red-500" />;
     }
-    
+
     switch (type) {
-      case 'message':
-      case 'urgent_message':
-      case 'mention':
-      case 'thread_reply':
+      case "message":
+      case "urgent_message":
+      case "mention":
+      case "thread_reply":
         return <MessageSquare className="w-5 h-5 text-blue-500" />;
-      case 'district_alert':
-      case 'route_update':
+      case "district_alert":
+      case "route_update":
         return <MapPin className="w-5 h-5 text-green-500" />;
       default:
         return <Bell className="w-5 h-5 text-gray-500" />;
@@ -91,11 +88,16 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'border-l-red-500 bg-red-50';
-      case 'high': return 'border-l-orange-500 bg-orange-50';
-      case 'medium': return 'border-l-blue-500 bg-blue-50';
-      case 'low': return 'border-l-gray-500 bg-gray-50';
-      default: return 'border-l-gray-500 bg-gray-50';
+      case "urgent":
+        return "border-l-red-500 bg-red-50";
+      case "high":
+        return "border-l-orange-500 bg-orange-50";
+      case "medium":
+        return "border-l-blue-500 bg-blue-50";
+      case "low":
+        return "border-l-gray-500 bg-gray-50";
+      default:
+        return "border-l-gray-500 bg-gray-50";
     }
   };
 
@@ -103,7 +105,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
   };
 
-  const unreadCount = notifications?.filter(n => !n.read).length || 0;
+  const unreadCount = notifications?.filter((n) => !n.read).length || 0;
 
   if (!isOpen) return null;
 
@@ -122,10 +124,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                 </span>
               )}
             </div>
-            <button
-              onClick={onClose}
-              className="p-1 text-gray-400 hover:text-gray-600 rounded"
-            >
+            <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 rounded">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -141,15 +140,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               Mark all read
             </button>
             <button
-              onClick={() => setFilter(prev => ({ ...prev, unreadOnly: !prev.unreadOnly }))}
+              onClick={() => setFilter((prev) => ({ ...prev, unreadOnly: !prev.unreadOnly }))}
               className={`text-sm flex items-center px-2 py-1 rounded ${
-                filter.unreadOnly 
-                  ? 'bg-blue-100 text-blue-800' 
-                  : 'text-gray-600 hover:text-gray-800'
+                filter.unreadOnly
+                  ? "bg-blue-100 text-blue-800"
+                  : "text-gray-600 hover:text-gray-800"
               }`}
             >
               <Filter className="w-4 h-4 mr-1" />
-              {filter.unreadOnly ? 'Show all' : 'Unread only'}
+              {filter.unreadOnly ? "Show all" : "Unread only"}
             </button>
           </div>
         </div>
@@ -158,8 +157,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         <div className="p-3 border-b border-gray-200 bg-gray-50">
           <div className="grid grid-cols-3 gap-2">
             <select
-              value={filter.priority || ''}
-              onChange={(e) => setFilter(prev => ({ ...prev, priority: e.target.value || undefined }))}
+              value={filter.priority || ""}
+              onChange={(e) =>
+                setFilter((prev) => ({ ...prev, priority: e.target.value || undefined }))
+              }
               className="text-xs p-2 border border-gray-300 rounded"
             >
               <option value="">All Priorities</option>
@@ -170,8 +171,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             </select>
 
             <select
-              value={filter.type || ''}
-              onChange={(e) => setFilter(prev => ({ ...prev, type: e.target.value || undefined }))}
+              value={filter.type || ""}
+              onChange={(e) =>
+                setFilter((prev) => ({ ...prev, type: e.target.value || undefined }))
+              }
               className="text-xs p-2 border border-gray-300 rounded"
             >
               <option value="">All Types</option>
@@ -182,8 +185,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             </select>
 
             <select
-              value={filter.district || ''}
-              onChange={(e) => setFilter(prev => ({ ...prev, district: e.target.value || undefined }))}
+              value={filter.district || ""}
+              onChange={(e) =>
+                setFilter((prev) => ({ ...prev, district: e.target.value || undefined }))
+              }
               className="text-xs p-2 border border-gray-300 rounded"
             >
               <option value="">All Districts</option>
@@ -205,7 +210,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   className={`
                     p-4 border-l-4 cursor-pointer hover:bg-gray-50 transition-colors
                     ${getPriorityColor(notification.priority)}
-                    ${!notification.read ? 'font-medium' : 'opacity-75'}
+                    ${!notification.read ? "font-medium" : "opacity-75"}
                   `}
                   onClick={() => {
                     if (!notification.read) {
@@ -220,26 +225,26 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                     <div className="mr-3 mt-1">
                       {getNotificationIcon(notification.type, notification.priority)}
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <h4 className="text-sm font-medium text-gray-900 truncate">
                           {notification.title}
                         </h4>
                         {!notification.read && (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full ml-2"></div>
+                          <div className="w-2 h-2 bg-blue-500 rounded-full ml-2" />
                         )}
                       </div>
-                      
+
                       <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                         {notification.personalizedContent || notification.message}
                       </p>
-                      
+
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center space-x-2 text-xs text-gray-500">
                           <Clock className="w-3 h-3" />
                           <span>{formatNotificationTime(notification._creationTime)}</span>
-                          
+
                           {notification.districtContext?.district && (
                             <>
                               <MapPin className="w-3 h-3" />
@@ -247,14 +252,14 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                             </>
                           )}
                         </div>
-                        
+
                         {notification.aiGenerated && (
                           <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded">
                             AI
                           </span>
                         )}
                       </div>
-                      
+
                       {/* Delivery Status */}
                       <div className="flex items-center mt-2 space-x-1">
                         {notification.pushSent && (
@@ -287,7 +292,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         {/* Footer */}
         <div className="p-4 border-t border-gray-200 bg-gray-50">
           <button
-            onClick={() => {/* Open notification settings */}}
+            onClick={() => {
+              /* Open notification settings */
+            }}
             className="w-full flex items-center justify-center p-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded"
           >
             <Settings className="w-4 h-4 mr-2" />

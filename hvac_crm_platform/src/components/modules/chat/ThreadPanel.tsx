@@ -1,7 +1,8 @@
-import React, { useRef, useEffect } from 'react';
-import { X, MessageCircle } from 'lucide-react';
-import MessageBubble from './MessageBubble';
-import MessageInput from './MessageInput';
+import { MessageCircle, X } from "lucide-react";
+import type React from "react";
+import { useEffect, useRef } from "react";
+import MessageBubble from "./MessageBubble";
+import MessageInput from "./MessageInput";
 
 // Import Message type from MessageBubble
 interface ThreadMessage {
@@ -10,7 +11,7 @@ interface ThreadMessage {
   senderId: string;
   senderName?: string;
   timestamp: number;
-  type: 'text' | 'image' | 'file' | 'audio' | 'location' | 'system';
+  type: "text" | "image" | "file" | "audio" | "location" | "system";
   isThreadStarter?: boolean;
   threadId?: string;
   reactions?: Record<string, string[]>;
@@ -29,16 +30,16 @@ export const ThreadPanel: React.FC<ThreadPanelProps> = ({
   threadId,
   messages,
   onClose,
-  onSendMessage
+  onSendMessage,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
-  const threadStarter = messages.find(msg => msg.isThreadStarter);
-  const replies = messages.filter(msg => !msg.isThreadStarter);
+  const threadStarter = messages.find((msg) => msg.isThreadStarter);
+  const replies = messages.filter((msg) => !msg.isThreadStarter);
 
   return (
     <div className="w-96 border-l border-gray-200 bg-white flex flex-col">
@@ -49,15 +50,12 @@ export const ThreadPanel: React.FC<ThreadPanelProps> = ({
             <MessageCircle className="w-5 h-5 text-blue-600 mr-2" />
             <h3 className="text-lg font-medium text-gray-900">Thread</h3>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-600 rounded"
-          >
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 rounded">
             <X className="w-5 h-5" />
           </button>
         </div>
         <p className="text-sm text-gray-600 mt-1">
-          {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
+          {replies.length} {replies.length === 1 ? "reply" : "replies"}
         </p>
       </div>
 

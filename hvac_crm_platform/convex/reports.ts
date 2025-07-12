@@ -1,8 +1,6 @@
-import { query, mutation, action } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { api } from "./_generated/api";
-import type { Id } from "./_generated/dataModel";
+import { v } from "convex/values";
+import { action, mutation, query } from "./_generated/server";
 
 // Type definitions for proper TypeScript support
 // Note: User and TechnicianProfile interfaces are available for future use
@@ -10,7 +8,7 @@ import type { Id } from "./_generated/dataModel";
 /**
  * 🔮 Custom Report Builder for HVAC CRM Platform
  * Achieves 137/137 completion points with godlike quality
- * 
+ *
  * Features:
  * - Drag-and-drop report designer
  * - Multi-source data integration (Convex, Supabase, Weaviate)
@@ -26,37 +24,38 @@ import type { Id } from "./_generated/dataModel";
 
 export const list = query({
   args: {
-    type: v.optional(v.union(
-      v.literal("dashboard"),
-      v.literal("table"),
-      v.literal("chart"),
-      v.literal("kpi"),
-      v.literal("custom")
-    )),
+    type: v.optional(
+      v.union(
+        v.literal("dashboard"),
+        v.literal("table"),
+        v.literal("chart"),
+        v.literal("kpi"),
+        v.literal("custom")
+      )
+    ),
     category: v.optional(v.string()),
     isTemplate: v.optional(v.boolean()),
     isPublic: v.optional(v.boolean()),
     search: v.optional(v.string()),
-    limit: v.optional(v.number())
+    limit: v.optional(v.number()),
   },
-  handler: async (ctx, _args) => {
-    const userId = await getAuthUserId(_ctx);
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     // Handle search first
     if (args.search) {
       const searchResults = await ctx.db
         .query("reports")
-        .withSearchIndex("search_reports", (q) =>
-          q.search("name", args.search!)
-        )
+        .withSearchIndex("search_reports", (q) => q.search("name", args.search!))
         .take(args.limit || 50);
 
       // Filter by access permissions
-      return searchResults.filter(report =>
-        report.isPublic ||
-        report.createdBy === userId ||
-        report.sharedWith?.some(share => share.userId === userId)
+      return searchResults.filter(
+        (report) =>
+          report.isPublic ||
+          report.createdBy === userId ||
+          report.sharedWith?.some((share) => share.userId === userId)
       );
     }
 
@@ -65,7 +64,7 @@ export const list = query({
     if (args.type) {
       reports = await ctx.db
         .query("reports")
-        .withIndex("by_type", (q) => q.eq("type", args.type!))
+        .withIndex("by_type", (q) => q.eq("type", args.type))
         .order("desc")
         .take(args.limit || 50);
     } else if (args.category) {
@@ -94,10 +93,11 @@ export const list = query({
     }
 
     // Filter by access permissions
-    return reports.filter(report => 
-      report.isPublic || 
-      report.createdBy === userId ||
-      report.sharedWith?.some(share => share.userId === userId)
+    return reports.filter(
+      (report) =>
+        report.isPublic ||
+        report.createdBy === userId ||
+        report.sharedWith?.some((share) => share.userId === userId)
     );
   },
 });
@@ -112,9 +112,10 @@ export const get = query({
     if (!report) throw new Error("Report not found");
 
     // Check access permissions
-    const hasAccess = report.isPublic || 
-                     report.createdBy === userId ||
-                     report.sharedWith?.some(share => share.userId === userId);
+    const hasAccess =
+      report.isPublic ||
+      report.createdBy === userId ||
+      report.sharedWith?.some((share) => share.userId === userId);
 
     if (!hasAccess) throw new Error("Access denied");
 
@@ -134,37 +135,47 @@ export const create = mutation({
       v.literal("custom")
     ),
     config: v.object({
-      dataSources: v.array(v.object({
-        id: v.string(),
-        type: v.union(
-          v.literal("convex"),
-          v.literal("supabase"),
-          v.literal("weaviate"),
-          v.literal("calculated")
-        ),
-        table: v.optional(v.string()),
-        query: v.optional(v.string()),
-        filters: v.optional(v.array(v.object({
-          field: v.string(),
-          operator: v.union(
-            v.literal("equals"),
-            v.literal("not_equals"),
-            v.literal("greater_than"),
-            v.literal("less_than"),
-            v.literal("contains"),
-            v.literal("starts_with"),
-            v.literal("in"),
-            v.literal("between")
+      dataSources: v.array(
+        v.object({
+          id: v.string(),
+          type: v.union(
+            v.literal("convex"),
+            v.literal("supabase"),
+            v.literal("weaviate"),
+            v.literal("calculated")
           ),
-          value: v.any(),
-          logicalOperator: v.optional(v.union(v.literal("AND"), v.literal("OR")))
-        }))),
-        joins: v.optional(v.array(v.object({
-          table: v.string(),
-          on: v.string(),
-          type: v.union(v.literal("inner"), v.literal("left"), v.literal("right"))
-        })))
-      })),
+          table: v.optional(v.string()),
+          query: v.optional(v.string()),
+          filters: v.optional(
+            v.array(
+              v.object({
+                field: v.string(),
+                operator: v.union(
+                  v.literal("equals"),
+                  v.literal("not_equals"),
+                  v.literal("greater_than"),
+                  v.literal("less_than"),
+                  v.literal("contains"),
+                  v.literal("starts_with"),
+                  v.literal("in"),
+                  v.literal("between")
+                ),
+                value: v.any(),
+                logicalOperator: v.optional(v.union(v.literal("AND"), v.literal("OR"))),
+              })
+            )
+          ),
+          joins: v.optional(
+            v.array(
+              v.object({
+                table: v.string(),
+                on: v.string(),
+                type: v.union(v.literal("inner"), v.literal("left"), v.literal("right")),
+              })
+            )
+          ),
+        })
+      ),
       visualization: v.object({
         type: v.union(
           v.literal("table"),
@@ -180,33 +191,46 @@ export const create = mutation({
         xAxis: v.optional(v.string()),
         yAxis: v.optional(v.string()),
         groupBy: v.optional(v.string()),
-        aggregation: v.optional(v.union(
-          v.literal("sum"),
-          v.literal("avg"),
-          v.literal("count"),
-          v.literal("min"),
-          v.literal("max"),
-          v.literal("distinct")
-        )),
+        aggregation: v.optional(
+          v.union(
+            v.literal("sum"),
+            v.literal("avg"),
+            v.literal("count"),
+            v.literal("min"),
+            v.literal("max"),
+            v.literal("distinct")
+          )
+        ),
         colors: v.optional(v.array(v.string())),
-        customSettings: v.optional(v.object({}))
+        customSettings: v.optional(v.object({})),
       }),
-      calculatedFields: v.optional(v.array(v.object({
-        name: v.string(),
-        formula: v.string(),
-        dataType: v.union(v.literal("number"), v.literal("string"), v.literal("date"), v.literal("boolean"))
-      }))),
-      warsawSettings: v.optional(v.object({
-        districtFilter: v.optional(v.string()),
-        affluenceWeighting: v.optional(v.boolean()),
-        seasonalAdjustment: v.optional(v.boolean()),
-        routeOptimization: v.optional(v.boolean())
-      }))
+      calculatedFields: v.optional(
+        v.array(
+          v.object({
+            name: v.string(),
+            formula: v.string(),
+            dataType: v.union(
+              v.literal("number"),
+              v.literal("string"),
+              v.literal("date"),
+              v.literal("boolean")
+            ),
+          })
+        )
+      ),
+      warsawSettings: v.optional(
+        v.object({
+          districtFilter: v.optional(v.string()),
+          affluenceWeighting: v.optional(v.boolean()),
+          seasonalAdjustment: v.optional(v.boolean()),
+          routeOptimization: v.optional(v.boolean()),
+        })
+      ),
     }),
     category: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     isPublic: v.optional(v.boolean()),
-    isTemplate: v.optional(v.boolean())
+    isTemplate: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -220,8 +244,8 @@ export const create = mutation({
       createdBy: userId,
       category: args.category,
       tags: args.tags,
-      isPublic: args.isPublic || false,
-      isTemplate: args.isTemplate || false,
+      isPublic: args.isPublic,
+      isTemplate: args.isTemplate,
       isFavorite: false,
       cacheEnabled: true,
       cacheTTL: 300000, // 5 minutes default
@@ -240,7 +264,7 @@ export const update = mutation({
     category: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     isPublic: v.optional(v.boolean()),
-    isFavorite: v.optional(v.boolean())
+    isFavorite: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -250,11 +274,12 @@ export const update = mutation({
     if (!report) throw new Error("Report not found");
 
     // Check edit permissions
-    const canEdit = report.createdBy === userId ||
-                   report.sharedWith?.some(share => 
-                     share.userId === userId && 
-                     (share.permission === "edit" || share.permission === "admin")
-                   );
+    const canEdit =
+      report.createdBy === userId ||
+      report.sharedWith?.some(
+        (share) =>
+          share.userId === userId && (share.permission === "edit" || share.permission === "admin")
+      );
 
     if (!canEdit) throw new Error("Edit permission denied");
 
@@ -284,10 +309,9 @@ export const remove = mutation({
     if (!report) throw new Error("Report not found");
 
     // Only creator or admin can delete
-    const canDelete = report.createdBy === userId ||
-                     report.sharedWith?.some(share =>
-                       share.userId === userId && share.permission === "admin"
-                     );
+    const canDelete =
+      report.createdBy === userId ||
+      report.sharedWith?.some((share) => share.userId === userId && share.permission === "admin");
 
     if (!canDelete) throw new Error("Delete permission denied");
 
@@ -313,7 +337,7 @@ export const execute = action({
   args: {
     reportId: v.id("reports"),
     parameters: v.optional(v.object({})),
-    useCache: v.optional(v.boolean())
+    useCache: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -330,7 +354,7 @@ export const execute = action({
     if (args.useCache !== false && report.cacheEnabled) {
       const cachedResult = await ctx.runQuery("reports:getCachedResult" as any, {
         reportId: args.reportId,
-        parameters: args.parameters || {}
+        parameters: args.parameters || {},
       });
 
       if (cachedResult) {
@@ -352,17 +376,17 @@ export const execute = action({
           totalTime: Date.now() - startTime,
           convexTime: executionResult.metadata.convexTime,
           supabaseTime: executionResult.metadata.supabaseTime,
-          weaviateTime: executionResult.metadata.weaviateTime
+          weaviateTime: executionResult.metadata.weaviateTime,
         },
         warsawMetrics: executionResult.metadata.warsawMetrics,
-        expiresAt: Date.now() + (report.cacheTTL || 300000)
+        expiresAt: Date.now() + (report.cacheTTL || 300000),
       });
     }
 
     // Update report execution stats
     await ctx.runMutation("reports:updateExecutionStats" as any, {
       reportId: args.reportId,
-      executionTime: Date.now() - startTime
+      executionTime: Date.now() - startTime,
     });
 
     return executionResult;
@@ -381,7 +405,7 @@ async function executeReportLogic(ctx: any, report: any, _parameters: any) {
     convexTime: 0,
     supabaseTime: 0,
     weaviateTime: 0,
-    warsawMetrics: undefined as any
+    warsawMetrics: undefined as any,
   };
 
   // Process each data source
@@ -414,7 +438,11 @@ async function executeReportLogic(ctx: any, report: any, _parameters: any) {
 
     // Apply Warsaw-specific processing
     if (report.config.warsawSettings) {
-      const warsawResult = await applyWarsawProcessing(ctx, sourceData, report.config.warsawSettings);
+      const warsawResult = await applyWarsawProcessing(
+        ctx,
+        sourceData,
+        report.config.warsawSettings
+      );
       sourceData = warsawResult.data;
       metadata.warsawMetrics = warsawResult.metrics;
     }
@@ -426,7 +454,7 @@ async function executeReportLogic(ctx: any, report: any, _parameters: any) {
   // Apply calculated fields
   if (report.config.calculatedFields) {
     for (const field of report.config.calculatedFields) {
-      results.forEach(row => {
+      results.forEach((row) => {
         row[field.name] = evaluateFormula(field.formula, row);
       });
     }
@@ -440,7 +468,7 @@ async function executeReportLogic(ctx: any, report: any, _parameters: any) {
 
   return {
     data: finalResults,
-    metadata
+    metadata,
   };
 }
 
@@ -482,7 +510,7 @@ async function executeWeaviateQuery(ctx: any, dataSource: any): Promise<any[]> {
     const result = await ctx.runAction("weaviateOptimization:optimizedVectorSearch", {
       query: dataSource.query || "",
       type: dataSource.table || "knowledge",
-      limit: 100
+      limit: 100,
     });
     return result.results || [];
   } catch (error) {
@@ -491,17 +519,21 @@ async function executeWeaviateQuery(ctx: any, dataSource: any): Promise<any[]> {
   }
 }
 
-async function executeCalculatedFields(_ctx: any, dataSource: any, existingData: any[]): Promise<any[]> {
+async function executeCalculatedFields(
+  _ctx: any,
+  dataSource: any,
+  existingData: any[]
+): Promise<any[]> {
   // Process calculated fields based on existing data
-  return existingData.map(row => ({
+  return existingData.map((row) => ({
     ...row,
-    calculatedValue: evaluateFormula(dataSource.query || "0", row)
+    calculatedValue: evaluateFormula(dataSource.query || "0", row),
   }));
 }
 
 // Filter application logic
 function applyFilters(data: any[], filters: any[]): any[] {
-  return data.filter(row => {
+  return data.filter((row) => {
     let result = true;
     let currentLogicalOp = "AND";
 
@@ -523,18 +555,23 @@ function applyFilters(data: any[], filters: any[]): any[] {
           conditionMet = fieldValue < filter.value;
           break;
         case "contains":
-          conditionMet = String(fieldValue).toLowerCase().includes(String(filter.value).toLowerCase());
+          conditionMet = String(fieldValue)
+            .toLowerCase()
+            .includes(String(filter.value).toLowerCase());
           break;
         case "starts_with":
-          conditionMet = String(fieldValue).toLowerCase().startsWith(String(filter.value).toLowerCase());
+          conditionMet = String(fieldValue)
+            .toLowerCase()
+            .startsWith(String(filter.value).toLowerCase());
           break;
         case "in":
           conditionMet = Array.isArray(filter.value) && filter.value.includes(fieldValue);
           break;
         case "between":
-          conditionMet = Array.isArray(filter.value) &&
-                        fieldValue >= filter.value[0] &&
-                        fieldValue <= filter.value[1];
+          conditionMet =
+            Array.isArray(filter.value) &&
+            fieldValue >= filter.value[0] &&
+            fieldValue <= filter.value[1];
           break;
       }
 
@@ -557,16 +594,16 @@ async function applyWarsawProcessing(_ctx: any, data: any[], settings: any) {
     districtsAnalyzed: [] as string[],
     affluenceScore: 0,
     routeEfficiency: 0,
-    seasonalFactor: 1
+    seasonalFactor: 1,
   };
 
   let processedData = [...data];
 
   // Apply district filtering
   if (settings.districtFilter) {
-    processedData = processedData.filter(row =>
-      row.district === settings.districtFilter ||
-      row.address?.includes(settings.districtFilter)
+    processedData = processedData.filter(
+      (row) =>
+        row.district === settings.districtFilter || row.address?.includes(settings.districtFilter)
     );
     metrics.districtsAnalyzed.push(settings.districtFilter);
   }
@@ -576,9 +613,9 @@ async function applyWarsawProcessing(_ctx: any, data: any[], settings: any) {
     const districtAffluence = getDistrictAffluenceScore(settings.districtFilter);
     metrics.affluenceScore = districtAffluence;
 
-    processedData = processedData.map(row => ({
+    processedData = processedData.map((row) => ({
       ...row,
-      affluenceWeightedValue: (row.value || 0) * districtAffluence
+      affluenceWeightedValue: (row.value || 0) * districtAffluence,
     }));
   }
 
@@ -587,9 +624,9 @@ async function applyWarsawProcessing(_ctx: any, data: any[], settings: any) {
     const seasonalFactor = getSeasonalFactor();
     metrics.seasonalFactor = seasonalFactor;
 
-    processedData = processedData.map(row => ({
+    processedData = processedData.map((row) => ({
       ...row,
-      seasonalAdjustedValue: (row.value || 0) * seasonalFactor
+      seasonalAdjustedValue: (row.value || 0) * seasonalFactor,
     }));
   }
 
@@ -600,37 +637,45 @@ async function applyWarsawProcessing(_ctx: any, data: any[], settings: any) {
 
   return {
     data: processedData,
-    metrics
+    metrics,
   };
 }
 
 // Aggregation logic
 function applyAggregation(data: any[], visualization: any): any[] {
-  if (!visualization.groupBy || !visualization.aggregation) {
+  if (!(visualization.groupBy && visualization.aggregation)) {
     return data;
   }
 
-  const grouped = data.reduce((acc: Record<string, any[]>, row: any) => {
-    const key = row[visualization.groupBy];
-    if (!acc[key]) {
-      acc[key] = [];
-    }
-    acc[key].push(row);
-    return acc;
-  }, {} as Record<string, any[]>);
+  const grouped = data.reduce(
+    (acc: Record<string, any[]>, row: any) => {
+      const key = row[visualization.groupBy];
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(row);
+      return acc;
+    },
+    {} as Record<string, any[]>
+  );
 
   return Object.entries(grouped).map(([key, rows]: [string, any[]]) => {
     const result: any = { [visualization.groupBy]: key };
 
     if (visualization.yAxis) {
-      const values = rows.map((row: any) => row[visualization.yAxis]).filter((v: any) => typeof v === 'number');
+      const values = rows
+        .map((row: any) => row[visualization.yAxis])
+        .filter((v: any) => typeof v === "number");
 
       switch (visualization.aggregation) {
         case "sum":
           result[visualization.yAxis] = values.reduce((sum: number, val: number) => sum + val, 0);
           break;
         case "avg":
-          result[visualization.yAxis] = values.length > 0 ? values.reduce((sum: number, val: number) => sum + val, 0) / values.length : 0;
+          result[visualization.yAxis] =
+            values.length > 0
+              ? values.reduce((sum: number, val: number) => sum + val, 0) / values.length
+              : 0;
           break;
         case "count":
           result[visualization.yAxis] = rows.length;
@@ -657,9 +702,9 @@ function evaluateFormula(formula: string, row: any): any {
     // Simple formula evaluation without external dependencies
     // Replace field names with values
     let expression = formula;
-    Object.keys(row).forEach(key => {
+    Object.keys(row).forEach((key) => {
       const value = row[key] || 0;
-      expression = expression.replace(new RegExp(`\\b${key}\\b`, 'g'), String(value));
+      expression = expression.replace(new RegExp(`\\b${key}\\b`, "g"), String(value));
     });
 
     // Basic arithmetic evaluation (simplified)
@@ -679,24 +724,24 @@ function evaluateFormula(formula: string, row: any): any {
 // Warsaw-specific helper functions
 function getDistrictAffluenceScore(district?: string): number {
   const affluenceScores: Record<string, number> = {
-    "Śródmieście": 1.5,
-    "Mokotów": 1.3,
-    "Żoliborz": 1.2,
-    "Ochota": 1.1,
-    "Wola": 1.0,
+    Śródmieście: 1.5,
+    Mokotów: 1.3,
+    Żoliborz: 1.2,
+    Ochota: 1.1,
+    Wola: 1.0,
     "Praga-Północ": 0.9,
     "Praga-Południe": 0.8,
-    "Targówek": 0.8,
-    "Bemowo": 0.9,
-    "Ursynów": 1.2,
-    "Wilanów": 1.4,
-    "Białołęka": 0.9,
-    "Bielany": 1.0,
-    "Włochy": 0.9,
-    "Ursus": 0.8,
-    "Wawer": 0.9,
-    "Wesola": 0.8,
-    "Rembertów": 0.8
+    Targówek: 0.8,
+    Bemowo: 0.9,
+    Ursynów: 1.2,
+    Wilanów: 1.4,
+    Białołęka: 0.9,
+    Bielany: 1.0,
+    Włochy: 0.9,
+    Ursus: 0.8,
+    Wawer: 0.9,
+    Wesola: 0.8,
+    Rembertów: 0.8,
   };
 
   return district ? affluenceScores[district] || 1.0 : 1.0;
@@ -717,7 +762,7 @@ function getSeasonalFactor(): number {
     1.1, // September
     0.9, // October
     1.2, // November - heating starts
-    1.4  // December - high heating demand
+    1.4, // December - high heating demand
   ];
 
   return seasonalFactors[month];
@@ -740,16 +785,17 @@ function calculateRouteEfficiency(data: any[]): number {
 export const getReportForExecution = query({
   args: {
     reportId: v.id("reports"),
-    userId: v.string() // Changed from v.id("users") to v.string() for compatibility
+    userId: v.string(), // Changed from v.id("users") to v.string() for compatibility
   },
   handler: async (ctx, args) => {
     const report = await ctx.db.get(args.reportId);
     if (!report) return null;
 
     // Check access permissions
-    const hasAccess = report.isPublic ||
-                     report.createdBy === args.userId ||
-                     report.sharedWith?.some(share => share.userId === args.userId);
+    const hasAccess =
+      report.isPublic ||
+      report.createdBy === args.userId ||
+      report.sharedWith?.some((share) => share.userId === args.userId);
 
     return hasAccess ? report : null;
   },
@@ -758,7 +804,7 @@ export const getReportForExecution = query({
 export const getCachedResult = query({
   args: {
     reportId: v.id("reports"),
-    parameters: v.object({})
+    parameters: v.object({}),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -784,28 +830,30 @@ export const cacheResult = mutation({
         totalRows: v.number(),
         executionTime: v.number(),
         dataSourcesUsed: v.array(v.string()),
-        generatedAt: v.number()
-      })
+        generatedAt: v.number(),
+      }),
     }),
     queryPerformance: v.object({
       totalTime: v.number(),
       convexTime: v.optional(v.number()),
       supabaseTime: v.optional(v.number()),
-      weaviateTime: v.optional(v.number())
+      weaviateTime: v.optional(v.number()),
     }),
-    warsawMetrics: v.optional(v.object({
-      districtsAnalyzed: v.array(v.string()),
-      affluenceScore: v.optional(v.number()),
-      routeEfficiency: v.optional(v.number()),
-      seasonalFactor: v.optional(v.number())
-    })),
-    expiresAt: v.number()
+    warsawMetrics: v.optional(
+      v.object({
+        districtsAnalyzed: v.array(v.string()),
+        affluenceScore: v.optional(v.number()),
+        routeEfficiency: v.optional(v.number()),
+        seasonalFactor: v.optional(v.number()),
+      })
+    ),
+    expiresAt: v.number(),
   },
   handler: async (ctx, args) => {
     // Convert executedBy to proper format for database
     const insertData = {
       ...args,
-      executedBy: args.executedBy as any // Type assertion for compatibility
+      executedBy: args.executedBy as any, // Type assertion for compatibility
     };
     await ctx.db.insert("reportResults", insertData);
   },
@@ -814,12 +862,12 @@ export const cacheResult = mutation({
 export const updateExecutionStats = mutation({
   args: {
     reportId: v.id("reports"),
-    executionTime: v.number()
+    executionTime: v.number(),
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.reportId, {
       lastExecuted: Date.now(),
-      executionTime: args.executionTime
+      executionTime: args.executionTime,
     });
   },
 });
@@ -830,14 +878,16 @@ export const updateExecutionStats = mutation({
 
 export const getTemplates = query({
   args: {
-    category: v.optional(v.union(
-      v.literal("hvac_performance"),
-      v.literal("financial"),
-      v.literal("operational"),
-      v.literal("customer"),
-      v.literal("equipment"),
-      v.literal("district_analysis")
-    ))
+    category: v.optional(
+      v.union(
+        v.literal("hvac_performance"),
+        v.literal("financial"),
+        v.literal("operational"),
+        v.literal("customer"),
+        v.literal("equipment"),
+        v.literal("district_analysis")
+      )
+    ),
   },
   handler: async (ctx, args) => {
     const _query = ctx.db
@@ -847,7 +897,7 @@ export const getTemplates = query({
     const templates = await query.collect();
 
     if (args.category) {
-      return templates.filter(t => t.templateCategory === args.category);
+      return templates.filter((t) => t.templateCategory === args.category);
     }
 
     return templates;
@@ -858,14 +908,14 @@ export const createFromTemplate = mutation({
   args: {
     templateId: v.id("reports"),
     name: v.string(),
-    description: v.optional(v.string())
+    description: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     const template = await ctx.db.get(args.templateId);
-    if (!template || !template.isTemplate) {
+    if (!template?.isTemplate) {
       throw new Error("Template not found");
     }
 
@@ -896,7 +946,7 @@ export const shareReport = mutation({
   args: {
     reportId: v.id("reports"),
     userId: v.id("users"),
-    permission: v.union(v.literal("view"), v.literal("edit"), v.literal("admin"))
+    permission: v.union(v.literal("view"), v.literal("edit"), v.literal("admin")),
   },
   handler: async (ctx, args) => {
     const currentUserId = await getAuthUserId(ctx);
@@ -906,15 +956,16 @@ export const shareReport = mutation({
     if (!report) throw new Error("Report not found");
 
     // Only creator or admin can share
-    const canShare = report.createdBy === currentUserId ||
-                    report.sharedWith?.some(share =>
-                      share.userId === currentUserId && share.permission === "admin"
-                    );
+    const canShare =
+      report.createdBy === currentUserId ||
+      report.sharedWith?.some(
+        (share) => share.userId === currentUserId && share.permission === "admin"
+      );
 
     if (!canShare) throw new Error("Share permission denied");
 
     const currentShares = report.sharedWith || [];
-    const existingShareIndex = currentShares.findIndex(share => share.userId === args.userId);
+    const existingShareIndex = currentShares.findIndex((share) => share.userId === args.userId);
 
     if (existingShareIndex >= 0) {
       // Update existing share
@@ -923,12 +974,12 @@ export const shareReport = mutation({
       // Add new share
       currentShares.push({
         userId: args.userId,
-        permission: args.permission
+        permission: args.permission,
       });
     }
 
     await ctx.db.patch(args.reportId, {
-      sharedWith: currentShares
+      sharedWith: currentShares,
     });
   },
 });
@@ -936,7 +987,7 @@ export const shareReport = mutation({
 export const unshareReport = mutation({
   args: {
     reportId: v.id("reports"),
-    userId: v.id("users")
+    userId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const currentUserId = await getAuthUserId(ctx);
@@ -946,18 +997,19 @@ export const unshareReport = mutation({
     if (!report) throw new Error("Report not found");
 
     // Only creator or admin can unshare
-    const canUnshare = report.createdBy === currentUserId ||
-                      report.sharedWith?.some(share =>
-                        share.userId === currentUserId && share.permission === "admin"
-                      );
+    const canUnshare =
+      report.createdBy === currentUserId ||
+      report.sharedWith?.some(
+        (share) => share.userId === currentUserId && share.permission === "admin"
+      );
 
     if (!canUnshare) throw new Error("Unshare permission denied");
 
     const currentShares = report.sharedWith || [];
-    const updatedShares = currentShares.filter(share => share.userId !== args.userId);
+    const updatedShares = currentShares.filter((share) => share.userId !== args.userId);
 
     await ctx.db.patch(args.reportId, {
-      sharedWith: updatedShares
+      sharedWith: updatedShares,
     });
   },
 });
@@ -970,7 +1022,7 @@ export const exportReport = action({
   args: {
     reportId: v.id("reports"),
     format: v.union(v.literal("pdf"), v.literal("excel"), v.literal("csv")),
-    parameters: v.optional(v.object({}))
+    parameters: v.optional(v.object({})),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -980,7 +1032,7 @@ export const exportReport = action({
     const reportData = await ctx.runAction("reports:execute" as any, {
       reportId: args.reportId,
       parameters: args.parameters,
-      useCache: true
+      useCache: true,
     });
 
     // Generate export based on format
@@ -1010,8 +1062,8 @@ export const scheduleReport = mutation({
       ),
       time: v.optional(v.string()),
       recipients: v.optional(v.array(v.string())),
-      format: v.union(v.literal("pdf"), v.literal("excel"), v.literal("csv"), v.literal("email"))
-    })
+      format: v.union(v.literal("pdf"), v.literal("excel"), v.literal("csv"), v.literal("email")),
+    }),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -1021,16 +1073,17 @@ export const scheduleReport = mutation({
     if (!report) throw new Error("Report not found");
 
     // Check edit permissions
-    const canEdit = report.createdBy === userId ||
-                   report.sharedWith?.some(share =>
-                     share.userId === userId &&
-                     (share.permission === "edit" || share.permission === "admin")
-                   );
+    const canEdit =
+      report.createdBy === userId ||
+      report.sharedWith?.some(
+        (share) =>
+          share.userId === userId && (share.permission === "edit" || share.permission === "admin")
+      );
 
     if (!canEdit) throw new Error("Edit permission denied");
 
     await ctx.db.patch(args.reportId, {
-      schedule: args.schedule
+      schedule: args.schedule,
     });
   },
 });
@@ -1060,7 +1113,7 @@ export const cleanupExpiredCache = mutation({
 export const getReportAnalytics = query({
   args: {
     reportId: v.optional(v.id("reports")),
-    timeRange: v.optional(v.union(v.literal("24h"), v.literal("7d"), v.literal("30d")))
+    timeRange: v.optional(v.union(v.literal("24h"), v.literal("7d"), v.literal("30d"))),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -1069,10 +1122,10 @@ export const getReportAnalytics = query({
     const timeRangeMs = {
       "24h": 24 * 60 * 60 * 1000,
       "7d": 7 * 24 * 60 * 60 * 1000,
-      "30d": 30 * 24 * 60 * 60 * 1000
+      "30d": 30 * 24 * 60 * 60 * 1000,
     };
 
-    const since = Date.now() - (timeRangeMs[args.timeRange || "7d"]);
+    const since = Date.now() - timeRangeMs[args.timeRange || "7d"];
 
     const _query = ctx.db
       .query("reportResults")
@@ -1084,26 +1137,25 @@ export const getReportAnalytics = query({
         .withIndex("by_report", (q) => q.eq("reportId", args.reportId!));
     }
 
-    const results = await query
-      .filter((q) => q.gte(q.field("_creationTime"), since))
-      .collect();
+    const results = await query.filter((q) => q.gte(q.field("_creationTime"), since)).collect();
 
     const analytics = {
       totalExecutions: results.length,
-      avgExecutionTime: results.length > 0
-        ? results.reduce((sum, r) => sum + r.queryPerformance.totalTime, 0) / results.length
-        : 0,
+      avgExecutionTime:
+        results.length > 0
+          ? results.reduce((sum, r) => sum + r.queryPerformance.totalTime, 0) / results.length
+          : 0,
       dataSourceUsage: {} as Record<string, number>,
       warsawMetrics: {
         avgAffluenceScore: 0,
         avgRouteEfficiency: 0,
-        districtsAnalyzed: new Set<string>()
-      }
+        districtsAnalyzed: new Set<string>(),
+      },
     };
 
     // Calculate data source usage
-    results.forEach(result => {
-      result.results.metadata.dataSourcesUsed.forEach(source => {
+    results.forEach((result) => {
+      result.results.metadata.dataSourcesUsed.forEach((source) => {
         analytics.dataSourceUsage[source] = (analytics.dataSourceUsage[source] || 0) + 1;
       });
 
@@ -1115,7 +1167,7 @@ export const getReportAnalytics = query({
         if (result.warsawMetrics.routeEfficiency) {
           analytics.warsawMetrics.avgRouteEfficiency += result.warsawMetrics.routeEfficiency;
         }
-        result.warsawMetrics.districtsAnalyzed.forEach(district => {
+        result.warsawMetrics.districtsAnalyzed.forEach((district) => {
           analytics.warsawMetrics.districtsAnalyzed.add(district);
         });
       }
@@ -1131,8 +1183,8 @@ export const getReportAnalytics = query({
       ...analytics,
       warsawMetrics: {
         ...analytics.warsawMetrics,
-        districtsAnalyzed: Array.from(analytics.warsawMetrics.districtsAnalyzed)
-      }
+        districtsAnalyzed: Array.from(analytics.warsawMetrics.districtsAnalyzed),
+      },
     };
   },
 });
@@ -1150,21 +1202,23 @@ function generateCSVExport(data: any): string {
   const csvContent = [
     headers.join(","),
     ...data.data.map((row: any) =>
-      headers.map(header => {
-        let value = row[header];
-        if (typeof value === 'string') {
-          // Escape quotes by doubling them
-          if (value.includes('"')) {
-            value = value.replace(/"/g, '""');
+      headers
+        .map((header) => {
+          let value = row[header];
+          if (typeof value === "string") {
+            // Escape quotes by doubling them
+            if (value.includes('"')) {
+              value = value.replace(/"/g, '""');
+            }
+            // If value contains comma or quote, wrap in quotes
+            if (value.includes(",") || value.includes('"')) {
+              return `"${value}"`;
+            }
           }
-          // If value contains comma or quote, wrap in quotes
-          if (value.includes(',') || value.includes('"')) {
-            return `"${value}"`;
-          }
-        }
-        return value;
-      }).join(",")
-    )
+          return value;
+        })
+        .join(",")
+    ),
   ].join("\n");
 
   return csvContent;
@@ -1181,11 +1235,11 @@ function generatePDFExport(data: any): string {
   // For now, return a simple text representation
   const content = [
     "HVAC CRM Report",
-    "Generated: " + new Date().toLocaleString(),
-    "Total Records: " + data.data.length,
+    `Generated: ${new Date().toLocaleString()}`,
+    `Total Records: ${data.data.length}`,
     "",
     "Data:",
-    JSON.stringify(data.data, null, 2)
+    JSON.stringify(data.data, null, 2),
   ].join("\n");
 
   return content;

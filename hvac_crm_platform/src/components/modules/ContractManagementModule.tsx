@@ -1,51 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { 
-  FileText, 
-  Plus, 
-  Search, 
-  Filter, 
-  Download, 
-  Upload,
-  Edit,
-  Trash2,
-  Eye,
+import { useMutation, useQuery } from "convex/react";
+import {
+  Building,
   Calendar,
   DollarSign,
-  MapPin,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  XCircle,
+  Download,
+  Edit,
+  Eye,
   FileSignature,
-  Building,
-  User,
-  Phone,
-  Mail,
-  Printer,
-  Share2,
-  Archive,
-  RefreshCw
-} from 'lucide-react';
-import { toast } from 'sonner';
-import type { WarsawDistrict } from '../../types/hvac';
-import { Id } from '../../../convex/_generated/dataModel';
+  FileText,
+  Filter,
+  MapPin,
+  Plus,
+  RefreshCw,
+  Search,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
+import type { WarsawDistrict } from "../../types/hvac";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Input } from "../ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 interface Contract {
   _id: Id<"contracts">;
   contractNumber: string;
   title: string;
-  type: 'installation' | 'maintenance' | 'service' | 'warranty' | 'lease' | 'support';
-  status: 'draft' | 'pending_approval' | 'active' | 'suspended' | 'expired' | 'terminated' | 'renewed';
+  type: "installation" | "maintenance" | "service" | "warranty" | "lease" | "support";
+  status:
+    | "draft"
+    | "pending_approval"
+    | "active"
+    | "suspended"
+    | "expired"
+    | "terminated"
+    | "renewed";
   clientId: Id<"contacts">;
   clientName: string;
   clientAddress: string;
@@ -59,7 +52,7 @@ interface Contract {
   description: string;
   terms: string;
   equipmentIds: Id<"equipment">[];
-  serviceLevel: 'basic' | 'standard' | 'premium' | 'enterprise';
+  serviceLevel: "basic" | "standard" | "premium" | "enterprise";
   paymentTerms: string;
   renewalDate?: number;
   signedDate?: number;
@@ -88,29 +81,30 @@ interface Contract {
 interface ContractTemplate {
   _id: string;
   name: string;
-  type: Contract['type'];
+  type: Contract["type"];
   template: string;
   variables: string[];
   isActive: boolean;
 }
 
 export function ContractManagementModule() {
-  const [activeTab, setActiveTab] = useState('contracts');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [districtFilter, setDistrictFilter] = useState<string>('all');
-  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("contracts");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [districtFilter, setDistrictFilter] = useState<string>("all");
+  const [_selectedContract, setSelectedContract] = useState<Contract | null>(null);
+  const [_isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [_isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
 
   // Real Convex queries
-  const contracts = useQuery(api.contracts.getContracts, {
-    status: statusFilter !== 'all' ? statusFilter as any : undefined,
-    district: districtFilter !== 'all' ? districtFilter : undefined,
-    type: typeFilter !== 'all' ? typeFilter as any : undefined,
-    limit: 50
-  }) || [];
+  const contracts =
+    useQuery(api.contracts.getContracts, {
+      status: statusFilter !== "all" ? (statusFilter as any) : undefined,
+      district: districtFilter !== "all" ? districtFilter : undefined,
+      type: typeFilter !== "all" ? (typeFilter as any) : undefined,
+      limit: 50,
+    }) || [];
 
   const createContract = useMutation(api.contracts.createContract);
   const updateContract = useMutation(api.contracts.updateContract);
@@ -118,91 +112,86 @@ export function ContractManagementModule() {
   const renewContract = useMutation(api.contracts.renewContract);
 
   // Search functionality
-  const searchResults = useQuery(api.contracts.searchContracts,
-    searchTerm ? {
-      searchTerm,
-      filters: {
-        status: statusFilter !== 'all' ? statusFilter : undefined,
-        type: typeFilter !== 'all' ? typeFilter : undefined,
-        district: districtFilter !== 'all' ? districtFilter : undefined
-      }
-    } : undefined
+  const searchResults = useQuery(
+    api.contracts.searchContracts,
+    searchTerm
+      ? {
+          searchTerm,
+          filters: {
+            status: statusFilter !== "all" ? statusFilter : undefined,
+            type: typeFilter !== "all" ? typeFilter : undefined,
+            district: districtFilter !== "all" ? districtFilter : undefined,
+          },
+        }
+      : undefined
   );
 
   // Use search results if searching, otherwise use filtered contracts
   const displayContracts = searchTerm && searchResults ? searchResults : contracts;
 
   // Mock contract templates - these could also be moved to Convex
-  const templates: ContractTemplate[] = [
+  const _templates: ContractTemplate[] = [
     {
-      _id: 't1',
-      name: 'Standardowa instalacja klimatyzacji',
-      type: 'installation',
-      template: 'Szablon dla standardowych instalacji...',
-      variables: ['clientName', 'address', 'equipmentType', 'value'],
-      isActive: true
+      _id: "t1",
+      name: "Standardowa instalacja klimatyzacji",
+      type: "installation",
+      template: "Szablon dla standardowych instalacji...",
+      variables: ["clientName", "address", "equipmentType", "value"],
+      isActive: true,
     },
     {
-      _id: 't2',
-      name: 'Kontrakt serwisowy roczny',
-      type: 'maintenance',
-      template: 'Szablon dla kontraktów serwisowych...',
-      variables: ['clientName', 'serviceLevel', 'frequency', 'value'],
-      isActive: true
-    }
+      _id: "t2",
+      name: "Kontrakt serwisowy roczny",
+      type: "maintenance",
+      template: "Szablon dla kontraktów serwisowych...",
+      variables: ["clientName", "serviceLevel", "frequency", "value"],
+      isActive: true,
+    },
   ];
 
   // No need for additional filtering since we're using Convex queries with filters
   const filteredContracts = displayContracts;
 
-  const getStatusBadge = (status: Contract['status']) => {
+  const getStatusBadge = (status: Contract["status"]) => {
     const variants = {
-      draft: 'secondary',
-      pending_approval: 'warning',
-      active: 'success',
-      suspended: 'warning',
-      expired: 'destructive',
-      terminated: 'destructive',
-      renewed: 'default'
+      draft: "secondary",
+      pending_approval: "warning",
+      active: "success",
+      suspended: "warning",
+      expired: "destructive",
+      terminated: "destructive",
+      renewed: "default",
     } as const;
 
     const labels = {
-      draft: 'Szkic',
-      pending_approval: 'Oczekuje zatwierdzenia',
-      active: 'Aktywny',
-      suspended: 'Zawieszony',
-      expired: 'Wygasły',
-      terminated: 'Rozwiązany',
-      renewed: 'Odnowiony'
+      draft: "Szkic",
+      pending_approval: "Oczekuje zatwierdzenia",
+      active: "Aktywny",
+      suspended: "Zawieszony",
+      expired: "Wygasły",
+      terminated: "Rozwiązany",
+      renewed: "Odnowiony",
     };
 
-    return (
-      <Badge variant={variants[status]}>
-        {labels[status]}
-      </Badge>
-    );
+    return <Badge variant={variants[status]}>{labels[status]}</Badge>;
   };
 
-  const getTypeBadge = (type: Contract['type']) => {
+  const getTypeBadge = (type: Contract["type"]) => {
     const labels = {
-      installation: 'Instalacja',
-      maintenance: 'Serwis',
-      service: 'Usługa',
-      warranty: 'Gwarancja',
-      lease: 'Leasing',
-      support: 'Wsparcie'
+      installation: "Instalacja",
+      maintenance: "Serwis",
+      service: "Usługa",
+      warranty: "Gwarancja",
+      lease: "Leasing",
+      support: "Wsparcie",
     };
 
-    return (
-      <Badge variant="outline">
-        {labels[type]}
-      </Badge>
-    );
+    return <Badge variant="outline">{labels[type]}</Badge>;
   };
 
   const handleCreateContract = async (contractData: any) => {
     try {
-      const contractId = await createContract({
+      const _contractId = await createContract({
         contractNumber: contractData.contractNumber,
         title: contractData.title,
         type: contractData.type,
@@ -218,9 +207,9 @@ export function ContractManagementModule() {
         equipmentIds: contractData.equipmentIds || [],
         serviceLevel: contractData.serviceLevel,
         paymentTerms: contractData.paymentTerms,
-        autoRenewal: contractData.autoRenewal || false,
-        gdprConsent: contractData.gdprConsent || true,
-        dataRetentionPeriod: contractData.dataRetentionPeriod || 60
+        autoRenewal: contractData.autoRenewal,
+        gdprConsent: true,
+        dataRetentionPeriod: contractData.dataRetentionPeriod || 60,
       });
 
       toast.success(`Umowa ${contractData.contractNumber} została utworzona`);
@@ -234,7 +223,7 @@ export function ContractManagementModule() {
     try {
       await updateContract({
         contractId: contract._id,
-        updates
+        updates,
       });
 
       toast.success(`Umowa ${contract.contractNumber} została zaktualizowana`);
@@ -260,7 +249,7 @@ export function ContractManagementModule() {
         contractId: contract._id,
         signedBy: "Current User", // Would get from auth context
         signatureData: "digital_signature_data", // Would come from signature pad
-        ipAddress: "127.0.0.1" // Would get real IP
+        ipAddress: "127.0.0.1", // Would get real IP
       });
 
       toast.success(`Umowa ${contract.contractNumber} została podpisana cyfrowo`);
@@ -276,7 +265,7 @@ export function ContractManagementModule() {
 
       await renewContract({
         contractId: contract._id,
-        newEndDate: newEndDate.getTime()
+        newEndDate: newEndDate.getTime(),
       });
 
       toast.success(`Umowa ${contract.contractNumber} została odnowiona`);
@@ -286,13 +275,13 @@ export function ContractManagementModule() {
   };
 
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('pl-PL');
+    return new Date(timestamp).toLocaleDateString("pl-PL");
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('pl-PL', {
-      style: 'currency',
-      currency: 'PLN'
+    return new Intl.NumberFormat("pl-PL", {
+      style: "currency",
+      currency: "PLN",
     }).format(amount);
   };
 
@@ -402,7 +391,7 @@ export function ContractManagementModule() {
                         {getStatusBadge(contract.status)}
                         {getTypeBadge(contract.type)}
                       </div>
-                      
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4" />
@@ -425,7 +414,9 @@ export function ContractManagementModule() {
                       <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          <span>{formatDate(contract.startDate)} - {formatDate(contract.endDate)}</span>
+                          <span>
+                            {formatDate(contract.startDate)} - {formatDate(contract.endDate)}
+                          </span>
                         </div>
                         {contract.digitalSignature && (
                           <div className="flex items-center gap-1">
@@ -441,7 +432,7 @@ export function ContractManagementModule() {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="flex gap-2 ml-4">
                       <Button
                         variant="outline"
@@ -464,7 +455,7 @@ export function ContractManagementModule() {
                       >
                         <Download className="w-4 h-4" />
                       </Button>
-                      {(contract.status === 'pending_approval' || contract.status === 'draft') && (
+                      {(contract.status === "pending_approval" || contract.status === "draft") && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -474,7 +465,7 @@ export function ContractManagementModule() {
                           <FileSignature className="w-4 h-4" />
                         </Button>
                       )}
-                      {contract.status === 'active' && contract.autoRenewal && (
+                      {contract.status === "active" && contract.autoRenewal && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -498,7 +489,9 @@ export function ContractManagementModule() {
               <CardTitle>Szablony Umów</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">Zarządzanie szablonami umów będzie dostępne wkrótce...</p>
+              <p className="text-gray-600">
+                Zarządzanie szablonami umów będzie dostępne wkrótce...
+              </p>
             </CardContent>
           </Card>
         </TabsContent>

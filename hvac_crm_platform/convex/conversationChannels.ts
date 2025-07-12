@@ -1,20 +1,22 @@
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 // List conversation channels for the current user
 export const list = query({
   args: {
-    type: v.optional(v.union(
-      v.literal("general"),
-      v.literal("technicians"),
-      v.literal("sales"),
-      v.literal("support"),
-      v.literal("emergency"),
-      v.literal("district"),
-      v.literal("project"),
-      v.literal("direct")
-    )),
+    type: v.optional(
+      v.union(
+        v.literal("general"),
+        v.literal("technicians"),
+        v.literal("sales"),
+        v.literal("support"),
+        v.literal("emergency"),
+        v.literal("district"),
+        v.literal("project"),
+        v.literal("direct")
+      )
+    ),
     district: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -25,19 +27,21 @@ export const list = query({
 
     // Filter by type if specified
     if (args.type) {
-      query = ctx.db.query("conversationChannels").filter((q) => q.eq(q.field("type"), args.type!));
+      query = ctx.db.query("conversationChannels").filter((q) => q.eq(q.field("type"), args.type));
     }
 
     // Filter by district if specified
     if (args.district) {
-      query = ctx.db.query("conversationChannels").filter((q) => q.eq(q.field("district"), args.district));
+      query = ctx.db
+        .query("conversationChannels")
+        .filter((q) => q.eq(q.field("district"), args.district));
     }
 
     const allChannels = await query.collect();
 
     // Filter channels where user is a participant
-    const userChannels = allChannels.filter(channel => 
-      channel.participants.includes(userId) || !channel.isPrivate
+    const userChannels = allChannels.filter(
+      (channel) => channel.participants.includes(userId) || !channel.isPrivate
     );
 
     // Get enhanced channel info
@@ -73,14 +77,12 @@ export const list = query({
           unreadCount: unreadMessages.length,
           onlineParticipants,
           isUserAdmin: channel.admins.includes(userId),
-          canPost: channel.participants.includes(userId) || !channel.isPrivate
+          canPost: channel.participants.includes(userId) || !channel.isPrivate,
         };
       })
     );
 
-    return channelsWithInfo.sort((a, b) => 
-      (b.lastActivity || 0) - (a.lastActivity || 0)
-    );
+    return channelsWithInfo.sort((a, b) => (b.lastActivity || 0) - (a.lastActivity || 0));
   },
 });
 
@@ -118,13 +120,13 @@ export const create = mutation({
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .first();
 
-    if (!userProfile || !["admin", "manager"].includes(userProfile.role)) {
+    if (!(userProfile && ["admin", "manager"].includes(userProfile.role))) {
       throw new Error("Insufficient permissions to create channels");
     }
 
     // Ensure creator is in participants
-    const participants = args.participants.includes(userId) 
-      ? args.participants 
+    const participants = args.participants.includes(userId)
+      ? args.participants
       : [...args.participants, userId];
 
     const channelId = await ctx.db.insert("conversationChannels", {
@@ -153,18 +155,20 @@ export const create = mutation({
       channelId: args.name,
       type: "system",
       priority: "normal",
-      readBy: [{
-        userId,
-        readAt: Date.now(),
-        deliveredAt: Date.now()
-      }],
+      readBy: [
+        {
+          userId,
+          readAt: Date.now(),
+          deliveredAt: Date.now(),
+        },
+      ],
     });
 
     // Notify participants about new channel
     await Promise.all(
       participants
-        .filter(participantId => participantId !== userId)
-        .map(participantId =>
+        .filter((participantId) => participantId !== userId)
+        .map((participantId) =>
           ctx.db.insert("notifications", {
             userId: participantId,
             title: "Added to Channel",
@@ -173,7 +177,7 @@ export const create = mutation({
             priority: "medium",
             read: false,
             relatedId: channelId,
-            actionUrl: `/chat/${args.name}`
+            actionUrl: `/chat/${args.name}`,
           })
         )
     );
@@ -204,7 +208,7 @@ export const join = mutation({
 
     await ctx.db.patch(args.channelId, {
       participants: [...channel.participants, userId],
-      lastActivity: Date.now()
+      lastActivity: Date.now(),
     });
 
     // Send join message
@@ -214,11 +218,13 @@ export const join = mutation({
       channelId: channel.name,
       type: "system",
       priority: "normal",
-      readBy: [{
-        userId,
-        readAt: Date.now(),
-        deliveredAt: Date.now()
-      }],
+      readBy: [
+        {
+          userId,
+          readAt: Date.now(),
+          deliveredAt: Date.now(),
+        },
+      ],
     });
 
     return true;
@@ -241,13 +247,13 @@ export const leave = mutation({
       throw new Error("Not a member of this channel");
     }
 
-    const newParticipants = channel.participants.filter(id => id !== userId);
-    const newAdmins = channel.admins.filter(id => id !== userId);
+    const newParticipants = channel.participants.filter((id) => id !== userId);
+    const newAdmins = channel.admins.filter((id) => id !== userId);
 
     await ctx.db.patch(args.channelId, {
       participants: newParticipants,
       admins: newAdmins,
-      lastActivity: Date.now()
+      lastActivity: Date.now(),
     });
 
     // Send leave message
@@ -257,11 +263,13 @@ export const leave = mutation({
       channelId: channel.name,
       type: "system",
       priority: "normal",
-      readBy: [{
-        userId,
-        readAt: Date.now(),
-        deliveredAt: Date.now()
-      }],
+      readBy: [
+        {
+          userId,
+          readAt: Date.now(),
+          deliveredAt: Date.now(),
+        },
+      ],
     });
 
     return true;
@@ -292,13 +300,13 @@ export const getDistrictChannels = query({
       { name: "Targówek", affluence: 4, urgencyMultiplier: 0.8 },
     ];
 
-    return warsawDistricts.map(district => {
-      const channel = districtChannels.find(ch => ch.district === district.name);
+    return warsawDistricts.map((district) => {
+      const channel = districtChannels.find((ch) => ch.district === district.name);
       return {
         ...district,
         hasChannel: !!channel,
         channelId: channel?._id,
-        isParticipant: channel?.participants.includes(userId) || false
+        isParticipant: channel?.participants.includes(userId),
       };
     });
   },
@@ -322,8 +330,14 @@ export const createDistrictChannels = mutation({
     }
 
     const warsawDistricts = [
-      "Śródmieście", "Wilanów", "Mokotów", "Żoliborz", 
-      "Ursynów", "Wola", "Praga-Południe", "Targówek"
+      "Śródmieście",
+      "Wilanów",
+      "Mokotów",
+      "Żoliborz",
+      "Ursynów",
+      "Wola",
+      "Praga-Południe",
+      "Targówek",
     ];
 
     const createdChannels = [];
@@ -332,11 +346,8 @@ export const createDistrictChannels = mutation({
       // Check if channel already exists
       const existingChannel = await ctx.db
         .query("conversationChannels")
-        .filter((q) => 
-          q.and(
-            q.eq(q.field("type"), "district"),
-            q.eq(q.field("district"), district)
-          )
+        .filter((q) =>
+          q.and(q.eq(q.field("type"), "district"), q.eq(q.field("district"), district))
         )
         .first();
 
@@ -345,17 +356,14 @@ export const createDistrictChannels = mutation({
         const districtTechnicians = await ctx.db
           .query("userProfiles")
           .filter((q) =>
-            q.and(
-              q.eq(q.field("role"), "technician"),
-              q.eq(q.field("serviceAreas"), [district])
-            )
+            q.and(q.eq(q.field("role"), "technician"), q.eq(q.field("serviceAreas"), [district]))
           )
           .collect();
 
-        const participants = [userId, ...districtTechnicians.map(t => t.userId)];
+        const participants = [userId, ...districtTechnicians.map((t) => t.userId)];
 
         const channelId = await ctx.db.insert("conversationChannels", {
-          name: `district-${district.toLowerCase().replace(/\s+/g, '-')}`,
+          name: `district-${district.toLowerCase().replace(/\s+/g, "-")}`,
           description: `Communication channel for ${district} district technicians`,
           type: "district",
           district,

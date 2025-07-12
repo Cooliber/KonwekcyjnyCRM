@@ -1,15 +1,15 @@
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { 
-  Users, 
-  Wrench, 
-  Calendar, 
-  DollarSign, 
+import {
   AlertTriangle,
-  TrendingUp,
+  Calendar,
+  CheckCircle,
   Clock,
-  CheckCircle
+  DollarSign,
+  TrendingUp,
+  Users,
+  Wrench,
 } from "lucide-react";
+import { api } from "../../../convex/_generated/api";
 
 export function DashboardOverview() {
   const contacts = useQuery(api.contacts.list, {});
@@ -24,29 +24,29 @@ export function DashboardOverview() {
       value: contacts?.length || 0,
       icon: Users,
       color: "bg-blue-500",
-      change: "+12%"
+      change: "+12%",
     },
     {
       title: "Active Jobs",
-      value: jobs?.filter(j => j.status === "in_progress").length || 0,
+      value: jobs?.filter((j) => j.status === "in_progress").length || 0,
       icon: Wrench,
       color: "bg-orange-500",
-      change: "+8%"
+      change: "+8%",
     },
     {
       title: "This Week",
       value: upcomingJobs?.length || 0,
       icon: Calendar,
       color: "bg-green-500",
-      change: "+15%"
+      change: "+15%",
     },
     {
       title: "Pending Quotes",
-      value: quotes?.filter(q => q.status === "sent").length || 0,
+      value: quotes?.filter((q) => q.status === "sent").length || 0,
       icon: DollarSign,
       color: "bg-purple-500",
-      change: "+5%"
-    }
+      change: "+5%",
+    },
   ];
 
   const recentJobs = jobs?.slice(0, 5) || [];
@@ -56,7 +56,9 @@ export function DashboardOverview() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Dashboard Overview</h1>
-        <p className="text-gray-600">Welcome back! Here's what's happening with your HVAC business.</p>
+        <p className="text-gray-600">
+          Welcome back! Here's what's happening with your HVAC business.
+        </p>
       </div>
 
       {/* Stats Grid */}
@@ -94,18 +96,33 @@ export function DashboardOverview() {
             {recentJobs.length > 0 ? (
               <div className="space-y-4">
                 {recentJobs.map((job) => (
-                  <div key={job._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div
+                    key={job._id}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                  >
                     <div className="flex items-center space-x-3">
-                      <div className={`p-2 rounded-lg ${
-                        job.priority === "urgent" ? "bg-red-100" :
-                        job.priority === "high" ? "bg-orange-100" :
-                        job.priority === "medium" ? "bg-yellow-100" : "bg-green-100"
-                      }`}>
-                        <Wrench className={`w-4 h-4 ${
-                          job.priority === "urgent" ? "text-red-600" :
-                          job.priority === "high" ? "text-orange-600" :
-                          job.priority === "medium" ? "text-yellow-600" : "text-green-600"
-                        }`} />
+                      <div
+                        className={`p-2 rounded-lg ${
+                          job.priority === "urgent"
+                            ? "bg-red-100"
+                            : job.priority === "high"
+                              ? "bg-orange-100"
+                              : job.priority === "medium"
+                                ? "bg-yellow-100"
+                                : "bg-green-100"
+                        }`}
+                      >
+                        <Wrench
+                          className={`w-4 h-4 ${
+                            job.priority === "urgent"
+                              ? "text-red-600"
+                              : job.priority === "high"
+                                ? "text-orange-600"
+                                : job.priority === "medium"
+                                  ? "text-yellow-600"
+                                  : "text-green-600"
+                          }`}
+                        />
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">{job.title}</p>
@@ -113,12 +130,17 @@ export function DashboardOverview() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        job.status === "completed" ? "bg-green-100 text-green-800" :
-                        job.status === "in_progress" ? "bg-blue-100 text-blue-800" :
-                        job.status === "scheduled" ? "bg-yellow-100 text-yellow-800" :
-                        "bg-gray-100 text-gray-800"
-                      }`}>
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          job.status === "completed"
+                            ? "bg-green-100 text-green-800"
+                            : job.status === "in_progress"
+                              ? "bg-blue-100 text-blue-800"
+                              : job.status === "scheduled"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
                         {job.status.replace("_", " ")}
                       </span>
                     </div>
@@ -143,18 +165,19 @@ export function DashboardOverview() {
             {lowStockItems.length > 0 ? (
               <div className="space-y-4">
                 {lowStockItems.map((item) => (
-                  <div key={item._id} className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <div
+                    key={item._id}
+                    className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200"
+                  >
                     <div>
                       <p className="font-medium text-gray-900">{item.name}</p>
-                      <p className="text-sm text-gray-500">{item.brand} - {item.model}</p>
+                      <p className="text-sm text-gray-500">
+                        {item.brand} - {item.model}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-orange-600">
-                        {item.quantity} left
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Min: {item.minStock}
-                      </p>
+                      <p className="text-sm font-medium text-orange-600">{item.quantity} left</p>
+                      <p className="text-xs text-gray-500">Min: {item.minStock}</p>
                     </div>
                   </div>
                 ))}
@@ -181,7 +204,10 @@ export function DashboardOverview() {
           {upcomingJobs && upcomingJobs.length > 0 ? (
             <div className="space-y-4">
               {upcomingJobs.map((job) => (
-                <div key={job._id} className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <div
+                  key={job._id}
+                  className="flex items-center justify-between p-4 bg-blue-50 rounded-lg"
+                >
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <Calendar className="w-4 h-4 text-blue-600" />
@@ -189,7 +215,9 @@ export function DashboardOverview() {
                     <div>
                       <p className="font-medium text-gray-900">{job.title}</p>
                       <p className="text-sm text-gray-500">
-                        {job.scheduledDate ? new Date(job.scheduledDate).toLocaleDateString() : "No date set"}
+                        {job.scheduledDate
+                          ? new Date(job.scheduledDate).toLocaleDateString()
+                          : "No date set"}
                       </p>
                     </div>
                   </div>

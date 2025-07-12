@@ -1,90 +1,86 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
+import { useQuery } from "convex/react";
+import { Activity, BarChart3, Brain, DollarSign, Download, Target } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 import {
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  AreaChart,
-  Area
-} from 'recharts';
-import {
-  TrendingUp,
-  DollarSign,
-  MapPin,
-  Users,
-  Clock,
-  Target,
-  Brain,
-  Zap,
-  Activity,
-  Download,
-  RefreshCw,
-  Filter,
-  Calendar,
-  BarChart3,
-  PieChart as PieChartIcon,
-  LineChart as LineChartIcon
-} from 'lucide-react';
-import { toast } from 'sonner';
+} from "recharts";
+import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
 
 interface AnalyticsFilters {
   dateFrom: number;
   dateTo: number;
   district?: string;
-  timeRange: '7d' | '30d' | '90d' | 'custom';
+  timeRange: "7d" | "30d" | "90d" | "custom";
 }
 
 export const AnalyticsModule: React.FC = () => {
   const [filters, setFilters] = useState<AnalyticsFilters>({
     dateFrom: Date.now() - 30 * 24 * 60 * 60 * 1000, // Last 30 days
     dateTo: Date.now(),
-    timeRange: '30d'
+    timeRange: "30d",
   });
 
-  const [selectedView, setSelectedView] = useState<'overview' | 'roi' | 'prophecy' | 'efficiency'>('overview');
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [selectedView, setSelectedView] = useState<"overview" | "roi" | "prophecy" | "efficiency">(
+    "overview"
+  );
+  const [_autoRefresh, _setAutoRefresh] = useState(true);
 
   // Get analytics data from various sources
   const revenueAnalytics = useQuery(api.invoices.getRevenueAnalytics, {
     dateFrom: filters.dateFrom,
     dateTo: filters.dateTo,
-    groupBy: "district"
+    groupBy: "district",
   });
 
   const inventoryAnalytics = useQuery(api.inventory.getInventoryAnalytics, {
     district: filters.district,
     dateFrom: filters.dateFrom,
-    dateTo: filters.dateTo
+    dateTo: filters.dateTo,
   });
 
-  const performanceMetrics = useQuery(api.performanceOptimization?.getPerformanceMetrics || "skip", {});
+  const performanceMetrics = useQuery(
+    api.performanceOptimization?.getPerformanceMetrics || "skip",
+    {}
+  );
 
-  const routeAnalytics = useQuery(api.routes?.getRouteAnalytics || "skip", {
+  const _routeAnalytics = useQuery(api.routes?.getRouteAnalytics || "skip", {
     dateFrom: filters.dateFrom,
-    dateTo: filters.dateTo
+    dateTo: filters.dateTo,
   });
 
   // Warsaw districts for filtering
-  const warsawDistricts = [
-    'Śródmieście', 'Mokotów', 'Wilanów', 'Żoliborz',
-    'Ursynów', 'Wola', 'Praga-Południe', 'Targówek'
+  const _warsawDistricts = [
+    "Śródmieście",
+    "Mokotów",
+    "Wilanów",
+    "Żoliborz",
+    "Ursynów",
+    "Wola",
+    "Praga-Południe",
+    "Targówek",
   ];
 
   // Colors for charts
-  const chartColors = [
-    '#3B82F6', '#10B981', '#F59E0B', '#EF4444',
-    '#8B5CF6', '#06B6D4', '#84CC16', '#F97316'
+  const _chartColors = [
+    "#3B82F6",
+    "#10B981",
+    "#F59E0B",
+    "#EF4444",
+    "#8B5CF6",
+    "#06B6D4",
+    "#84CC16",
+    "#F97316",
   ];
 
   const handleTimeRangeChange = (range: string) => {
@@ -92,13 +88,13 @@ export const AnalyticsModule: React.FC = () => {
     let dateFrom = now;
 
     switch (range) {
-      case '7d':
+      case "7d":
         dateFrom = now - 7 * 24 * 60 * 60 * 1000;
         break;
-      case '30d':
+      case "30d":
         dateFrom = now - 30 * 24 * 60 * 60 * 1000;
         break;
-      case '90d':
+      case "90d":
         dateFrom = now - 90 * 24 * 60 * 60 * 1000;
         break;
     }
@@ -107,18 +103,18 @@ export const AnalyticsModule: React.FC = () => {
       ...filters,
       timeRange: range as any,
       dateFrom,
-      dateTo: now
+      dateTo: now,
     });
   };
 
   const handleExportReport = () => {
     // In a real implementation, this would generate and download a comprehensive report
-    toast.success('Analytics report export initiated');
+    toast.success("Analytics report export initiated");
   };
 
   // Calculate ROI metrics
   const calculateROIMetrics = () => {
-    if (!revenueAnalytics || !inventoryAnalytics) return null;
+    if (!(revenueAnalytics && inventoryAnalytics)) return null;
 
     const totalRevenue = revenueAnalytics.totalRevenue;
     const totalInventoryValue = inventoryAnalytics.totalValue;
@@ -132,7 +128,7 @@ export const AnalyticsModule: React.FC = () => {
       profitMargin: Math.round(profitMargin * 100) / 100,
       totalRevenue,
       operationalCosts,
-      netProfit: totalRevenue - operationalCosts
+      netProfit: totalRevenue - operationalCosts,
     };
   };
 
@@ -142,42 +138,44 @@ export const AnalyticsModule: React.FC = () => {
     return {
       overallAccuracy: 87.3,
       districtAccuracy: {
-        'Śródmieście': 92.1,
-        'Wilanów': 89.5,
-        'Mokotów': 86.8,
-        'Żoliborz': 84.2,
-        'Ursynów': 88.7,
-        'Wola': 83.9,
-        'Praga-Południe': 81.4,
-        'Targówek': 79.8
+        Śródmieście: 92.1,
+        Wilanów: 89.5,
+        Mokotów: 86.8,
+        Żoliborz: 84.2,
+        Ursynów: 88.7,
+        Wola: 83.9,
+        "Praga-Południe": 81.4,
+        Targówek: 79.8,
       },
       predictionTypes: {
-        'demand_forecast': 91.2,
-        'maintenance_needs': 85.7,
-        'equipment_failure': 82.4,
-        'revenue_projection': 89.8
+        demand_forecast: 91.2,
+        maintenance_needs: 85.7,
+        equipment_failure: 82.4,
+        revenue_projection: 89.8,
       },
-      improvementTrend: 2.1 // +2.1% this period
+      improvementTrend: 2.1, // +2.1% this period
     };
   };
 
   // Calculate district efficiency metrics
   const calculateDistrictEfficiency = () => {
-    if (!revenueAnalytics?.byDistrict || !inventoryAnalytics?.byDistrict) return null;
+    if (!(revenueAnalytics?.byDistrict && inventoryAnalytics?.byDistrict)) return null;
 
-    const efficiencyData = Object.keys(revenueAnalytics.byDistrict).map(district => {
-      const revenue = revenueAnalytics.byDistrict[district]?.revenue || 0;
-      const inventoryValue = inventoryAnalytics.byDistrict[district]?.totalValue || 0;
-      const efficiency = inventoryValue > 0 ? (revenue / inventoryValue) * 100 : 0;
+    const efficiencyData = Object.keys(revenueAnalytics.byDistrict)
+      .map((district) => {
+        const revenue = revenueAnalytics.byDistrict[district]?.revenue || 0;
+        const inventoryValue = inventoryAnalytics.byDistrict[district]?.totalValue || 0;
+        const efficiency = inventoryValue > 0 ? (revenue / inventoryValue) * 100 : 0;
 
-      return {
-        district,
-        revenue,
-        inventoryValue,
-        efficiency: Math.round(efficiency * 100) / 100,
-        invoiceCount: revenueAnalytics.byDistrict[district]?.count || 0
-      };
-    }).sort((a, b) => b.efficiency - a.efficiency);
+        return {
+          district,
+          revenue,
+          inventoryValue,
+          efficiency: Math.round(efficiency * 100) / 100,
+          invoiceCount: revenueAnalytics.byDistrict[district]?.count || 0,
+        };
+      })
+      .sort((a, b) => b.efficiency - a.efficiency);
 
     return efficiencyData;
   };
@@ -198,11 +196,11 @@ export const AnalyticsModule: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Revenue</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {revenueAnalytics ?
-                  new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' })
-                    .format(revenueAnalytics.totalRevenue) :
-                  'Loading...'
-                }
+                {revenueAnalytics
+                  ? new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" }).format(
+                      revenueAnalytics.totalRevenue
+                    )
+                  : "Loading..."}
               </p>
               <p className="text-xs text-green-600">+17% vs baseline</p>
             </div>
@@ -217,7 +215,7 @@ export const AnalyticsModule: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">ROI</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {roiMetrics ? `${roiMetrics.roi}%` : 'Calculating...'}
+                {roiMetrics ? `${roiMetrics.roi}%` : "Calculating..."}
               </p>
               <p className="text-xs text-blue-600">Above industry avg</p>
             </div>
@@ -234,7 +232,9 @@ export const AnalyticsModule: React.FC = () => {
               <p className="text-2xl font-semibold text-gray-900">
                 {prophecyAccuracy.overallAccuracy}%
               </p>
-              <p className="text-xs text-purple-600">+{prophecyAccuracy.improvementTrend}% this period</p>
+              <p className="text-xs text-purple-600">
+                +{prophecyAccuracy.improvementTrend}% this period
+              </p>
             </div>
           </div>
         </div>
@@ -247,7 +247,7 @@ export const AnalyticsModule: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">System Uptime</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {performanceMetrics ? '99.95%' : 'Loading...'}
+                {performanceMetrics ? "99.95%" : "Loading..."}
               </p>
               <p className="text-xs text-orange-600">Target: 99.9%</p>
             </div>
@@ -260,20 +260,28 @@ export const AnalyticsModule: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue by District</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={Object.entries(revenueAnalytics.byDistrict).map(([district, data]: [string, any]) => ({
-              district,
-              revenue: data.revenue,
-              count: data.count
-            }))}>
+            <BarChart
+              data={Object.entries(revenueAnalytics.byDistrict).map(
+                ([district, data]: [string, any]) => ({
+                  district,
+                  revenue: data.revenue,
+                  count: data.count,
+                })
+              )}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="district" />
               <YAxis />
-              <Tooltip formatter={(value, name) => [
-                name === 'revenue' ?
-                  new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(value as number) :
-                  value,
-                name === 'revenue' ? 'Revenue' : 'Invoice Count'
-              ]} />
+              <Tooltip
+                formatter={(value, name) => [
+                  name === "revenue"
+                    ? new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" }).format(
+                        value as number
+                      )
+                    : value,
+                  name === "revenue" ? "Revenue" : "Invoice Count",
+                ]}
+              />
               <Legend />
               <Bar dataKey="revenue" fill="#3B82F6" name="Revenue" />
               <Bar dataKey="count" fill="#10B981" name="Invoice Count" />
@@ -291,16 +299,31 @@ export const AnalyticsModule: React.FC = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="district" />
               <YAxis />
-              <Tooltip formatter={(value, name) => [
-                name === 'efficiency' ? `${value}%` :
-                name === 'revenue' ?
-                  new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(value as number) :
-                  value,
-                name === 'efficiency' ? 'Efficiency' :
-                name === 'revenue' ? 'Revenue' : 'Inventory Value'
-              ]} />
+              <Tooltip
+                formatter={(value, name) => [
+                  name === "efficiency"
+                    ? `${value}%`
+                    : name === "revenue"
+                      ? new Intl.NumberFormat("pl-PL", {
+                          style: "currency",
+                          currency: "PLN",
+                        }).format(value as number)
+                      : value,
+                  name === "efficiency"
+                    ? "Efficiency"
+                    : name === "revenue"
+                      ? "Revenue"
+                      : "Inventory Value",
+                ]}
+              />
               <Legend />
-              <Line type="monotone" dataKey="efficiency" stroke="#8B5CF6" strokeWidth={2} name="Efficiency %" />
+              <Line
+                type="monotone"
+                dataKey="efficiency"
+                stroke="#8B5CF6"
+                strokeWidth={2}
+                name="Efficiency %"
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -317,7 +340,9 @@ export const AnalyticsModule: React.FC = () => {
             <BarChart3 className="w-6 h-6 mr-2 text-blue-600" />
             Advanced Analytics Dashboard
           </h1>
-          <p className="text-gray-600">ROI metrics, prophecy accuracy, and district efficiency analysis</p>
+          <p className="text-gray-600">
+            ROI metrics, prophecy accuracy, and district efficiency analysis
+          </p>
         </div>
 
         <div className="flex items-center space-x-3">
@@ -344,27 +369,25 @@ export const AnalyticsModule: React.FC = () => {
       {/* View Selector */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="flex space-x-4">
-          {[
-            { id: 'overview', label: 'Overview', icon: <Activity className="w-4 h-4" /> }
-          ].map(({ id, label, icon }) => (
-            <button
-              key={id}
-              onClick={() => setSelectedView(id as any)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                selectedView === id
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              {icon}
-              <span>{label}</span>
-            </button>
-          ))}
+          {[{ id: "overview", label: "Overview", icon: <Activity className="w-4 h-4" /> }].map(
+            ({ id, label, icon }) => (
+              <button
+                key={id}
+                onClick={() => setSelectedView(id as any)}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                  selectedView === id ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                {icon}
+                <span>{label}</span>
+              </button>
+            )
+          )}
         </div>
       </div>
 
       {/* Content */}
-      {selectedView === 'overview' && renderOverview()}
+      {selectedView === "overview" && renderOverview()}
     </div>
   );
 };

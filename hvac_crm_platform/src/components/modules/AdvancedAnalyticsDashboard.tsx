@@ -1,56 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Progress } from '../ui/progress';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  TrendingDown,
+import { useQuery } from "convex/react";
+import {
+  Activity,
   DollarSign,
+  Download,
+  RefreshCw,
+  Star,
+  TrendingDown,
+  TrendingUp,
   Users,
   Wrench,
-  MapPin,
-  Calendar,
-  Clock,
-  Target,
-  Zap,
-  Activity,
-  AlertTriangle,
-  CheckCircle,
-  Star,
-  Building,
-  Thermometer,
-  Gauge,
-  RefreshCw,
-  Download,
-  Filter,
-  Eye
-} from 'lucide-react';
-import { 
-  LineChart, 
-  Line, 
-  AreaChart, 
-  Area, 
-  BarChart, 
-  Bar, 
-  PieChart, 
-  Pie, 
+} from "lucide-react";
+import React, { useState } from "react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
   Cell,
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer 
-} from 'recharts';
-import { toast } from 'sonner';
-import type { WarsawDistrict } from '../../types/hvac';
-import { Id } from '../../../convex/_generated/dataModel';
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
+import type { WarsawDistrict } from "../../types/hvac";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Progress } from "../ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 interface AnalyticsData {
   revenue: {
@@ -97,77 +81,91 @@ interface TimeSeriesData {
 }
 
 export function AdvancedAnalyticsDashboard() {
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
-  const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState('overview');
+  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "1y">("30d");
+  const [selectedDistrict, _setSelectedDistrict] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState("overview");
   const [refreshing, setRefreshing] = useState(false);
 
   // Real Convex queries
   const analyticsData = useQuery(api.advancedAnalytics.getAnalyticsData, {
     timeRange,
-    district: selectedDistrict !== 'all' ? selectedDistrict : undefined
+    district: selectedDistrict !== "all" ? selectedDistrict : undefined,
   });
 
   const revenueMetrics = useQuery(api.advancedAnalytics.getRevenueMetrics, {
     timeRange,
-    district: selectedDistrict !== 'all' ? selectedDistrict : undefined
+    district: selectedDistrict !== "all" ? selectedDistrict : undefined,
   });
 
   const customerMetrics = useQuery(api.advancedAnalytics.getCustomerMetrics, {
     timeRange,
-    district: selectedDistrict !== 'all' ? selectedDistrict : undefined
+    district: selectedDistrict !== "all" ? selectedDistrict : undefined,
   });
 
   const serviceMetrics = useQuery(api.advancedAnalytics.getServiceMetrics, {
     timeRange,
-    district: selectedDistrict !== 'all' ? selectedDistrict : undefined
+    district: selectedDistrict !== "all" ? selectedDistrict : undefined,
   });
 
   const equipmentMetrics = useQuery(api.advancedAnalytics.getEquipmentMetrics, {
     timeRange,
-    district: selectedDistrict !== 'all' ? selectedDistrict : undefined
+    district: selectedDistrict !== "all" ? selectedDistrict : undefined,
   });
 
   // Combine metrics into analytics data structure
   const combinedAnalyticsData: AnalyticsData = {
-    revenue: revenueMetrics ? {
-      monthly: revenueMetrics.totalRevenue,
-      quarterly: revenueMetrics.totalRevenue * 3,
-      annual: revenueMetrics.totalRevenue * 12,
-      growth: revenueMetrics.growth
-    } : { monthly: 0, quarterly: 0, annual: 0, growth: 0 },
-    customers: customerMetrics ? {
-      total: customerMetrics.total,
-      new: customerMetrics.new,
-      retention: customerMetrics.retention,
-      satisfaction: customerMetrics.satisfaction
-    } : { total: 0, new: 0, retention: 0, satisfaction: 0 },
-    services: serviceMetrics ? {
-      completed: serviceMetrics.completed,
-      pending: serviceMetrics.pending,
-      efficiency: serviceMetrics.efficiency,
-      avgResponseTime: serviceMetrics.avgResponseTime
-    } : { completed: 0, pending: 0, efficiency: 0, avgResponseTime: 0 },
-    equipment: equipmentMetrics ? {
-      monitored: equipmentMetrics.monitored,
-      alerts: equipmentMetrics.alerts,
-      uptime: equipmentMetrics.uptime,
-      energyEfficiency: equipmentMetrics.energyEfficiency
-    } : { monitored: 0, alerts: 0, uptime: 0, energyEfficiency: 0 }
+    revenue: revenueMetrics
+      ? {
+          monthly: revenueMetrics.totalRevenue,
+          quarterly: revenueMetrics.totalRevenue * 3,
+          annual: revenueMetrics.totalRevenue * 12,
+          growth: revenueMetrics.growth,
+        }
+      : { monthly: 0, quarterly: 0, annual: 0, growth: 0 },
+    customers: customerMetrics
+      ? {
+          total: customerMetrics.total,
+          new: customerMetrics.new,
+          retention: customerMetrics.retention,
+          satisfaction: customerMetrics.satisfaction,
+        }
+      : { total: 0, new: 0, retention: 0, satisfaction: 0 },
+    services: serviceMetrics
+      ? {
+          completed: serviceMetrics.completed,
+          pending: serviceMetrics.pending,
+          efficiency: serviceMetrics.efficiency,
+          avgResponseTime: serviceMetrics.avgResponseTime,
+        }
+      : { completed: 0, pending: 0, efficiency: 0, avgResponseTime: 0 },
+    equipment: equipmentMetrics
+      ? {
+          monitored: equipmentMetrics.monitored,
+          alerts: equipmentMetrics.alerts,
+          uptime: equipmentMetrics.uptime,
+          energyEfficiency: equipmentMetrics.energyEfficiency,
+        }
+      : { monitored: 0, alerts: 0, uptime: 0, energyEfficiency: 0 },
   };
 
   // Use real data if available, fallback to loading state
   const displayData = analyticsData || combinedAnalyticsData;
-  const isLoading = !analyticsData || !revenueMetrics || !customerMetrics || !serviceMetrics || !equipmentMetrics;
+  const isLoading = !(
+    analyticsData &&
+    revenueMetrics &&
+    customerMetrics &&
+    serviceMetrics &&
+    equipmentMetrics
+  );
 
   // Refresh handler
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
       // Convex queries will automatically refresh
-      toast.success('Dane zostały odświeżone');
-    } catch (error) {
-      toast.error('Błąd podczas odświeżania danych');
+      toast.success("Dane zostały odświeżone");
+    } catch (_error) {
+      toast.error("Błąd podczas odświeżania danych");
     } finally {
       setTimeout(() => setRefreshing(false), 1000);
     }
@@ -176,71 +174,69 @@ export function AdvancedAnalyticsDashboard() {
   // Mock district performance data - this could also be moved to Convex
   const districtPerformance: DistrictPerformance[] = [
     {
-      district: 'Śródmieście',
+      district: "Śródmieście",
       revenue: 45000,
       customers: 28,
       services: 34,
       satisfaction: 4.8,
-      growth: 18.5
+      growth: 18.5,
     },
     {
-      district: 'Mokotów',
+      district: "Mokotów",
       revenue: 32000,
       customers: 22,
       services: 26,
       satisfaction: 4.5,
-      growth: 12.3
+      growth: 12.3,
     },
     {
-      district: 'Wilanów',
+      district: "Wilanów",
       revenue: 28000,
       customers: 18,
       services: 19,
       satisfaction: 4.7,
-      growth: 22.1
+      growth: 22.1,
     },
     {
-      district: 'Żoliborz',
+      district: "Żoliborz",
       revenue: 20000,
       customers: 15,
       services: 10,
       satisfaction: 4.3,
-      growth: 8.7
-    }
+      growth: 8.7,
+    },
   ];
 
   const timeSeriesData: TimeSeriesData[] = [
-    { date: '2024-01', revenue: 98000, services: 67, customers: 144, efficiency: 94.2 },
-    { date: '2024-02', revenue: 112000, services: 78, customers: 148, efficiency: 95.1 },
-    { date: '2024-03', revenue: 125000, services: 89, customers: 156, efficiency: 96.8 },
-    { date: '2024-04', revenue: 118000, services: 82, customers: 159, efficiency: 95.9 },
-    { date: '2024-05', revenue: 134000, services: 95, customers: 162, efficiency: 97.2 },
-    { date: '2024-06', revenue: 142000, services: 103, customers: 168, efficiency: 97.8 }
+    { date: "2024-01", revenue: 98000, services: 67, customers: 144, efficiency: 94.2 },
+    { date: "2024-02", revenue: 112000, services: 78, customers: 148, efficiency: 95.1 },
+    { date: "2024-03", revenue: 125000, services: 89, customers: 156, efficiency: 96.8 },
+    { date: "2024-04", revenue: 118000, services: 82, customers: 159, efficiency: 95.9 },
+    { date: "2024-05", revenue: 134000, services: 95, customers: 162, efficiency: 97.2 },
+    { date: "2024-06", revenue: 142000, services: 103, customers: 168, efficiency: 97.8 },
   ];
 
   const serviceTypeData = [
-    { name: 'Instalacje', value: 35, color: '#1A3E7C' },
-    { name: 'Serwis', value: 40, color: '#F2994A' },
-    { name: 'Konserwacja', value: 20, color: '#27AE60' },
-    { name: 'Naprawa', value: 5, color: '#E74C3C' }
+    { name: "Instalacje", value: 35, color: "#1A3E7C" },
+    { name: "Serwis", value: 40, color: "#F2994A" },
+    { name: "Konserwacja", value: 20, color: "#27AE60" },
+    { name: "Naprawa", value: 5, color: "#E74C3C" },
   ];
 
-
-
   const handleExport = () => {
-    toast.success('Eksportowanie raportu...');
+    toast.success("Eksportowanie raportu...");
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pl-PL', {
-      style: 'currency',
-      currency: 'PLN',
-      minimumFractionDigits: 0
+    return new Intl.NumberFormat("pl-PL", {
+      style: "currency",
+      currency: "PLN",
+      minimumFractionDigits: 0,
     }).format(value);
   };
 
   const getGrowthColor = (growth: number) => {
-    return growth >= 0 ? 'text-green-600' : 'text-red-600';
+    return growth >= 0 ? "text-green-600" : "text-red-600";
   };
 
   const getGrowthIcon = (growth: number) => {
@@ -270,7 +266,7 @@ export function AdvancedAnalyticsDashboard() {
             </SelectContent>
           </Select>
           <Button variant="outline" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
             Odśwież
           </Button>
           <Button variant="outline" onClick={handleExport}>
@@ -289,18 +285,22 @@ export function AdvancedAnalyticsDashboard() {
                 <p className="text-sm font-medium text-gray-600">Przychód Miesięczny</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {isLoading ? (
-                    <div className="h-8 w-24 bg-gray-200 animate-pulse rounded"></div>
+                    <div className="h-8 w-24 bg-gray-200 animate-pulse rounded" />
                   ) : (
                     formatCurrency(displayData.revenue.monthly)
                   )}
                 </p>
                 <div className="flex items-center mt-1">
-                  {!isLoading && React.createElement(getGrowthIcon(displayData.revenue.growth), {
-                    className: `w-4 h-4 mr-1 ${getGrowthColor(displayData.revenue.growth)}`
-                  })}
+                  {!isLoading &&
+                    React.createElement(getGrowthIcon(displayData.revenue.growth), {
+                      className: `w-4 h-4 mr-1 ${getGrowthColor(displayData.revenue.growth)}`,
+                    })}
                   {!isLoading && (
-                    <span className={`text-sm font-medium ${getGrowthColor(displayData.revenue.growth)}`}>
-                      {displayData.revenue.growth > 0 ? '+' : ''}{displayData.revenue.growth.toFixed(1)}%
+                    <span
+                      className={`text-sm font-medium ${getGrowthColor(displayData.revenue.growth)}`}
+                    >
+                      {displayData.revenue.growth > 0 ? "+" : ""}
+                      {displayData.revenue.growth.toFixed(1)}%
                     </span>
                   )}
                 </div>
@@ -317,14 +317,14 @@ export function AdvancedAnalyticsDashboard() {
                 <p className="text-sm font-medium text-gray-600">Klienci</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {isLoading ? (
-                    <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                    <div className="h-8 w-16 bg-gray-200 animate-pulse rounded" />
                   ) : (
                     displayData.customers.total
                   )}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
                   {isLoading ? (
-                    <div className="h-4 w-20 bg-gray-200 animate-pulse rounded"></div>
+                    <div className="h-4 w-20 bg-gray-200 animate-pulse rounded" />
                   ) : (
                     `+${displayData.customers.new} nowych`
                   )}
@@ -342,14 +342,14 @@ export function AdvancedAnalyticsDashboard() {
                 <p className="text-sm font-medium text-gray-600">Efektywność Serwisu</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {isLoading ? (
-                    <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                    <div className="h-8 w-16 bg-gray-200 animate-pulse rounded" />
                   ) : (
                     `${displayData.services.efficiency.toFixed(1)}%`
                   )}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
                   {isLoading ? (
-                    <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
+                    <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />
                   ) : (
                     `Śr. czas: ${displayData.services.avgResponseTime.toFixed(1)}h`
                   )}
@@ -365,7 +365,9 @@ export function AdvancedAnalyticsDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Uptime Urządzeń</p>
-                <p className="text-2xl font-bold text-gray-900">{analyticsData.equipment.uptime}%</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {analyticsData.equipment.uptime}%
+                </p>
                 <p className="text-sm text-gray-500 mt-1">
                   {analyticsData.equipment.alerts} alertów
                 </p>
@@ -400,12 +402,12 @@ export function AdvancedAnalyticsDashboard() {
                     <XAxis dataKey="date" />
                     <YAxis />
                     <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                    <Line 
-                      type="monotone" 
-                      dataKey="revenue" 
-                      stroke="#1A3E7C" 
+                    <Line
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#1A3E7C"
                       strokeWidth={2}
-                      dot={{ fill: '#1A3E7C' }}
+                      dot={{ fill: "#1A3E7C" }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -452,11 +454,11 @@ export function AdvancedAnalyticsDashboard() {
                     <XAxis dataKey="date" />
                     <YAxis domain={[90, 100]} />
                     <Tooltip />
-                    <Area 
-                      type="monotone" 
-                      dataKey="efficiency" 
-                      stroke="#F2994A" 
-                      fill="#F2994A" 
+                    <Area
+                      type="monotone"
+                      dataKey="efficiency"
+                      stroke="#F2994A"
+                      fill="#F2994A"
                       fillOpacity={0.3}
                     />
                   </AreaChart>
@@ -493,15 +495,21 @@ export function AdvancedAnalyticsDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="text-center">
                   <p className="text-sm text-gray-600">Miesięczny</p>
-                  <p className="text-2xl font-bold">{formatCurrency(analyticsData.revenue.monthly)}</p>
+                  <p className="text-2xl font-bold">
+                    {formatCurrency(analyticsData.revenue.monthly)}
+                  </p>
                 </div>
                 <div className="text-center">
                   <p className="text-sm text-gray-600">Kwartalny</p>
-                  <p className="text-2xl font-bold">{formatCurrency(analyticsData.revenue.quarterly)}</p>
+                  <p className="text-2xl font-bold">
+                    {formatCurrency(analyticsData.revenue.quarterly)}
+                  </p>
                 </div>
                 <div className="text-center">
                   <p className="text-sm text-gray-600">Roczny</p>
-                  <p className="text-2xl font-bold">{formatCurrency(analyticsData.revenue.annual)}</p>
+                  <p className="text-2xl font-bold">
+                    {formatCurrency(analyticsData.revenue.annual)}
+                  </p>
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={400}>
@@ -510,12 +518,12 @@ export function AdvancedAnalyticsDashboard() {
                   <XAxis dataKey="date" />
                   <YAxis />
                   <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="revenue" 
-                    stroke="#1A3E7C" 
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#1A3E7C"
                     strokeWidth={3}
-                    dot={{ fill: '#1A3E7C', strokeWidth: 2, r: 6 }}
+                    dot={{ fill: "#1A3E7C", strokeWidth: 2, r: 6 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -533,14 +541,18 @@ export function AdvancedAnalyticsDashboard() {
                 <div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium">Efektywność Serwisu</span>
-                    <span className="text-sm text-gray-600">{analyticsData.services.efficiency}%</span>
+                    <span className="text-sm text-gray-600">
+                      {analyticsData.services.efficiency}%
+                    </span>
                   </div>
                   <Progress value={analyticsData.services.efficiency} className="h-2" />
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium">Retencja Klientów</span>
-                    <span className="text-sm text-gray-600">{analyticsData.customers.retention}%</span>
+                    <span className="text-sm text-gray-600">
+                      {analyticsData.customers.retention}%
+                    </span>
                   </div>
                   <Progress value={analyticsData.customers.retention} className="h-2" />
                 </div>
@@ -554,7 +566,9 @@ export function AdvancedAnalyticsDashboard() {
                 <div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium">Efektywność Energetyczna</span>
-                    <span className="text-sm text-gray-600">{analyticsData.equipment.energyEfficiency}%</span>
+                    <span className="text-sm text-gray-600">
+                      {analyticsData.equipment.energyEfficiency}%
+                    </span>
                   </div>
                   <Progress value={analyticsData.equipment.energyEfficiency} className="h-2" />
                 </div>
@@ -576,8 +590,8 @@ export function AdvancedAnalyticsDashboard() {
                         key={star}
                         className={`w-6 h-6 ${
                           star <= Math.floor(analyticsData.customers.satisfaction)
-                            ? 'text-yellow-400 fill-current'
-                            : 'text-gray-300'
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300"
                         }`}
                       />
                     ))}
@@ -604,10 +618,11 @@ export function AdvancedAnalyticsDashboard() {
                       <h3 className="text-lg font-semibold">{district.district}</h3>
                       <div className="flex items-center gap-2">
                         {React.createElement(getGrowthIcon(district.growth), {
-                          className: `w-4 h-4 ${getGrowthColor(district.growth)}`
+                          className: `w-4 h-4 ${getGrowthColor(district.growth)}`,
                         })}
                         <span className={`text-sm font-medium ${getGrowthColor(district.growth)}`}>
-                          {district.growth > 0 ? '+' : ''}{district.growth}%
+                          {district.growth > 0 ? "+" : ""}
+                          {district.growth}%
                         </span>
                       </div>
                     </div>

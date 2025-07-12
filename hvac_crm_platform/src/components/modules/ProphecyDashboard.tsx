@@ -1,27 +1,27 @@
-import { useState, useEffect } from "react";
-import { useQuery, useAction } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { 
-  Brain, 
-  TrendingUp, 
-  DollarSign, 
-  MapPin, 
-  Users, 
-  Zap,
+import { useQuery } from "convex/react";
+import {
   AlertTriangle,
+  Brain,
   CheckCircle,
   Clock,
-  Target
+  DollarSign,
+  MapPin,
+  Target,
+  TrendingUp,
+  Users,
+  Zap,
 } from "lucide-react";
+import { useState } from "react";
+import { api } from "../../../convex/_generated/api";
 
 export function ProphecyDashboard() {
-  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [_selectedDistrict, _setSelectedDistrict] = useState("");
   const [timeRange, setTimeRange] = useState("7d");
 
   // Get recent data for analysis
-  const recentContacts = useQuery(api.contacts.list, {});
-  const recentJobs = useQuery(api.jobs.list, {});
-  const recentQuotes = useQuery(api.quotes.list, {});
+  const _recentContacts = useQuery(api.contacts.list, {});
+  const _recentJobs = useQuery(api.jobs.list, {});
+  const _recentQuotes = useQuery(api.quotes.list, {});
 
   // Warsaw districts with affluence data
   const districtData = [
@@ -73,11 +73,16 @@ export function ProphecyDashboard() {
 
   const getInsightIcon = (type: string) => {
     switch (type) {
-      case "pricing": return DollarSign;
-      case "demand": return TrendingUp;
-      case "service": return Clock;
-      case "competition": return Target;
-      default: return Brain;
+      case "pricing":
+        return DollarSign;
+      case "demand":
+        return TrendingUp;
+      case "service":
+        return Clock;
+      case "competition":
+        return Target;
+      default:
+        return Brain;
     }
   };
 
@@ -186,7 +191,9 @@ export function ProphecyDashboard() {
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-medium text-gray-900">{insight.title}</h4>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getConfidenceColor(insight.confidence)}`}>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${getConfidenceColor(insight.confidence)}`}
+                        >
                           {Math.round(insight.confidence * 100)}% confidence
                         </span>
                       </div>
@@ -240,10 +247,10 @@ export function ProphecyDashboard() {
                     <td className="py-3 px-4">
                       <div className="flex items-center">
                         <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                          <div 
-                            className="bg-purple-600 h-2 rounded-full" 
+                          <div
+                            className="bg-purple-600 h-2 rounded-full"
                             style={{ width: `${district.affluence * 100}%` }}
-                          ></div>
+                          />
                         </div>
                         <span className="text-sm text-gray-600">
                           {Math.round(district.affluence * 100)}%
@@ -259,10 +266,15 @@ export function ProphecyDashboard() {
                       <span className="text-gray-900">{district.jobs}</span>
                     </td>
                     <td className="py-3 px-4">
-                      <span className={`text-sm font-medium ${
-                        district.trend.startsWith('+') ? 'text-green-600' : 
-                        district.trend.startsWith('-') ? 'text-red-600' : 'text-gray-600'
-                      }`}>
+                      <span
+                        className={`text-sm font-medium ${
+                          district.trend.startsWith("+")
+                            ? "text-green-600"
+                            : district.trend.startsWith("-")
+                              ? "text-red-600"
+                              : "text-gray-600"
+                        }`}
+                      >
                         {district.trend}
                       </span>
                     </td>

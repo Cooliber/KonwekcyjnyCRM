@@ -1,22 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { 
-  Wifi, 
-  WifiOff, 
-  Bell, 
-  Users, 
-  MapPin, 
+import {
   Activity,
   AlertTriangle,
-  CheckCircle,
-  Clock,
-  Zap,
+  Bell,
+  MapPin,
   Radio,
-  Settings
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { cn } from '../../lib/utils';
+  Users,
+  Wifi,
+  WifiOff,
+  Zap,
+} from "lucide-react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { cn } from "../../lib/utils";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 // Type definitions for real-time events
 interface JobUpdateData {
@@ -36,7 +34,7 @@ interface TechnicianLocationData {
 
 interface EmergencyAlertData {
   message: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   district?: string;
   jobId?: string;
   contactId?: string;
@@ -49,11 +47,15 @@ interface SystemNotificationData {
   metadata?: Record<string, unknown>;
 }
 
-type RealtimeEventData = JobUpdateData | TechnicianLocationData | EmergencyAlertData | SystemNotificationData;
+type RealtimeEventData =
+  | JobUpdateData
+  | TechnicianLocationData
+  | EmergencyAlertData
+  | SystemNotificationData;
 
 interface RealtimeEvent {
   id: string;
-  type: 'job_update' | 'technician_location' | 'emergency_alert' | 'system_notification';
+  type: "job_update" | "technician_location" | "emergency_alert" | "system_notification";
   data: RealtimeEventData;
   timestamp: number;
   channel: string;
@@ -75,50 +77,50 @@ export function RealTimeSubscriptionManager() {
   const [events, setEvents] = useState<RealtimeEvent[]>([]);
   const [channels, setChannels] = useState<SubscriptionChannel[]>([
     {
-      id: 'job_updates',
-      name: 'Job Updates',
-      description: 'Real-time job status changes and technician updates',
+      id: "job_updates",
+      name: "Job Updates",
+      description: "Real-time job status changes and technician updates",
       isActive: true,
       eventCount: 0,
       icon: Activity,
-      color: '#3b82f6'
+      color: "#3b82f6",
     },
     {
-      id: 'technician_tracking',
-      name: 'Technician Tracking',
-      description: 'Live GPS location updates from field technicians',
+      id: "technician_tracking",
+      name: "Technician Tracking",
+      description: "Live GPS location updates from field technicians",
       isActive: true,
       eventCount: 0,
       icon: MapPin,
-      color: '#10b981'
+      color: "#10b981",
     },
     {
-      id: 'emergency_alerts',
-      name: 'Emergency Alerts',
-      description: 'Critical system alerts and emergency notifications',
+      id: "emergency_alerts",
+      name: "Emergency Alerts",
+      description: "Critical system alerts and emergency notifications",
       isActive: true,
       eventCount: 0,
       icon: AlertTriangle,
-      color: '#ef4444'
+      color: "#ef4444",
     },
     {
-      id: 'district_updates',
-      name: 'District Updates',
-      description: 'Warsaw district-specific updates and prophecy alerts',
+      id: "district_updates",
+      name: "District Updates",
+      description: "Warsaw district-specific updates and prophecy alerts",
       isActive: false,
       eventCount: 0,
       icon: Radio,
-      color: '#8b5cf6'
+      color: "#8b5cf6",
     },
     {
-      id: 'customer_portal',
-      name: 'Customer Portal',
-      description: 'Customer interactions and portal activities',
+      id: "customer_portal",
+      name: "Customer Portal",
+      description: "Customer interactions and portal activities",
       isActive: false,
       eventCount: 0,
       icon: Users,
-      color: '#f59e0b'
-    }
+      color: "#f59e0b",
+    },
   ]);
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -128,23 +130,25 @@ export function RealTimeSubscriptionManager() {
   const connectToSupabase = () => {
     try {
       // Mock WebSocket URL - replace with actual Supabase Realtime endpoint
-      const wsUrl = 'wss://mock-supabase-realtime.com/websocket';
-      
+      const wsUrl = "wss://mock-supabase-realtime.com/websocket";
+
       // In real implementation, use Supabase client:
       // const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
       // const channel = supabase.channel('hvac-updates')
-      
+
       wsRef.current = new WebSocket(wsUrl);
-      
+
       wsRef.current.onopen = () => {
         setIsConnected(true);
-        toast.success('Connected to real-time updates');
-        
+        toast.success("Connected to real-time updates");
+
         // Subscribe to active channels
-        channels.filter(c => c.isActive).forEach(channel => {
-          // Mock subscription - replace with actual Supabase channel subscription
-          console.log(`Subscribing to ${channel.id}`);
-        });
+        channels
+          .filter((c) => c.isActive)
+          .forEach((channel) => {
+            // Mock subscription - replace with actual Supabase channel subscription
+            console.log(`Subscribing to ${channel.id}`);
+          });
       };
 
       wsRef.current.onmessage = (event) => {
@@ -152,14 +156,14 @@ export function RealTimeSubscriptionManager() {
           const data = JSON.parse(event.data);
           handleRealtimeEvent(data);
         } catch (error) {
-          console.error('Failed to parse WebSocket message:', error);
+          console.error("Failed to parse WebSocket message:", error);
         }
       };
 
       wsRef.current.onclose = () => {
         setIsConnected(false);
-        toast.error('Disconnected from real-time updates');
-        
+        toast.error("Disconnected from real-time updates");
+
         // Attempt to reconnect after 3 seconds
         reconnectTimeoutRef.current = setTimeout(() => {
           connectToSupabase();
@@ -167,70 +171,75 @@ export function RealTimeSubscriptionManager() {
       };
 
       wsRef.current.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        toast.error('Real-time connection error');
+        console.error("WebSocket error:", error);
+        toast.error("Real-time connection error");
       };
-
     } catch (error) {
-      console.error('Failed to connect to Supabase Realtime:', error);
-      toast.error('Failed to establish real-time connection');
+      console.error("Failed to connect to Supabase Realtime:", error);
+      toast.error("Failed to establish real-time connection");
     }
   };
 
-  const handleRealtimeEvent = (data: {
-    type?: string;
-    payload?: RealtimeEventData;
-    channel?: string;
-  } & Partial<RealtimeEventData>) => {
-    const eventType = (data.type as RealtimeEvent['type']) || 'system_notification';
+  const handleRealtimeEvent = (
+    data: {
+      type?: string;
+      payload?: RealtimeEventData;
+      channel?: string;
+    } & Partial<RealtimeEventData>
+  ) => {
+    const eventType = (data.type as RealtimeEvent["type"]) || "system_notification";
     const event: RealtimeEvent = {
       id: Math.random().toString(36).substr(2, 9),
       type: eventType,
       data: data.payload || (data as RealtimeEventData),
       timestamp: Date.now(),
-      channel: data.channel || 'general'
+      channel: data.channel || "general",
     };
 
-    setEvents(prev => [event, ...prev.slice(0, 49)]); // Keep last 50 events
+    setEvents((prev) => [event, ...prev.slice(0, 49)]); // Keep last 50 events
 
     // Update channel event count
-    setChannels(prev => prev.map(channel => {
-      if (channel.id === event.channel) {
-        return {
-          ...channel,
-          eventCount: channel.eventCount + 1,
-          lastEvent: event.timestamp
-        };
-      }
-      return channel;
-    }));
+    setChannels((prev) =>
+      prev.map((channel) => {
+        if (channel.id === event.channel) {
+          return {
+            ...channel,
+            eventCount: channel.eventCount + 1,
+            lastEvent: event.timestamp,
+          };
+        }
+        return channel;
+      })
+    );
 
     // Show toast for important events
-    if (event.type === 'emergency_alert') {
+    if (event.type === "emergency_alert") {
       toast.error(`Emergency Alert: ${event.data.message}`);
-    } else if (event.type === 'job_update') {
+    } else if (event.type === "job_update") {
       toast.info(`Job Update: ${event.data.message}`);
     }
   };
 
   const toggleChannel = (channelId: string) => {
-    setChannels(prev => prev.map(channel => {
-      if (channel.id === channelId) {
-        const newActive = !channel.isActive;
-        
-        // Mock channel subscription toggle
-        if (newActive) {
-          console.log(`Subscribing to ${channelId}`);
-          toast.success(`Subscribed to ${channel.name}`);
-        } else {
-          console.log(`Unsubscribing from ${channelId}`);
-          toast.info(`Unsubscribed from ${channel.name}`);
+    setChannels((prev) =>
+      prev.map((channel) => {
+        if (channel.id === channelId) {
+          const newActive = !channel.isActive;
+
+          // Mock channel subscription toggle
+          if (newActive) {
+            console.log(`Subscribing to ${channelId}`);
+            toast.success(`Subscribed to ${channel.name}`);
+          } else {
+            console.log(`Unsubscribing from ${channelId}`);
+            toast.info(`Unsubscribed from ${channel.name}`);
+          }
+
+          return { ...channel, isActive: newActive };
         }
-        
-        return { ...channel, isActive: newActive };
-      }
-      return channel;
-    }));
+        return channel;
+      })
+    );
   };
 
   const disconnect = () => {
@@ -245,65 +254,79 @@ export function RealTimeSubscriptionManager() {
 
   // Simulate real-time events for demo
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (isConnected) {
-        const mockEvents = [
-          {
-            type: 'job_update',
-            channel: 'job_updates',
-            payload: { message: 'Technician arrived at Śródmieście location', jobId: 'job_123' }
-          },
-          {
-            type: 'technician_location',
-            channel: 'technician_tracking',
-            payload: { lat: 52.2297, lng: 21.0122, technicianId: 'tech_456' }
-          },
-          {
-            type: 'system_notification',
-            channel: 'district_updates',
-            payload: { message: 'High demand predicted in Mokotów district', district: 'Mokotów' }
-          }
-        ];
+    const interval = setInterval(
+      () => {
+        if (isConnected) {
+          const mockEvents = [
+            {
+              type: "job_update",
+              channel: "job_updates",
+              payload: { message: "Technician arrived at Śródmieście location", jobId: "job_123" },
+            },
+            {
+              type: "technician_location",
+              channel: "technician_tracking",
+              payload: { lat: 52.2297, lng: 21.0122, technicianId: "tech_456" },
+            },
+            {
+              type: "system_notification",
+              channel: "district_updates",
+              payload: {
+                message: "High demand predicted in Mokotów district",
+                district: "Mokotów",
+              },
+            },
+          ];
 
-        const randomEvent = mockEvents[Math.floor(Math.random() * mockEvents.length)];
-        handleRealtimeEvent(randomEvent);
-      }
-    }, 5000 + Math.random() * 10000); // Random interval between 5-15 seconds
+          const randomEvent = mockEvents[Math.floor(Math.random() * mockEvents.length)];
+          handleRealtimeEvent(randomEvent);
+        }
+      },
+      5000 + Math.random() * 10000
+    ); // Random interval between 5-15 seconds
 
     return () => clearInterval(interval);
-  }, [isConnected]);
+  }, [isConnected, handleRealtimeEvent]);
 
   useEffect(() => {
     connectToSupabase();
-    
+
     return () => {
       disconnect();
     };
-  }, []);
+  }, [connectToSupabase, disconnect]);
 
   const formatEventTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString('pl-PL', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+    return new Date(timestamp).toLocaleTimeString("pl-PL", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
   };
 
   const getEventIcon = (type: string) => {
     switch (type) {
-      case 'job_update': return <Activity className="w-4 h-4" />;
-      case 'technician_location': return <MapPin className="w-4 h-4" />;
-      case 'emergency_alert': return <AlertTriangle className="w-4 h-4" />;
-      default: return <Bell className="w-4 h-4" />;
+      case "job_update":
+        return <Activity className="w-4 h-4" />;
+      case "technician_location":
+        return <MapPin className="w-4 h-4" />;
+      case "emergency_alert":
+        return <AlertTriangle className="w-4 h-4" />;
+      default:
+        return <Bell className="w-4 h-4" />;
     }
   };
 
   const getEventColor = (type: string) => {
     switch (type) {
-      case 'job_update': return 'text-blue-600';
-      case 'technician_location': return 'text-green-600';
-      case 'emergency_alert': return 'text-red-600';
-      default: return 'text-gray-600';
+      case "job_update":
+        return "text-blue-600";
+      case "technician_location":
+        return "text-green-600";
+      case "emergency_alert":
+        return "text-red-600";
+      default:
+        return "text-gray-600";
     }
   };
 
@@ -329,36 +352,31 @@ export function RealTimeSubscriptionManager() {
                   <span className="text-sm font-medium">Disconnected</span>
                 </div>
               )}
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={isConnected ? disconnect : connectToSupabase}
               >
-                {isConnected ? 'Disconnect' : 'Connect'}
+                {isConnected ? "Disconnect" : "Connect"}
               </Button>
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {channels.map(channel => {
+            {channels.map((channel) => {
               const Icon = channel.icon;
               return (
                 <div
                   key={channel.id}
                   className={cn(
                     "p-4 rounded-lg border-2 transition-all cursor-pointer",
-                    channel.isActive 
-                      ? "border-blue-200 bg-blue-50" 
-                      : "border-gray-200 bg-gray-50"
+                    channel.isActive ? "border-blue-200 bg-blue-50" : "border-gray-200 bg-gray-50"
                   )}
                   onClick={() => toggleChannel(channel.id)}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <Icon 
-                      className="w-5 h-5" 
-                      style={{ color: channel.color }}
-                    />
+                    <Icon className="w-5 h-5" style={{ color: channel.color }} />
                     <div className="flex items-center space-x-2">
                       {channel.isActive && (
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
@@ -398,15 +416,18 @@ export function RealTimeSubscriptionManager() {
                 <p>No events yet. Connect to start receiving real-time updates.</p>
               </div>
             ) : (
-              events.map(event => (
-                <div key={event.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+              events.map((event) => (
+                <div
+                  key={event.id}
+                  className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg"
+                >
                   <div className={cn("mt-0.5", getEventColor(event.type))}>
                     {getEventIcon(event.type)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium text-gray-900">
-                        {event.type.replace('_', ' ').toUpperCase()}
+                        {event.type.replace("_", " ").toUpperCase()}
                       </p>
                       <span className="text-xs text-gray-500">
                         {formatEventTime(event.timestamp)}
@@ -415,9 +436,7 @@ export function RealTimeSubscriptionManager() {
                     <p className="text-sm text-gray-600 mt-1">
                       {event.data.message || JSON.stringify(event.data)}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Channel: {event.channel}
-                    </p>
+                    <p className="text-xs text-gray-500 mt-1">Channel: {event.channel}</p>
                   </div>
                 </div>
               ))

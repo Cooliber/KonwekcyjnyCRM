@@ -1,26 +1,24 @@
-import React, { useState } from 'react';
-import { useQuery } from 'convex/react';
-import { api } from '../../../../convex/_generated/api';
-import { Id } from '../../../../convex/_generated/dataModel';
-import { Button } from '../../ui/button';
-import { 
-  Share, 
-  Users, 
-  Eye,
-  Edit,
-  Shield,
-  X,
-  Plus,
-  Trash2,
-  Copy,
-  Mail,
-  Link,
-  Globe,
-  Lock,
+import { useQuery } from "convex/react";
+import {
+  AlertCircle,
   CheckCircle,
-  AlertCircle
-} from 'lucide-react';
-import { toast } from 'sonner';
+  Copy,
+  Edit,
+  Eye,
+  Globe,
+  Link,
+  Plus,
+  Share,
+  Shield,
+  Trash2,
+  Users,
+  X,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
+import { Button } from "../../ui/button";
 
 // Type definitions for proper TypeScript support
 interface User {
@@ -51,7 +49,7 @@ interface TechnicianProfile {
 }
 
 interface ShareUser extends User {
-  permission: 'view' | 'edit' | 'admin';
+  permission: "view" | "edit" | "admin";
 }
 
 interface ShareDialogProps {
@@ -61,12 +59,12 @@ interface ShareDialogProps {
 }
 
 export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
-  const [shareMode, setShareMode] = useState<'users' | 'link' | 'public'>('users');
+  const [shareMode, setShareMode] = useState<"users" | "link" | "public">("users");
   const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
-  const [newUserEmail, setNewUserEmail] = useState('');
-  const [defaultPermission, setDefaultPermission] = useState<'view' | 'edit' | 'admin'>('view');
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [defaultPermission, setDefaultPermission] = useState<"view" | "edit" | "admin">("view");
   const [isPublic, setIsPublic] = useState(false);
-  const [linkExpiry, setLinkExpiry] = useState('never');
+  const [linkExpiry, setLinkExpiry] = useState("never");
 
   // Fetch users from backend - using getTechnicians as the correct API method
   const technicianProfiles = useQuery(api.users.getTechnicians, { isActive: true }) || [];
@@ -77,28 +75,28 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
     name: tech.name,
     email: tech.email,
     role: tech.role,
-    id: tech._id // For compatibility with existing code
+    id: tech._id, // For compatibility with existing code
   }));
 
   const permissionLevels = [
-    { 
-      value: 'view', 
-      label: 'View Only', 
-      icon: Eye, 
-      description: 'Can view the report and its results' 
+    {
+      value: "view",
+      label: "View Only",
+      icon: Eye,
+      description: "Can view the report and its results",
     },
-    { 
-      value: 'edit', 
-      label: 'Edit', 
-      icon: Edit, 
-      description: 'Can modify report configuration and settings' 
+    {
+      value: "edit",
+      label: "Edit",
+      icon: Edit,
+      description: "Can modify report configuration and settings",
     },
-    { 
-      value: 'admin', 
-      label: 'Admin', 
-      icon: Shield, 
-      description: 'Full control including sharing and deletion' 
-    }
+    {
+      value: "admin",
+      label: "Admin",
+      icon: Shield,
+      description: "Full control including sharing and deletion",
+    },
   ];
 
   const handleAddUser = () => {
@@ -107,18 +105,18 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
     const existingUser = availableUsers.find((u: User) => u.email === newUserEmail);
     if (existingUser && !selectedUsers.find((u: ShareUser) => u.id === existingUser.id)) {
       setSelectedUsers([...selectedUsers, { ...existingUser, permission: defaultPermission }]);
-      setNewUserEmail('');
+      setNewUserEmail("");
     } else if (!existingUser) {
       // Add external user
       const newUser = {
         id: `external_${Date.now()}`,
-        name: newUserEmail.split('@')[0],
+        name: newUserEmail.split("@")[0],
         email: newUserEmail,
-        role: 'External',
-        permission: defaultPermission
+        role: "External",
+        permission: defaultPermission,
       };
       setSelectedUsers([...selectedUsers, newUser]);
-      setNewUserEmail('');
+      setNewUserEmail("");
     }
   };
 
@@ -126,62 +124,62 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
     setSelectedUsers(selectedUsers.filter((u: ShareUser) => u.id !== userId));
   };
 
-  const handleUpdatePermission = (userId: string, permission: 'view' | 'edit' | 'admin') => {
-    setSelectedUsers(selectedUsers.map((u: ShareUser) => 
-      u.id === userId ? { ...u, permission } : u
-    ));
+  const handleUpdatePermission = (userId: string, permission: "view" | "edit" | "admin") => {
+    setSelectedUsers(
+      selectedUsers.map((u: ShareUser) => (u.id === userId ? { ...u, permission } : u))
+    );
   };
 
   const handleShare = async () => {
     if (!reportId) {
-      toast.error('No report selected');
+      toast.error("No report selected");
       return;
     }
 
     try {
-      if (shareMode === 'users') {
+      if (shareMode === "users") {
         // Share with individual users
         for (const user of selectedUsers) {
           await onShare({
             reportId: reportId as any,
             userId: user.id as any,
-            permission: user.permission
+            permission: user.permission,
           });
         }
         toast.success(`Report shared with ${selectedUsers.length} user(s)`);
-      } else if (shareMode === 'link') {
+      } else if (shareMode === "link") {
         // Handle link sharing
         await onShare({
           reportId: reportId as any,
-          shareType: 'link',
-          expiry: linkExpiry
+          shareType: "link",
+          expiry: linkExpiry,
         });
-        toast.success('Share link created');
-      } else if (shareMode === 'public' && isPublic) {
+        toast.success("Share link created");
+      } else if (shareMode === "public" && isPublic) {
         // Handle public sharing
         await onShare({
           reportId: reportId as any,
-          shareType: 'public',
-          isPublic: true
+          shareType: "public",
+          isPublic: true,
         });
-        toast.success('Report is now publicly accessible');
+        toast.success("Report is now publicly accessible");
       }
 
       onClose();
     } catch (error) {
-      toast.error('Failed to share report');
-      console.error('Share error:', error);
+      toast.error("Failed to share report");
+      console.error("Share error:", error);
     }
   };
 
   const handleCopyLink = () => {
     const link = `${window.location.origin}/reports/${reportId}`;
     void navigator.clipboard.writeText(link);
-    toast.success('Link copied to clipboard');
+    toast.success("Link copied to clipboard");
   };
 
   const getPermissionIcon = (permission: string) => {
-    const perm = permissionLevels.find(p => p.value === permission);
+    const perm = permissionLevels.find((p) => p.value === permission);
     return perm ? perm.icon : Eye;
   };
 
@@ -194,10 +192,7 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
             <h2 className="text-lg font-semibold text-gray-900">Share Report</h2>
             <p className="text-sm text-gray-600">Control who can access and modify this report</p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -206,17 +201,17 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
         <div className="border-b border-gray-200">
           <div className="flex">
             {[
-              { mode: 'users', label: 'Specific Users', icon: Users },
-              { mode: 'link', label: 'Share Link', icon: Link },
-              { mode: 'public', label: 'Public Access', icon: Globe }
+              { mode: "users", label: "Specific Users", icon: Users },
+              { mode: "link", label: "Share Link", icon: Link },
+              { mode: "public", label: "Public Access", icon: Globe },
             ].map(({ mode, label, icon: Icon }) => (
               <button
                 key={mode}
                 onClick={() => setShareMode(mode as any)}
                 className={`flex items-center space-x-2 px-6 py-3 border-b-2 transition-colors ${
                   shareMode === mode
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-600 hover:text-gray-900"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -228,13 +223,11 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
 
         {/* Content */}
         <div className="p-6">
-          {shareMode === 'users' && (
+          {shareMode === "users" && (
             <div className="space-y-4">
               {/* Add User */}
               <div>
-                <label className="text-sm font-medium text-gray-700 block mb-2">
-                  Add People
-                </label>
+                <label className="text-sm font-medium text-gray-700 block mb-2">Add People</label>
                 <div className="flex space-x-2">
                   <input
                     type="email"
@@ -242,14 +235,14 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
                     onChange={(e) => setNewUserEmail(e.target.value)}
                     placeholder="Enter email address"
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    onKeyPress={(e) => e.key === 'Enter' && handleAddUser()}
+                    onKeyPress={(e) => e.key === "Enter" && handleAddUser()}
                   />
                   <select
                     value={defaultPermission}
                     onChange={(e) => setDefaultPermission(e.target.value as any)}
                     className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    {permissionLevels.map(perm => (
+                    {permissionLevels.map((perm) => (
                       <option key={perm.value} value={perm.value}>
                         {perm.label}
                       </option>
@@ -269,24 +262,32 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
                     .filter((user: User) => !selectedUsers.find((u: ShareUser) => u.id === user.id))
                     .slice(0, 4)
                     .map((user: User) => (
-                    <button
-                      key={user.id}
-                      onClick={() => {
-                        setSelectedUsers([...selectedUsers, { ...user, permission: defaultPermission }]);
-                      }}
-                      className="flex items-center space-x-2 p-2 border border-gray-200 rounded-md hover:bg-gray-50 text-left"
-                    >
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-medium text-blue-600">
-                          {user.name.split(' ').map((n: string) => n[0]).join('')}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 truncate">{user.name}</div>
-                        <div className="text-xs text-gray-500 truncate">{user.role}</div>
-                      </div>
-                    </button>
-                  ))}
+                      <button
+                        key={user.id}
+                        onClick={() => {
+                          setSelectedUsers([
+                            ...selectedUsers,
+                            { ...user, permission: defaultPermission },
+                          ]);
+                        }}
+                        className="flex items-center space-x-2 p-2 border border-gray-200 rounded-md hover:bg-gray-50 text-left"
+                      >
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-medium text-blue-600">
+                            {user.name
+                              .split(" ")
+                              .map((n: string) => n[0])
+                              .join("")}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-900 truncate">
+                            {user.name}
+                          </div>
+                          <div className="text-xs text-gray-500 truncate">{user.role}</div>
+                        </div>
+                      </button>
+                    ))}
                 </div>
               </div>
 
@@ -297,14 +298,20 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
                     People with access ({selectedUsers.length})
                   </div>
                   <div className="space-y-2">
-                    {selectedUsers.map(user => {
-                      const PermissionIcon = getPermissionIcon(user.permission);
+                    {selectedUsers.map((user) => {
+                      const _PermissionIcon = getPermissionIcon(user.permission);
                       return (
-                        <div key={user.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-md">
+                        <div
+                          key={user.id}
+                          className="flex items-center justify-between p-3 border border-gray-200 rounded-md"
+                        >
                           <div className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                               <span className="text-xs font-medium text-blue-600">
-                                {user.name.split(' ').map((n: string) => n[0]).join('')}
+                                {user.name
+                                  .split(" ")
+                                  .map((n: string) => n[0])
+                                  .join("")}
                               </span>
                             </div>
                             <div>
@@ -315,10 +322,12 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
                           <div className="flex items-center space-x-2">
                             <select
                               value={user.permission}
-                              onChange={(e) => handleUpdatePermission(user.id, e.target.value as any)}
+                              onChange={(e) =>
+                                handleUpdatePermission(user.id, e.target.value as any)
+                              }
                               className="text-xs px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
                             >
-                              {permissionLevels.map(perm => (
+                              {permissionLevels.map((perm) => (
                                 <option key={perm.value} value={perm.value}>
                                   {perm.label}
                                 </option>
@@ -341,7 +350,7 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
             </div>
           )}
 
-          {shareMode === 'link' && (
+          {shareMode === "link" && (
             <div className="space-y-4">
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-start space-x-3">
@@ -349,8 +358,8 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
                   <div>
                     <h4 className="font-medium text-blue-900">Share via Link</h4>
                     <p className="text-sm text-blue-800 mt-1">
-                      Anyone with this link will be able to view the report. 
-                      You can set an expiration date for security.
+                      Anyone with this link will be able to view the report. You can set an
+                      expiration date for security.
                     </p>
                   </div>
                 </div>
@@ -388,7 +397,7 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
             </div>
           )}
 
-          {shareMode === 'public' && (
+          {shareMode === "public" && (
             <div className="space-y-4">
               <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <div className="flex items-start space-x-3">
@@ -396,7 +405,7 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
                   <div>
                     <h4 className="font-medium text-yellow-900">Public Access</h4>
                     <p className="text-sm text-yellow-800 mt-1">
-                      Making this report public will allow anyone to view it without authentication. 
+                      Making this report public will allow anyone to view it without authentication.
                       This includes sensitive HVAC and customer data.
                     </p>
                   </div>
@@ -435,19 +444,19 @@ export function ShareDialog({ reportId, onClose, onShare }: ShareDialogProps) {
         {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-200">
           <div className="text-sm text-gray-600">
-            {shareMode === 'users' && selectedUsers.length > 0 && 
-              `${selectedUsers.length} user(s) will be notified`
-            }
-            {shareMode === 'link' && 'Link sharing enabled'}
-            {shareMode === 'public' && isPublic && 'Public access enabled'}
+            {shareMode === "users" &&
+              selectedUsers.length > 0 &&
+              `${selectedUsers.length} user(s) will be notified`}
+            {shareMode === "link" && "Link sharing enabled"}
+            {shareMode === "public" && isPublic && "Public access enabled"}
           </div>
           <div className="flex items-center space-x-3">
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleShare}
-              disabled={shareMode === 'users' && selectedUsers.length === 0}
+              disabled={shareMode === "users" && selectedUsers.length === 0}
             >
               <Share className="w-4 h-4 mr-2" />
               Share Report

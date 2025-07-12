@@ -1,8 +1,7 @@
-import { query, mutation, internalMutation, action } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { internal } from "./_generated/api";
-import { Id } from "./_generated/dataModel";
+import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
 
 // Advanced caching configuration for performance optimization
 const CACHE_CONFIG = {
@@ -23,7 +22,7 @@ const CACHE_CONFIG = {
     EMERGENCY_SEND: { requests: 5, window: 300000 }, // 5 emergency alerts per 5 minutes
     THREAD_CREATE: { requests: 10, window: 60000 }, // 10 threads per minute
     FILE_UPLOAD: { requests: 10, window: 300000 }, // 10 file uploads per 5 minutes
-  }
+  },
 };
 
 // In-memory cache for high-performance access
@@ -32,21 +31,26 @@ const rateLimitCache = new Map<string, { count: number; resetTime: number }>();
 
 // Cache helper functions
 function getCacheKey(key: string, params: Record<string, any>): string {
-  const sortedParams = Object.keys(params).sort().reduce((result, key) => {
-    result[key] = params[key];
-    return result;
-  }, {} as Record<string, any>);
+  const sortedParams = Object.keys(params)
+    .sort()
+    .reduce(
+      (result, key) => {
+        result[key] = params[key];
+        return result;
+      },
+      {} as Record<string, any>
+    );
   return `${key}_${JSON.stringify(sortedParams)}`;
 }
 
 function isHighAffluenceDistrict(district?: string): boolean {
-  const highAffluenceDistricts = ['Śródmieście', 'Wilanów', 'Mokotów'];
-  return district ? highAffluenceDistricts.includes(_district) : false;
+  const highAffluenceDistricts = ["Śródmieście", "Wilanów", "Mokotów"];
+  return district ? highAffluenceDistricts.includes(district) : false;
 }
 
 function getTTL(baseKey: string, district?: string): number {
-  if (baseKey.includes('emergency')) return CACHE_CONFIG.EMERGENCY_TTL;
-  if (baseKey.includes('thread')) return CACHE_CONFIG.THREAD_TTL;
+  if (baseKey.includes("emergency")) return CACHE_CONFIG.EMERGENCY_TTL;
+  if (baseKey.includes("thread")) return CACHE_CONFIG.THREAD_TTL;
   if (district && isHighAffluenceDistrict(district)) return CACHE_CONFIG.DISTRICT_MESSAGE_TTL;
   return CACHE_CONFIG.MESSAGE_LIST_TTL;
 }
@@ -67,7 +71,7 @@ function setCachedData(cacheKey: string, data: any, ttl: number): void {
   messageCache.set(cacheKey, {
     data,
     timestamp: Date.now(),
-    ttl
+    ttl,
   });
 
   // Cleanup old cache entries periodically
@@ -89,9 +93,13 @@ function invalidateCache(pattern: string): void {
   }
 }
 
-async function checkRateLimit(userId: string, action: string, isEmergency: boolean = false): Promise<boolean> {
+async function checkRateLimit(
+  userId: string,
+  action: string,
+  isEmergency = false
+): Promise<boolean> {
   // AI exemption for emergency alerts
-  if (isEmergency && action === 'MESSAGE_SEND') {
+  if (isEmergency && action === "MESSAGE_SEND") {
     return true;
   }
 
@@ -127,14 +135,14 @@ export const list = query({
     includeThreads: v.optional(v.boolean()),
     district: v.optional(v.string()), // For cache TTL optimization
   },
-  handler: async (ctx, _args) => {
+  handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     const limit = args.limit || 50;
 
     // Generate cache key for this query
-    const cacheKey = getCacheKey('message_list', {
+    const cacheKey = getCacheKey("message_list", {
       userId,
       channelId: args.channelId,
       jobId: args.jobId,
@@ -142,7 +150,7 @@ export const list = query({
       threadId: args.threadId,
       limit,
       before: args.before,
-      includeThreads: args.includeThreads
+      includeThreads: args.includeThreads,
     });
 
     // Check cache first
@@ -207,7 +215,7 @@ export const list = query({
           threadInfo = {
             messageCount: threadMessages.length,
             lastMessage: threadMessages[threadMessages.length - 1],
-            participants: message.threadParticipants || []
+            participants: message.threadParticipants || [],
           };
         }
 
@@ -218,8 +226,8 @@ export const list = query({
         }
 
         // Check read status for current user
-        const isRead = message.readBy?.some(r => r.userId === userId) || false;
-        const deliveredToUser = message.readBy?.find(r => r.userId === userId)?.deliveredAt;
+        const isRead = message.readBy?.some((r) => r.userId === userId);
+        const deliveredToUser = message.readBy?.find((r) => r.userId === userId)?.deliveredAt;
 
         return {
           ...message,
@@ -233,10 +241,12 @@ export const list = query({
           isRead,
           deliveredToUser,
           // Add Warsaw district context if available
-          districtInfo: message.districtContext ? {
-            ...message.districtContext,
-            isHighPriority: message.districtContext.urgencyLevel === "emergency"
-          } : null
+          districtInfo: message.districtContext
+            ? {
+                ...message.districtContext,
+                isHighPriority: message.districtContext.urgencyLevel === "emergency",
+              }
+            : null,
         };
       })
     );
@@ -245,7 +255,7 @@ export const list = query({
     const result = args.threadId ? messagesWithDetails : messagesWithDetails.reverse();
 
     // Cache the result with appropriate TTL
-    const ttl = getTTL('message_list', args.district);
+    const ttl = getTTL("message_list", args.district);
     setCachedData(cacheKey, result, ttl);
 
     return result;
@@ -261,19 +271,30 @@ export const send = mutation({
     contactId: v.optional(v.id("contacts")),
     replyTo: v.optional(v.id("messages")),
     threadId: v.optional(v.string()),
-    priority: v.optional(v.union(v.literal("low"), v.literal("normal"), v.literal("high"), v.literal("urgent"))),
-    districtContext: v.optional(v.object({
-      district: v.string(),
-      urgencyLevel: v.union(v.literal("low"), v.literal("medium"), v.literal("high"), v.literal("emergency")),
-      routeOptimized: v.optional(v.boolean()),
-      estimatedResponseTime: v.optional(v.number())
-    })),
-    location: v.optional(v.object({
-      lat: v.number(),
-      lng: v.number(),
-      accuracy: v.optional(v.number()),
-      address: v.optional(v.string())
-    })),
+    priority: v.optional(
+      v.union(v.literal("low"), v.literal("normal"), v.literal("high"), v.literal("urgent"))
+    ),
+    districtContext: v.optional(
+      v.object({
+        district: v.string(),
+        urgencyLevel: v.union(
+          v.literal("low"),
+          v.literal("medium"),
+          v.literal("high"),
+          v.literal("emergency")
+        ),
+        routeOptimized: v.optional(v.boolean()),
+        estimatedResponseTime: v.optional(v.number()),
+      })
+    ),
+    location: v.optional(
+      v.object({
+        lat: v.number(),
+        lng: v.number(),
+        accuracy: v.optional(v.number()),
+        address: v.optional(v.string()),
+      })
+    ),
     mentions: v.optional(v.array(v.id("users"))),
     scheduledFor: v.optional(v.number()),
   },
@@ -282,8 +303,9 @@ export const send = mutation({
     if (!userId) throw new Error("Not authenticated");
 
     // Check rate limiting with AI exemption for emergency messages
-    const isEmergency = args.districtContext?.urgencyLevel === 'emergency' || args.priority === 'urgent';
-    const rateLimitPassed = await checkRateLimit(userId, 'MESSAGE_SEND', isEmergency);
+    const isEmergency =
+      args.districtContext?.urgencyLevel === "emergency" || args.priority === "urgent";
+    const rateLimitPassed = await checkRateLimit(userId, "MESSAGE_SEND", isEmergency);
 
     if (!rateLimitPassed) {
       throw new Error("Rate limit exceeded. Please wait before sending another message.");
@@ -327,13 +349,15 @@ export const send = mutation({
       metadata: {
         mentions: args.mentions,
         hashtags: extractHashtags(args.content),
-        links: extractLinks(args.content)
+        links: extractLinks(args.content),
       },
-      readBy: [{
-        userId,
-        readAt: Date.now(),
-        deliveredAt: Date.now()
-      }],
+      readBy: [
+        {
+          userId,
+          readAt: Date.now(),
+          deliveredAt: Date.now(),
+        },
+      ],
     });
 
     // Create enhanced notifications
@@ -348,7 +372,7 @@ export const send = mutation({
       priority: args.priority || "normal",
       districtContext: args.districtContext,
       threadId,
-      isReply: !!args.replyTo
+      isReply: !!args.replyTo,
     });
 
     // Invalidate relevant caches
@@ -390,10 +414,12 @@ export const sendFile = mutation({
       channelId: args.channelId,
       jobId: args.jobId,
       contactId: args.contactId,
-      readBy: [{
-        userId,
-        readAt: Date.now(),
-      }],
+      readBy: [
+        {
+          userId,
+          readAt: Date.now(),
+        },
+      ],
     });
   },
 });
@@ -419,10 +445,12 @@ export const sendImage = mutation({
       channelId: args.channelId,
       jobId: args.jobId,
       contactId: args.contactId,
-      readBy: [{
-        userId,
-        readAt: Date.now(),
-      }],
+      readBy: [
+        {
+          userId,
+          readAt: Date.now(),
+        },
+      ],
     });
   },
 });
@@ -463,7 +491,7 @@ export const markAsRead = mutation({
     if (!message) throw new Error("Message not found");
 
     const currentReadBy = message.readBy || [];
-    const alreadyRead = currentReadBy.some(r => r.userId === userId);
+    const alreadyRead = currentReadBy.some((r) => r.userId === userId);
 
     if (!alreadyRead) {
       await ctx.db.patch(args.messageId, {
@@ -472,7 +500,7 @@ export const markAsRead = mutation({
           {
             userId,
             readAt: Date.now(),
-          }
+          },
         ],
       });
     }
@@ -488,18 +516,23 @@ export const getChannels = query({
     // Get distinct channels from messages
     const messages = await ctx.db.query("messages").collect();
     const channels = new Set<string>();
-    
-    messages.forEach(message => {
+
+    messages.forEach((message) => {
       if (message.channelId) {
         channels.add(message.channelId);
       }
     });
 
-    return Array.from(channels).map(channelId => ({
+    return Array.from(channels).map((channelId) => ({
       id: channelId,
-      name: channelId === "general" ? "General" : 
-            channelId === "technicians" ? "Technicians" :
-            channelId === "sales" ? "Sales" : channelId,
+      name:
+        channelId === "general"
+          ? "General"
+          : channelId === "technicians"
+            ? "Technicians"
+            : channelId === "sales"
+              ? "Sales"
+              : channelId,
     }));
   },
 });
@@ -525,19 +558,22 @@ function extractLinks(content: string): string[] {
 }
 
 // Enhanced notification creation for messages
-async function createMessageNotifications(ctx: any, params: {
-  messageId: string;
-  senderId: string;
-  content: string;
-  channelId?: string;
-  jobId?: string;
-  contactId?: string;
-  mentions?: string[];
-  priority: string;
-  districtContext?: any;
-  threadId?: string;
-  isReply: boolean;
-}) {
+async function createMessageNotifications(
+  ctx: any,
+  params: {
+    messageId: string;
+    senderId: string;
+    content: string;
+    channelId?: string;
+    jobId?: string;
+    contactId?: string;
+    mentions?: string[];
+    priority: string;
+    districtContext?: any;
+    threadId?: string;
+    isReply: boolean;
+  }
+) {
   const notifications: any[] = [];
 
   // Job-based notifications
@@ -556,11 +592,15 @@ async function createMessageNotifications(ctx: any, params: {
             read: false,
             relatedId: params.messageId,
             actionUrl: `/jobs/${params.jobId}`,
-            districtContext: params.districtContext ? {
-              district: params.districtContext.district,
-              affluenceLevel: await getDistrictAffluence(params.districtContext.district),
-              priorityMultiplier: await getDistrictPriorityMultiplier(params.districtContext.district)
-            } : undefined
+            districtContext: params.districtContext
+              ? {
+                  district: params.districtContext.district,
+                  affluenceLevel: await getDistrictAffluence(params.districtContext.district),
+                  priorityMultiplier: await getDistrictPriorityMultiplier(
+                    params.districtContext.district
+                  ),
+                }
+              : undefined,
           });
         }
       }
@@ -579,7 +619,7 @@ async function createMessageNotifications(ctx: any, params: {
           priority: "medium",
           read: false,
           relatedId: params.messageId,
-          actionUrl: params.channelId ? `/chat/${params.channelId}` : `/jobs/${params.jobId}`
+          actionUrl: params.channelId ? `/chat/${params.channelId}` : `/jobs/${params.jobId}`,
         });
       }
     }
@@ -607,7 +647,7 @@ async function createMessageNotifications(ctx: any, params: {
               priority: mapMessagePriorityToNotification(params.priority),
               read: false,
               relatedId: params.messageId,
-              actionUrl: `/chat/${params.channelId}`
+              actionUrl: `/chat/${params.channelId}`,
             });
           }
         }
@@ -642,8 +682,8 @@ async function createMessageNotifications(ctx: any, params: {
           districtContext: {
             district: params.districtContext.district,
             affluenceLevel: await getDistrictAffluence(params.districtContext.district),
-            priorityMultiplier: 2.0 // Emergency multiplier
-          }
+            priorityMultiplier: 2.0, // Emergency multiplier
+          },
         });
       }
     }
@@ -651,7 +691,7 @@ async function createMessageNotifications(ctx: any, params: {
 
   // Batch insert notifications
   await Promise.all(
-    notifications.map(notification => ctx.db.insert("notifications", notification))
+    notifications.map((notification) => ctx.db.insert("notifications", notification))
   );
 }
 
@@ -659,16 +699,16 @@ async function createMessageNotifications(ctx: any, params: {
 async function getDistrictAffluence(district: string): Promise<number> {
   // Warsaw district affluence mapping (1-10 scale)
   const affluenceMap: Record<string, number> = {
-    "Śródmieście": 9,
-    "Wilanów": 8,
-    "Mokotów": 7,
-    "Żoliborz": 7,
-    "Ursynów": 6,
-    "Wola": 6,
+    Śródmieście: 9,
+    Wilanów: 8,
+    Mokotów: 7,
+    Żoliborz: 7,
+    Ursynów: 6,
+    Wola: 6,
     "Praga-Południe": 4,
-    "Targówek": 4,
-    "Bemowo": 5,
-    "Bielany": 5
+    Targówek: 4,
+    Bemowo: 5,
+    Bielany: 5,
   };
   return affluenceMap[district] || 5;
 }
@@ -678,17 +718,28 @@ async function getDistrictPriorityMultiplier(district: string): Promise<number> 
   return Math.max(0.8, Math.min(1.5, affluence / 6)); // 0.8x to 1.5x multiplier
 }
 
-function mapMessagePriorityToNotification(messagePriority: string): "low" | "medium" | "high" | "urgent" {
+function mapMessagePriorityToNotification(
+  messagePriority: string
+): "low" | "medium" | "high" | "urgent" {
   switch (messagePriority) {
-    case "urgent": return "urgent";
-    case "high": return "high";
-    case "normal": return "medium";
-    case "low": return "low";
-    default: return "medium";
+    case "urgent":
+      return "urgent";
+    case "high":
+      return "high";
+    case "normal":
+      return "medium";
+    case "low":
+      return "low";
+    default:
+      return "medium";
   }
 }
 
-async function shouldSendChannelNotification(ctx: any, userId: string, channel: any): Promise<boolean> {
+async function shouldSendChannelNotification(
+  ctx: any,
+  userId: string,
+  channel: any
+): Promise<boolean> {
   // Check user's notification preferences
   const userProfile = await ctx.db
     .query("userProfiles")
@@ -723,7 +774,7 @@ export const startThread = mutation({
     await ctx.db.patch(args.messageId, {
       threadId,
       isThreadStarter: true,
-      threadParticipants: [originalMessage.senderId, userId]
+      threadParticipants: [originalMessage.senderId, userId],
     });
 
     // Create the first reply
@@ -738,11 +789,13 @@ export const startThread = mutation({
       threadParticipants: [originalMessage.senderId, userId],
       type: "text",
       priority: "normal",
-      readBy: [{
-        userId,
-        readAt: Date.now(),
-        deliveredAt: Date.now()
-      }],
+      readBy: [
+        {
+          userId,
+          readAt: Date.now(),
+          deliveredAt: Date.now(),
+        },
+      ],
     });
 
     // Notify original message sender
@@ -754,7 +807,7 @@ export const startThread = mutation({
       priority: "medium",
       read: false,
       relatedId: replyId,
-      actionUrl: `/chat/thread/${threadId}`
+      actionUrl: `/chat/thread/${threadId}`,
     });
 
     return { threadId, replyId };
@@ -767,11 +820,13 @@ export const sendUrgentMessage = mutation({
     content: v.string(),
     district: v.string(),
     urgencyLevel: v.union(v.literal("high"), v.literal("emergency")),
-    location: v.optional(v.object({
-      lat: v.number(),
-      lng: v.number(),
-      address: v.optional(v.string())
-    })),
+    location: v.optional(
+      v.object({
+        lat: v.number(),
+        lng: v.number(),
+        address: v.optional(v.string()),
+      })
+    ),
     estimatedResponseTime: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -789,14 +844,16 @@ export const sendUrgentMessage = mutation({
         district: args.district,
         urgencyLevel: args.urgencyLevel,
         routeOptimized: false,
-        estimatedResponseTime: args.estimatedResponseTime
+        estimatedResponseTime: args.estimatedResponseTime,
       },
       location: args.location,
-      readBy: [{
-        userId,
-        readAt: Date.now(),
-        deliveredAt: Date.now()
-      }],
+      readBy: [
+        {
+          userId,
+          readAt: Date.now(),
+          deliveredAt: Date.now(),
+        },
+      ],
     });
 
     // Trigger emergency notification system
@@ -806,7 +863,7 @@ export const sendUrgentMessage = mutation({
       content: args.content,
       district: args.district,
       urgencyLevel: args.urgencyLevel,
-      location: args.location
+      location: args.location,
     });
 
     return messageId;
@@ -859,46 +916,43 @@ export const sendVoiceNote = mutation({
       jobId: args.jobId,
       contactId: args.contactId,
       metadata: {
-        duration: args.duration
+        duration: args.duration,
       },
-      readBy: [{
-        userId,
-        readAt: Date.now(),
-        deliveredAt: Date.now()
-      }],
+      readBy: [
+        {
+          userId,
+          readAt: Date.now(),
+          deliveredAt: Date.now(),
+        },
+      ],
     });
   },
 });
 
 // Emergency notification helper
-async function createEmergencyNotifications(ctx: any, params: {
-  messageId: string;
-  senderId: string;
-  content: string;
-  district: string;
-  urgencyLevel: string;
-  location?: any;
-}) {
+async function createEmergencyNotifications(
+  ctx: any,
+  params: {
+    messageId: string;
+    senderId: string;
+    content: string;
+    district: string;
+    urgencyLevel: string;
+    location?: any;
+  }
+) {
   // Get all technicians in the district
   const districtTechnicians = await ctx.db
     .query("userProfiles")
     .filter((q: any) =>
-      q.and(
-        q.eq(q.field("role"), "technician"),
-        q.eq(q.field("serviceAreas"), [params.district])
-      )
+      q.and(q.eq(q.field("role"), "technician"), q.eq(q.field("serviceAreas"), [params.district]))
     )
     .collect();
 
   // Get managers and admins
   const managers = await ctx.db
     .query("userProfiles")
-    .filter((q: any) =>
-      q.or(
-        q.eq(q.field("role"), "manager"),
-        q.eq(q.field("role"), "admin")
-      )
-    )
+    .filter((q: any) => q.or(q.eq(q.field("role"), "manager"), q.eq(q.field("role"), "admin")))
     .collect();
 
   const allRecipients = [...districtTechnicians, ...managers];
@@ -919,12 +973,12 @@ async function createEmergencyNotifications(ctx: any, params: {
           districtContext: {
             district: params.district,
             affluenceLevel: await getDistrictAffluence(params.district),
-            priorityMultiplier: 2.0
+            priorityMultiplier: 2.0,
           },
           location: params.location,
           // Schedule immediate delivery
           scheduledFor: Date.now(),
-          aiGenerated: false
+          aiGenerated: false,
         });
       }
     })

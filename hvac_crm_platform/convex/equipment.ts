@@ -1,6 +1,6 @@
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 export const list = query({
   args: {
@@ -16,13 +16,11 @@ export const list = query({
     if (args.search) {
       return await ctx.db
         .query("equipment")
-        .withSearchIndex("search_equipment", (q) => 
-          q.search("name", args.search!)
-        )
+        .withSearchIndex("search_equipment", (q) => q.search("name", args.search!))
         .collect();
     }
 
-    let equipment;
+    let equipment: any;
     if (args.category) {
       equipment = await ctx.db
         .query("equipment")
@@ -36,15 +34,13 @@ export const list = query({
     let filteredEquipment = equipment;
 
     if (args.lowStock) {
-      filteredEquipment = equipment.filter(item => 
-        item.minStock && item.quantity <= item.minStock
+      filteredEquipment = equipment.filter(
+        (item: any) => item.minStock && item.quantity <= item.minStock
       );
     }
 
     if (args.supplier) {
-      filteredEquipment = filteredEquipment.filter(item => 
-        item.supplier === args.supplier
-      );
+      filteredEquipment = filteredEquipment.filter((item: any) => item.supplier === args.supplier);
     }
 
     return filteredEquipment;
@@ -62,7 +58,7 @@ export const get = query({
 
     // Get photo URLs if they exist
     let photoUrl = null;
-    let installationPhotoUrls: Array<{photoUrl: string, overlayData?: string}> = [];
+    let installationPhotoUrls: Array<{ photoUrl: string; overlayData?: string }> = [];
 
     if (equipment.photoId) {
       photoUrl = await ctx.storage.getUrl(equipment.photoId);
@@ -71,8 +67,8 @@ export const get = query({
     if (equipment.installationPhotos) {
       installationPhotoUrls = await Promise.all(
         equipment.installationPhotos.map(async (photo) => ({
-          photoUrl: await ctx.storage.getUrl(photo.photoId) || "",
-          overlayData: photo.overlayData
+          photoUrl: (await ctx.storage.getUrl(photo.photoId)) || "",
+          overlayData: photo.overlayData,
         }))
       );
     }
@@ -110,12 +106,14 @@ export const create = mutation({
     supplier: v.optional(v.string()),
     location: v.optional(v.string()),
     description: v.optional(v.string()),
-    specifications: v.optional(v.object({
-      power: v.optional(v.string()),
-      efficiency: v.optional(v.string()),
-      warranty: v.optional(v.number()),
-      dimensions: v.optional(v.string())
-    })),
+    specifications: v.optional(
+      v.object({
+        power: v.optional(v.string()),
+        efficiency: v.optional(v.string()),
+        warranty: v.optional(v.number()),
+        dimensions: v.optional(v.string()),
+      })
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -157,12 +155,14 @@ export const update = mutation({
     supplier: v.optional(v.string()),
     location: v.optional(v.string()),
     description: v.optional(v.string()),
-    specifications: v.optional(v.object({
-      power: v.optional(v.string()),
-      efficiency: v.optional(v.string()),
-      warranty: v.optional(v.number()),
-      dimensions: v.optional(v.string())
-    })),
+    specifications: v.optional(
+      v.object({
+        power: v.optional(v.string()),
+        efficiency: v.optional(v.string()),
+        warranty: v.optional(v.number()),
+        dimensions: v.optional(v.string()),
+      })
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -170,13 +170,17 @@ export const update = mutation({
 
     const { id, ...updates } = args;
     const equipment = await ctx.db.get(id);
-    
+
     if (!equipment) throw new Error("Equipment not found");
 
     await ctx.db.patch(id, updates);
 
     // Check for low stock after update
-    if (updates.quantity !== undefined && equipment.minStock && updates.quantity <= equipment.minStock) {
+    if (
+      updates.quantity !== undefined &&
+      equipment.minStock &&
+      updates.quantity <= equipment.minStock
+    ) {
       await ctx.db.insert("notifications", {
         userId,
         title: "Low Stock Alert",
@@ -276,9 +280,7 @@ export const getLowStockItems = query({
     if (!userId) throw new Error("Not authenticated");
 
     const equipment = await ctx.db.query("equipment").collect();
-    
-    return equipment.filter(item => 
-      item.minStock && item.quantity <= item.minStock
-    );
+
+    return equipment.filter((item) => item.minStock && item.quantity <= item.minStock);
   },
 });

@@ -1,17 +1,6 @@
-import React, { useState } from 'react';
-import { Button } from '../../ui/button';
-import { 
-  X, 
-  Database, 
-  Filter, 
-  Settings,
-  Plus,
-  Trash2,
-  Type,
-  Hash,
-  Calendar,
-  ToggleLeft
-} from 'lucide-react';
+import { Calendar, Filter, Hash, Plus, Settings, ToggleLeft, Trash2, Type, X } from "lucide-react";
+import { useState } from "react";
+import { Button } from "../../ui/button";
 
 interface FieldConfigDialogProps {
   field: any;
@@ -21,37 +10,37 @@ interface FieldConfigDialogProps {
 
 export function FieldConfigDialog({ field, onSave, onClose }: FieldConfigDialogProps) {
   const [config, setConfig] = useState({
-    table: field.table || '',
-    field: field.field || '',
-    alias: field.alias || '',
-    dataType: field.dataType || 'string',
+    table: field.table || "",
+    field: field.field || "",
+    alias: field.alias || "",
+    dataType: field.dataType || "string",
     filters: field.filters || [],
-    aggregation: field.aggregation || '',
-    sortOrder: field.sortOrder || '',
-    ...field
+    aggregation: field.aggregation || "",
+    sortOrder: field.sortOrder || "",
+    ...field,
   });
 
   const dataTypes = [
-    { value: 'string', label: 'Text', icon: Type },
-    { value: 'number', label: 'Number', icon: Hash },
-    { value: 'date', label: 'Date', icon: Calendar },
-    { value: 'boolean', label: 'Boolean', icon: ToggleLeft }
+    { value: "string", label: "Text", icon: Type },
+    { value: "number", label: "Number", icon: Hash },
+    { value: "date", label: "Date", icon: Calendar },
+    { value: "boolean", label: "Boolean", icon: ToggleLeft },
   ];
 
   const aggregationTypes = [
-    { value: '', label: 'None' },
-    { value: 'sum', label: 'Sum' },
-    { value: 'avg', label: 'Average' },
-    { value: 'count', label: 'Count' },
-    { value: 'min', label: 'Minimum' },
-    { value: 'max', label: 'Maximum' },
-    { value: 'distinct', label: 'Distinct Count' }
+    { value: "", label: "None" },
+    { value: "sum", label: "Sum" },
+    { value: "avg", label: "Average" },
+    { value: "count", label: "Count" },
+    { value: "min", label: "Minimum" },
+    { value: "max", label: "Maximum" },
+    { value: "distinct", label: "Distinct Count" },
   ];
 
   const sortOptions = [
-    { value: '', label: 'No sorting' },
-    { value: 'asc', label: 'Ascending' },
-    { value: 'desc', label: 'Descending' }
+    { value: "", label: "No sorting" },
+    { value: "asc", label: "Ascending" },
+    { value: "desc", label: "Descending" },
   ];
 
   const handleSave = () => {
@@ -60,18 +49,18 @@ export function FieldConfigDialog({ field, onSave, onClose }: FieldConfigDialogP
 
   const addFilter = () => {
     const newFilter = {
-      operator: 'equals',
-      value: '',
-      logicalOperator: 'AND'
+      operator: "equals",
+      value: "",
+      logicalOperator: "AND",
     };
     setConfig({
       ...config,
-      filters: [...config.filters, newFilter]
+      filters: [...config.filters, newFilter],
     });
   };
 
   const updateFilter = (index: number, updates: any) => {
-    const updatedFilters = config.filters.map((filter: any, i: number) => 
+    const updatedFilters = config.filters.map((filter: any, i: number) =>
       i === index ? { ...filter, ...updates } : filter
     );
     setConfig({ ...config, filters: updatedFilters });
@@ -91,10 +80,7 @@ export function FieldConfigDialog({ field, onSave, onClose }: FieldConfigDialogP
             <h2 className="text-lg font-semibold text-gray-900">Configure Field</h2>
             <p className="text-sm text-gray-600">Customize field settings and filters</p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -104,9 +90,7 @@ export function FieldConfigDialog({ field, onSave, onClose }: FieldConfigDialogP
           {/* Basic Configuration */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">
-                Table
-              </label>
+              <label className="text-sm font-medium text-gray-700 block mb-1">Table</label>
               <input
                 type="text"
                 value={config.table}
@@ -115,9 +99,7 @@ export function FieldConfigDialog({ field, onSave, onClose }: FieldConfigDialogP
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">
-                Field
-              </label>
+              <label className="text-sm font-medium text-gray-700 block mb-1">Field</label>
               <input
                 type="text"
                 value={config.field}
@@ -142,9 +124,7 @@ export function FieldConfigDialog({ field, onSave, onClose }: FieldConfigDialogP
 
           {/* Data Type */}
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">
-              Data Type
-            </label>
+            <label className="text-sm font-medium text-gray-700 block mb-2">Data Type</label>
             <div className="grid grid-cols-2 gap-2">
               {dataTypes.map(({ value, label, icon: Icon }) => (
                 <button
@@ -152,8 +132,8 @@ export function FieldConfigDialog({ field, onSave, onClose }: FieldConfigDialogP
                   onClick={() => setConfig({ ...config, dataType: value })}
                   className={`flex items-center space-x-2 p-2 rounded-md border transition-colors ${
                     config.dataType === value
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -166,15 +146,13 @@ export function FieldConfigDialog({ field, onSave, onClose }: FieldConfigDialogP
           {/* Aggregation and Sorting */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">
-                Aggregation
-              </label>
+              <label className="text-sm font-medium text-gray-700 block mb-1">Aggregation</label>
               <select
                 value={config.aggregation}
                 onChange={(e) => setConfig({ ...config, aggregation: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                {aggregationTypes.map(agg => (
+                {aggregationTypes.map((agg) => (
                   <option key={agg.value} value={agg.value}>
                     {agg.label}
                   </option>
@@ -182,15 +160,13 @@ export function FieldConfigDialog({ field, onSave, onClose }: FieldConfigDialogP
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">
-                Sort Order
-              </label>
+              <label className="text-sm font-medium text-gray-700 block mb-1">Sort Order</label>
               <select
                 value={config.sortOrder}
                 onChange={(e) => setConfig({ ...config, sortOrder: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                {sortOptions.map(sort => (
+                {sortOptions.map((sort) => (
                   <option key={sort.value} value={sort.value}>
                     {sort.label}
                   </option>
@@ -202,15 +178,13 @@ export function FieldConfigDialog({ field, onSave, onClose }: FieldConfigDialogP
           {/* Filters */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-gray-700">
-                Field Filters
-              </label>
+              <label className="text-sm font-medium text-gray-700">Field Filters</label>
               <Button variant="outline" size="sm" onClick={addFilter}>
                 <Plus className="w-3 h-3 mr-1" />
                 Add Filter
               </Button>
             </div>
-            
+
             {config.filters.length === 0 ? (
               <div className="text-center text-gray-500 py-4 border border-gray-200 rounded-md">
                 <Filter className="w-6 h-6 mx-auto mb-2 text-gray-400" />
@@ -240,17 +214,13 @@ export function FieldConfigDialog({ field, onSave, onClose }: FieldConfigDialogP
                         placeholder="Value"
                         className="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
                       />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeFilter(index)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => removeFilter(index)}>
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
                     {index < config.filters.length - 1 && (
                       <select
-                        value={filter.logicalOperator || 'AND'}
+                        value={filter.logicalOperator || "AND"}
                         onChange={(e) => updateFilter(index, { logicalOperator: e.target.value })}
                         className="px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50"
                       >

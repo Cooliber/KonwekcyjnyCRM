@@ -1,6 +1,6 @@
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 export const list = query({
   args: {
@@ -92,22 +92,26 @@ export const create = mutation({
     title: v.string(),
     description: v.string(),
     validUntil: v.number(),
-    proposals: v.array(v.object({
-      id: v.string(),
-      title: v.string(),
-      description: v.string(),
-      lineItems: v.array(v.object({
+    proposals: v.array(
+      v.object({
+        id: v.string(),
+        title: v.string(),
         description: v.string(),
-        quantity: v.number(),
-        unitPrice: v.number(),
+        lineItems: v.array(
+          v.object({
+            description: v.string(),
+            quantity: v.number(),
+            unitPrice: v.number(),
+            total: v.number(),
+            type: v.union(v.literal("labor"), v.literal("material"), v.literal("equipment")),
+          })
+        ),
+        subtotal: v.number(),
+        tax: v.optional(v.number()),
         total: v.number(),
-        type: v.union(v.literal("labor"), v.literal("material"), v.literal("equipment"))
-      })),
-      subtotal: v.number(),
-      tax: v.optional(v.number()),
-      total: v.number(),
-      recommended: v.boolean()
-    })),
+        recommended: v.boolean(),
+      })
+    ),
     terms: v.optional(v.string()),
     aiGenerated: v.optional(v.boolean()),
     transcriptionSource: v.optional(v.id("transcriptions")),
@@ -118,7 +122,7 @@ export const create = mutation({
 
     // Generate quote number
     const quoteCount = await ctx.db.query("quotes").collect();
-    const quoteNumber = `Q${String(quoteCount.length + 1).padStart(4, '0')}`;
+    const quoteNumber = `Q${String(quoteCount.length + 1).padStart(4, "0")}`;
 
     // Generate dynamic link
     const dynamicLink = Math.random().toString(36).substring(2, 15);
@@ -169,20 +173,20 @@ export const generateFromTranscription = mutation({
           quantity: extractedData.deviceCount || 1,
           unitPrice: 2000,
           total: (extractedData.deviceCount || 1) * 2000,
-          type: "equipment" as const
+          type: "equipment" as const,
         },
         {
           description: "Installation Labor",
           quantity: extractedData.deviceCount || 1,
           unitPrice: 500,
           total: (extractedData.deviceCount || 1) * 500,
-          type: "labor" as const
-        }
+          type: "labor" as const,
+        },
       ],
       subtotal: basicCost,
       tax: basicCost * 0.23, // 23% VAT in Poland
       total: basicCost * 1.23,
-      recommended: false
+      recommended: false,
     });
 
     // Premium proposal
@@ -197,20 +201,20 @@ export const generateFromTranscription = mutation({
           quantity: extractedData.deviceCount || 1,
           unitPrice: 2800,
           total: (extractedData.deviceCount || 1) * 2800,
-          type: "equipment" as const
+          type: "equipment" as const,
         },
         {
           description: "Professional Installation",
           quantity: extractedData.deviceCount || 1,
           unitPrice: 700,
           total: (extractedData.deviceCount || 1) * 700,
-          type: "labor" as const
-        }
+          type: "labor" as const,
+        },
       ],
       subtotal: premiumCost,
       tax: premiumCost * 0.23,
       total: premiumCost * 1.23,
-      recommended: true
+      recommended: true,
     });
 
     // VIP proposal (if affluence score is high)
@@ -226,25 +230,25 @@ export const generateFromTranscription = mutation({
             quantity: extractedData.deviceCount || 1,
             unitPrice: 4000,
             total: (extractedData.deviceCount || 1) * 4000,
-            type: "equipment" as const
+            type: "equipment" as const,
           },
           {
             description: "VIP Installation & Setup",
             quantity: extractedData.deviceCount || 1,
             unitPrice: 1000,
             total: (extractedData.deviceCount || 1) * 1000,
-            type: "labor" as const
-          }
+            type: "labor" as const,
+          },
         ],
         subtotal: vipCost,
         tax: vipCost * 0.23,
         total: vipCost * 1.23,
-        recommended: false
+        recommended: false,
       });
     }
 
     const quoteCount = await ctx.db.query("quotes").collect();
-    const quoteNumber = `Q${String(quoteCount.length + 1).padStart(4, '0')}`;
+    const quoteNumber = `Q${String(quoteCount.length + 1).padStart(4, "0")}`;
     const dynamicLink = Math.random().toString(36).substring(2, 15);
 
     const quoteId = await ctx.db.insert("quotes", {
@@ -253,7 +257,7 @@ export const generateFromTranscription = mutation({
       title: `HVAC Installation Quote - ${contact.name}`,
       description: `Quote generated from phone consultation`,
       status: "draft",
-      validUntil: Date.now() + (14 * 24 * 60 * 60 * 1000), // 14 days
+      validUntil: Date.now() + 14 * 24 * 60 * 60 * 1000, // 14 days
       proposals,
       dynamicLink,
       linkViews: 0,
@@ -271,10 +275,10 @@ export const updateStatus = mutation({
   args: {
     id: v.id("quotes"),
     status: v.union(
-      v.literal("draft"), 
-      v.literal("sent"), 
+      v.literal("draft"),
+      v.literal("sent"),
       v.literal("viewed"),
-      v.literal("accepted"), 
+      v.literal("accepted"),
       v.literal("rejected"),
       v.literal("expired")
     ),
@@ -327,8 +331,8 @@ export const acceptProposal = mutation({
           timestamp: Date.now(),
           action: "accepted",
           proposalId: args.proposalId,
-        }
-      ]
+        },
+      ],
     };
 
     if (args.signatureData) {
@@ -342,7 +346,7 @@ export const acceptProposal = mutation({
     await ctx.db.patch(args.quoteId, updates);
 
     // Create job from accepted quote
-    const selectedProposal = quote.proposals.find(p => p.id === args.proposalId);
+    const selectedProposal = quote.proposals.find((p) => p.id === args.proposalId);
     if (selectedProposal && quote.jobId) {
       await ctx.db.patch(quote.jobId, {
         status: "approved",

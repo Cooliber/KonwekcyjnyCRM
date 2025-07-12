@@ -1,26 +1,20 @@
-import { useState } from "react";
-import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
 import {
   DndContext,
-  DragEndEvent,
+  type DragEndEvent,
   DragOverlay,
-  DragStartEvent,
+  type DragStartEvent,
   PointerSensor,
+  useDroppable,
   useSensor,
   useSensors,
-  useDroppable,
 } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import {
-  useSortable,
-} from "@dnd-kit/sortable";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Clock, User, MapPin, AlertTriangle, Wrench, CheckCircle } from "lucide-react";
+import { useMutation } from "convex/react";
+import { AlertTriangle, CheckCircle, Clock, MapPin, User, Wrench } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
 
 interface Job {
   _id: string;
@@ -66,14 +60,9 @@ const typeIcons: Record<string, any> = {
 };
 
 function JobCard({ job }: { job: Job }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: job._id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: job._id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -93,18 +82,32 @@ function JobCard({ job }: { job: Job }) {
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center space-x-2">
-          <div className={`p-1.5 rounded-lg ${
-            job.priority === "urgent" ? "bg-red-100" :
-            job.priority === "high" ? "bg-orange-100" :
-            job.priority === "medium" ? "bg-yellow-100" : "bg-green-100"
-          }`}>
-            <TypeIcon className={`w-4 h-4 ${
-              job.priority === "urgent" ? "text-red-600" :
-              job.priority === "high" ? "text-orange-600" :
-              job.priority === "medium" ? "text-yellow-600" : "text-green-600"
-            }`} />
+          <div
+            className={`p-1.5 rounded-lg ${
+              job.priority === "urgent"
+                ? "bg-red-100"
+                : job.priority === "high"
+                  ? "bg-orange-100"
+                  : job.priority === "medium"
+                    ? "bg-yellow-100"
+                    : "bg-green-100"
+            }`}
+          >
+            <TypeIcon
+              className={`w-4 h-4 ${
+                job.priority === "urgent"
+                  ? "text-red-600"
+                  : job.priority === "high"
+                    ? "text-orange-600"
+                    : job.priority === "medium"
+                      ? "text-yellow-600"
+                      : "text-green-600"
+              }`}
+            />
           </div>
-          <span className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColors[job.priority]}`}>
+          <span
+            className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColors[job.priority]}`}
+          >
             {job.priority}
           </span>
         </div>
@@ -120,7 +123,7 @@ function JobCard({ job }: { job: Job }) {
             {job.contact.name}
           </div>
         )}
-        
+
         {job.contact?.address && (
           <div className="flex items-center text-xs text-gray-500">
             <MapPin className="w-3 h-3 mr-1" />
@@ -131,7 +134,7 @@ function JobCard({ job }: { job: Job }) {
         {job.scheduledDate && (
           <div className="flex items-center text-xs text-gray-500">
             <Clock className="w-3 h-3 mr-1" />
-            {new Date(job.scheduledDate).toLocaleDateString('pl-PL')}
+            {new Date(job.scheduledDate).toLocaleDateString("pl-PL")}
             {job.estimatedHours && ` • ${job.estimatedHours}h`}
           </div>
         )}
@@ -144,12 +147,12 @@ function KanbanColumn({
   status,
   title,
   color,
-  jobs
+  jobs,
 }: {
   status: string;
   title: string;
   color: string;
-  jobs: Job[]
+  jobs: Job[];
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: status,
@@ -159,7 +162,7 @@ function KanbanColumn({
     <div
       ref={setNodeRef}
       className={`rounded-lg border-2 border-dashed ${color} p-4 min-h-[500px] transition-colors ${
-        isOver ? 'bg-blue-50 border-blue-300' : ''
+        isOver ? "bg-blue-50 border-blue-300" : ""
       }`}
     >
       <div className="flex items-center justify-between mb-4">
@@ -169,7 +172,7 @@ function KanbanColumn({
         </span>
       </div>
 
-      <SortableContext items={jobs.map(job => job._id)} strategy={verticalListSortingStrategy}>
+      <SortableContext items={jobs.map((job) => job._id)} strategy={verticalListSortingStrategy}>
         <div className="space-y-3">
           {jobs.map((job) => (
             <JobCard key={job._id} job={job} />
@@ -193,7 +196,7 @@ export function JobsKanban({ jobs }: JobsKanbanProps) {
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    const job = jobs.find(j => j._id === event.active.id);
+    const job = jobs.find((j) => j._id === event.active.id);
     setActiveJob(job || null);
   };
 
@@ -207,7 +210,7 @@ export function JobsKanban({ jobs }: JobsKanbanProps) {
     const newStatus = over.id as string;
 
     // Find the job being moved
-    const job = jobs.find(j => j._id === jobId);
+    const job = jobs.find((j) => j._id === jobId);
     if (!job || job.status === newStatus) return;
 
     try {
@@ -216,22 +219,18 @@ export function JobsKanban({ jobs }: JobsKanbanProps) {
         status: newStatus as any,
         completedDate: newStatus === "completed" ? Date.now() : undefined,
       });
-      toast.success(`Job moved to ${newStatus.replace('_', ' ')}`);
-    } catch (error) {
+      toast.success(`Job moved to ${newStatus.replace("_", " ")}`);
+    } catch (_error) {
       toast.error("Failed to update job status");
     }
   };
 
   const getJobsByStatus = (status: string) => {
-    return jobs.filter(job => job.status === status);
+    return jobs.filter((job) => job.status === status);
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
+    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statusColumns.map((column) => (
           <KanbanColumn
@@ -244,9 +243,7 @@ export function JobsKanban({ jobs }: JobsKanbanProps) {
         ))}
       </div>
 
-      <DragOverlay>
-        {activeJob ? <JobCard job={activeJob} /> : null}
-      </DragOverlay>
+      <DragOverlay>{activeJob ? <JobCard job={activeJob} /> : null}</DragOverlay>
     </DndContext>
   );
 }

@@ -1,22 +1,9 @@
-import { useState, useEffect } from "react";
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import { 
-  MapPin, 
-  Navigation, 
-  Phone, 
-  Clock, 
-  CheckCircle, 
-  AlertTriangle,
-  Menu,
-  X,
-  Locate,
-  Layers,
-  Route,
-  Home
-} from "lucide-react";
 import L from "leaflet";
+import { Clock, Home, Layers, Locate, Menu, Navigation, Phone, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { api } from "../../../convex/_generated/api";
 import "leaflet/dist/leaflet.css";
 
 // Mobile-specific Leaflet configuration
@@ -29,7 +16,7 @@ const mobileMapOptions = {
   scrollWheelZoom: false, // Disable on mobile to prevent page scroll issues
   dragging: true,
   maxZoom: 18,
-  minZoom: 10
+  minZoom: 10,
 };
 
 interface MobileMapInterfaceProps {
@@ -38,7 +25,11 @@ interface MobileMapInterfaceProps {
   onJobComplete?: (jobId: string) => void;
 }
 
-export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }: MobileMapInterfaceProps) {
+export function MobileMapInterface({
+  technicianId,
+  currentRoute,
+  onJobComplete,
+}: MobileMapInterfaceProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedJob, setSelectedJob] = useState<any>(null);
@@ -49,7 +40,7 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
   const todaysJobs = useQuery(api.jobs.list, {
     assignedToMe: true,
     scheduledAfter: new Date().setHours(0, 0, 0, 0),
-    scheduledBefore: new Date().setHours(23, 59, 59, 999)
+    scheduledBefore: new Date().setHours(23, 59, 59, 999),
   });
 
   // Track online/offline status
@@ -57,12 +48,12 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
@@ -73,7 +64,7 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
         (position) => {
           setCurrentLocation({
             lat: position.coords.latitude,
-            lng: position.coords.longitude
+            lng: position.coords.longitude,
           });
         },
         (error) => {
@@ -84,7 +75,7 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
         {
           enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: 60000 // Cache for 1 minute
+          maximumAge: 60000, // Cache for 1 minute
         }
       );
 
@@ -95,17 +86,17 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
   // Custom mobile-friendly markers
   const createMobileJobIcon = (job: any) => {
     const colors = {
-      urgent: '#EF4444',
-      high: '#F59E0B',
-      medium: '#3B82F6',
-      low: '#10B981'
+      urgent: "#EF4444",
+      high: "#F59E0B",
+      medium: "#3B82F6",
+      low: "#10B981",
     };
-    
+
     const statusIcons = {
-      scheduled: '📅',
-      in_progress: '🔧',
-      completed: '✅',
-      cancelled: '❌'
+      scheduled: "📅",
+      in_progress: "🔧",
+      completed: "✅",
+      cancelled: "❌",
     };
 
     return L.divIcon({
@@ -122,12 +113,12 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
           justify-content: center;
           font-size: 16px;
         ">
-          ${statusIcons[job.status as keyof typeof statusIcons] || '📍'}
+          ${statusIcons[job.status as keyof typeof statusIcons] || "📍"}
         </div>
       `,
-      className: 'mobile-job-marker',
+      className: "mobile-job-marker",
       iconSize: [36, 36],
-      iconAnchor: [18, 18]
+      iconAnchor: [18, 18],
     });
   };
 
@@ -151,9 +142,9 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
           }
         </style>
       `,
-      className: 'current-location-marker',
+      className: "current-location-marker",
       iconSize: [20, 20],
-      iconAnchor: [10, 10]
+      iconAnchor: [10, 10],
     });
   };
 
@@ -162,7 +153,7 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
     setIsMenuOpen(false);
   };
 
-  const handleJobComplete = (jobId: string) => {
+  const _handleJobComplete = (jobId: string) => {
     if (onJobComplete) {
       onJobComplete(jobId);
     }
@@ -171,12 +162,12 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
 
   const getJobStatusColor = (status: string) => {
     const colors = {
-      scheduled: 'bg-blue-100 text-blue-800',
-      in_progress: 'bg-yellow-100 text-yellow-800',
-      completed: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800'
+      scheduled: "bg-blue-100 text-blue-800",
+      in_progress: "bg-yellow-100 text-yellow-800",
+      completed: "bg-green-100 text-green-800",
+      cancelled: "bg-red-100 text-red-800",
     };
-    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+    return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800";
   };
 
   const mapCenter = currentLocation || { lat: 52.2297, lng: 21.0122 };
@@ -198,12 +189,10 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
         >
           {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
-        
+
         <div className="text-center">
           <h1 className="text-lg font-semibold text-gray-900">HVAC Mobile</h1>
-          <p className="text-sm text-gray-600">
-            {todaysJobs?.length || 0} jobs today
-          </p>
+          <p className="text-sm text-gray-600">{todaysJobs?.length || 0} jobs today</p>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -226,9 +215,10 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url={mapLayer === "satellite" 
-              ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-              : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            url={
+              mapLayer === "satellite"
+                ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             }
           />
 
@@ -250,42 +240,45 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
           )}
 
           {/* Job Markers */}
-          {todaysJobs?.map((job) => (
-            job.contact?.coordinates && (
-              <Marker
-                key={job._id}
-                position={[job.contact.coordinates.lat, job.contact.coordinates.lng]}
-                icon={createMobileJobIcon(job)}
-                eventHandlers={{
-                  click: () => handleJobSelect(job)
-                }}
-              >
-                <Popup>
-                  <div className="p-2 min-w-[200px]">
-                    <h3 className="font-semibold mb-2">{job.title}</h3>
-                    <p className="text-sm text-gray-600 mb-2">{job.contact?.address}</p>
-                    <div className="space-y-2">
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getJobStatusColor(job.status)}`}>
-                        {job.status.replace('_', ' ')}
-                      </span>
-                      <div className="flex items-center space-x-2 text-sm">
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        <span>{new Date(job.scheduledDate).toLocaleTimeString()}</span>
-                      </div>
-                      {job.contact?.phone && (
+          {todaysJobs?.map(
+            (job) =>
+              job.contact?.coordinates && (
+                <Marker
+                  key={job._id}
+                  position={[job.contact.coordinates.lat, job.contact.coordinates.lng]}
+                  icon={createMobileJobIcon(job)}
+                  eventHandlers={{
+                    click: () => handleJobSelect(job),
+                  }}
+                >
+                  <Popup>
+                    <div className="p-2 min-w-[200px]">
+                      <h3 className="font-semibold mb-2">{job.title}</h3>
+                      <p className="text-sm text-gray-600 mb-2">{job.contact?.address}</p>
+                      <div className="space-y-2">
+                        <span
+                          className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getJobStatusColor(job.status)}`}
+                        >
+                          {job.status.replace("_", " ")}
+                        </span>
                         <div className="flex items-center space-x-2 text-sm">
-                          <Phone className="w-4 h-4 text-gray-400" />
-                          <a href={`tel:${job.contact.phone}`} className="text-blue-600">
-                            {job.contact.phone}
-                          </a>
+                          <Clock className="w-4 h-4 text-gray-400" />
+                          <span>{new Date(job.scheduledDate).toLocaleTimeString()}</span>
                         </div>
-                      )}
+                        {job.contact?.phone && (
+                          <div className="flex items-center space-x-2 text-sm">
+                            <Phone className="w-4 h-4 text-gray-400" />
+                            <a href={`tel:${job.contact.phone}`} className="text-blue-600">
+                              {job.contact.phone}
+                            </a>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </Popup>
-              </Marker>
-            )
-          ))}
+                  </Popup>
+                </Marker>
+              )
+          )}
         </MapContainer>
 
         {/* Floating Action Buttons */}
@@ -301,14 +294,17 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
           >
             <Locate className="w-6 h-6" />
           </button>
-          
+
           {selectedJob && (
             <button
               onClick={() => {
                 // Open navigation to selected job
                 const coords = selectedJob.contact?.coordinates;
                 if (coords) {
-                  window.open(`https://maps.google.com/maps?daddr=${coords.lat},${coords.lng}`, '_blank');
+                  window.open(
+                    `https://maps.google.com/maps?daddr=${coords.lat},${coords.lng}`,
+                    "_blank"
+                  );
                 }
               }}
               className="w-12 h-12 bg-green-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-green-700 transition-colors"
@@ -321,8 +317,11 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
 
       {/* Slide-out Menu */}
       {isMenuOpen && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 z-50" onClick={() => setIsMenuOpen(false)}>
-          <div 
+        <div
+          className="absolute inset-0 bg-black bg-opacity-50 z-50"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          <div
             className="absolute left-0 top-0 bottom-0 w-80 bg-white shadow-xl transform transition-transform"
             onClick={(e) => e.stopPropagation()}
           >
@@ -330,7 +329,7 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
               <h2 className="text-lg font-semibold text-gray-900">Today's Jobs</h2>
               <p className="text-sm text-gray-600">{todaysJobs?.length || 0} scheduled</p>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto">
               {todaysJobs?.map((job) => (
                 <div
@@ -340,13 +339,15 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
                 >
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="font-medium text-gray-900 text-sm">{job.title}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getJobStatusColor(job.status)}`}>
-                      {job.status.replace('_', ' ')}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getJobStatusColor(job.status)}`}
+                    >
+                      {job.status.replace("_", " ")}
                     </span>
                   </div>
-                  
+
                   <p className="text-sm text-gray-600 mb-2">{job.contact?.address}</p>
-                  
+
                   <div className="flex items-center space-x-4 text-xs text-gray-500">
                     <div className="flex items-center space-x-1">
                       <Clock className="w-3 h-3" />
@@ -361,7 +362,7 @@ export function MobileMapInterface({ technicianId, currentRoute, onJobComplete }
                   </div>
                 </div>
               ))}
-              
+
               {(!todaysJobs || todaysJobs.length === 0) && (
                 <div className="p-8 text-center text-gray-500">
                   <Home className="w-12 h-12 text-gray-300 mx-auto mb-3" />

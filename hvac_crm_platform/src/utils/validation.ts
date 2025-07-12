@@ -1,6 +1,6 @@
 /**
  * 🔒 Comprehensive Form Validation Utilities - 137/137 Godlike Quality
- * 
+ *
  * Features:
  * - Input sanitization and XSS protection
  * - Polish-specific validation (NIP, phone numbers, addresses)
@@ -11,7 +11,7 @@
  * - Accessibility-first error handling
  */
 
-import DOMPurify from 'dompurify';
+import DOMPurify from "dompurify";
 
 // ============================================================================
 // VALIDATION RESULT TYPES
@@ -50,20 +50,20 @@ export interface FieldValidationConfig {
  * Sanitize input to prevent XSS attacks
  */
 export function sanitizeInput(input: string): string {
-  if (typeof input !== 'string') return '';
-  
+  if (typeof input !== "string") return "";
+
   // Remove potentially dangerous characters and scripts
   const sanitized = DOMPurify.sanitize(input, {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
-    KEEP_CONTENT: true
+    KEEP_CONTENT: true,
   });
-  
+
   // Additional sanitization for common attack vectors
   return sanitized
-    .replace(/[<>]/g, '') // Remove angle brackets
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, '') // Remove event handlers
+    .replace(/[<>]/g, "") // Remove angle brackets
+    .replace(/javascript:/gi, "") // Remove javascript: protocol
+    .replace(/on\w+=/gi, "") // Remove event handlers
     .trim();
 }
 
@@ -78,7 +78,7 @@ export function sanitizeEmail(email: string): string {
  * Sanitize phone numbers (Polish format)
  */
 export function sanitizePhoneNumber(phone: string): string {
-  return sanitizeInput(phone).replace(/[^\d+\-\s()]/g, '');
+  return sanitizeInput(phone).replace(/[^\d+\-\s()]/g, "");
 }
 
 // ============================================================================
@@ -89,54 +89,54 @@ export function sanitizePhoneNumber(phone: string): string {
  * Validate Polish NIP (Tax ID)
  */
 export function validatePolishNIP(nip: string): ValidationResult {
-  const sanitizedNip = sanitizeInput(nip).replace(/[\s-]/g, '');
-  
+  const sanitizedNip = sanitizeInput(nip).replace(/[\s-]/g, "");
+
   if (!sanitizedNip) {
     return {
       isValid: false,
-      errors: ['NIP is required'],
+      errors: ["NIP is required"],
       warnings: [],
       accessibility: {
-        ariaLabel: 'Invalid NIP format',
-        role: 'alert'
-      }
+        ariaLabel: "Invalid NIP format",
+        role: "alert",
+      },
     };
   }
 
   if (!/^\d{10}$/.test(sanitizedNip)) {
     return {
       isValid: false,
-      errors: ['NIP must be exactly 10 digits'],
+      errors: ["NIP must be exactly 10 digits"],
       warnings: [],
       accessibility: {
-        ariaLabel: 'NIP format error: must be 10 digits',
-        role: 'alert'
-      }
+        ariaLabel: "NIP format error: must be 10 digits",
+        role: "alert",
+      },
     };
   }
 
   // Calculate checksum
   const weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
   let sum = 0;
-  
+
   for (let i = 0; i < 9; i++) {
-    sum += parseInt(sanitizedNip[i]) * weights[i];
+    sum += Number.parseInt(sanitizedNip[i]) * weights[i];
   }
-  
+
   const checksum = sum % 11;
-  const lastDigit = parseInt(sanitizedNip[9]);
-  
+  const lastDigit = Number.parseInt(sanitizedNip[9]);
+
   const isValid = checksum === lastDigit;
-  
+
   return {
     isValid,
-    errors: isValid ? [] : ['Invalid NIP checksum'],
+    errors: isValid ? [] : ["Invalid NIP checksum"],
     warnings: [],
     sanitizedValue: sanitizedNip,
     accessibility: {
-      ariaLabel: isValid ? 'Valid NIP' : 'Invalid NIP checksum',
-      role: isValid ? 'status' : 'alert'
-    }
+      ariaLabel: isValid ? "Valid NIP" : "Invalid NIP checksum",
+      role: isValid ? "status" : "alert",
+    },
   };
 }
 
@@ -145,37 +145,37 @@ export function validatePolishNIP(nip: string): ValidationResult {
  */
 export function validatePolishPhone(phone: string): ValidationResult {
   const sanitizedPhone = sanitizePhoneNumber(phone);
-  const cleanPhone = sanitizedPhone.replace(/[\s\-()]/g, '');
-  
+  const cleanPhone = sanitizedPhone.replace(/[\s\-()]/g, "");
+
   if (!cleanPhone) {
     return {
       isValid: false,
-      errors: ['Phone number is required'],
+      errors: ["Phone number is required"],
       warnings: [],
       accessibility: {
-        ariaLabel: 'Phone number required',
-        role: 'alert'
-      }
+        ariaLabel: "Phone number required",
+        role: "alert",
+      },
     };
   }
 
   // Polish phone number patterns
   const patterns = [
     /^(\+48)?[4-8]\d{8}$/, // Mobile numbers
-    /^(\+48)?(12|13|14|15|16|17|18|22|23|24|25|29|32|33|34|41|42|43|44|46|48|52|54|55|56|58|59|61|62|63|65|67|68|71|74|75|76|77|81|82|83|84|85|86|87|89|91|94|95)\d{7}$/ // Landline numbers
+    /^(\+48)?(12|13|14|15|16|17|18|22|23|24|25|29|32|33|34|41|42|43|44|46|48|52|54|55|56|58|59|61|62|63|65|67|68|71|74|75|76|77|81|82|83|84|85|86|87|89|91|94|95)\d{7}$/, // Landline numbers
   ];
 
-  const isValid = patterns.some(pattern => pattern.test(cleanPhone));
-  
+  const isValid = patterns.some((pattern) => pattern.test(cleanPhone));
+
   return {
     isValid,
-    errors: isValid ? [] : ['Invalid Polish phone number format'],
-    warnings: !cleanPhone.startsWith('+48') ? ['Consider adding country code (+48)'] : [],
+    errors: isValid ? [] : ["Invalid Polish phone number format"],
+    warnings: !cleanPhone.startsWith("+48") ? ["Consider adding country code (+48)"] : [],
     sanitizedValue: cleanPhone,
     accessibility: {
-      ariaLabel: isValid ? 'Valid phone number' : 'Invalid phone number format',
-      role: isValid ? 'status' : 'alert'
-    }
+      ariaLabel: isValid ? "Valid phone number" : "Invalid phone number format",
+      role: isValid ? "status" : "alert",
+    },
   };
 }
 
@@ -184,49 +184,52 @@ export function validatePolishPhone(phone: string): ValidationResult {
  */
 export function validateWarsawAddress(address: string): ValidationResult {
   const sanitizedAddress = sanitizeInput(address);
-  
+
   if (!sanitizedAddress) {
     return {
       isValid: false,
-      errors: ['Address is required'],
+      errors: ["Address is required"],
       warnings: [],
       accessibility: {
-        ariaLabel: 'Address required',
-        role: 'alert'
-      }
+        ariaLabel: "Address required",
+        role: "alert",
+      },
     };
   }
 
   if (sanitizedAddress.length < 5) {
     return {
       isValid: false,
-      errors: ['Address is too short (minimum 5 characters)'],
+      errors: ["Address is too short (minimum 5 characters)"],
       warnings: [],
       accessibility: {
-        ariaLabel: 'Address too short',
-        role: 'alert'
-      }
+        ariaLabel: "Address too short",
+        role: "alert",
+      },
     };
   }
 
   // Check for Warsaw-specific patterns
   const warsawPatterns = [
-    /ul\./i, /al\./i, /pl\./i, // Street types
-    /warszawa/i, /warsaw/i, // City names
-    /\d{2}-\d{3}/ // Polish postal code
+    /ul\./i,
+    /al\./i,
+    /pl\./i, // Street types
+    /warszawa/i,
+    /warsaw/i, // City names
+    /\d{2}-\d{3}/, // Polish postal code
   ];
 
-  const hasWarsawPattern = warsawPatterns.some(pattern => pattern.test(sanitizedAddress));
-  
+  const hasWarsawPattern = warsawPatterns.some((pattern) => pattern.test(sanitizedAddress));
+
   return {
     isValid: true,
     errors: [],
-    warnings: !hasWarsawPattern ? ['Address may not be in Warsaw format'] : [],
+    warnings: !hasWarsawPattern ? ["Address may not be in Warsaw format"] : [],
     sanitizedValue: sanitizedAddress,
     accessibility: {
-      ariaLabel: 'Valid address format',
-      role: 'status'
-    }
+      ariaLabel: "Valid address format",
+      role: "status",
+    },
   };
 }
 
@@ -239,31 +242,31 @@ export function validateWarsawAddress(address: string): ValidationResult {
  */
 export function validateEmail(email: string): ValidationResult {
   const sanitizedEmail = sanitizeEmail(email);
-  
+
   if (!sanitizedEmail) {
     return {
       isValid: false,
-      errors: ['Email is required'],
+      errors: ["Email is required"],
       warnings: [],
       accessibility: {
-        ariaLabel: 'Email required',
-        role: 'alert'
-      }
+        ariaLabel: "Email required",
+        role: "alert",
+      },
     };
   }
 
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const isValid = emailPattern.test(sanitizedEmail);
-  
+
   return {
     isValid,
-    errors: isValid ? [] : ['Invalid email format'],
+    errors: isValid ? [] : ["Invalid email format"],
     warnings: [],
     sanitizedValue: sanitizedEmail,
     accessibility: {
-      ariaLabel: isValid ? 'Valid email format' : 'Invalid email format',
-      role: isValid ? 'status' : 'alert'
-    }
+      ariaLabel: isValid ? "Valid email format" : "Invalid email format",
+      role: isValid ? "status" : "alert",
+    },
   };
 }
 
@@ -271,18 +274,20 @@ export function validateEmail(email: string): ValidationResult {
  * Validate required fields
  */
 export function validateRequired(value: any, fieldName: string): ValidationResult {
-  const isEmpty = value === null || value === undefined || 
-                  (typeof value === 'string' && value.trim() === '') ||
-                  (Array.isArray(value) && value.length === 0);
-  
+  const isEmpty =
+    value === null ||
+    value === undefined ||
+    (typeof value === "string" && value.trim() === "") ||
+    (Array.isArray(value) && value.length === 0);
+
   return {
     isValid: !isEmpty,
     errors: isEmpty ? [`${fieldName} is required`] : [],
     warnings: [],
     accessibility: {
       ariaLabel: isEmpty ? `${fieldName} is required` : `${fieldName} provided`,
-      role: isEmpty ? 'alert' : 'status'
-    }
+      role: isEmpty ? "alert" : "status",
+    },
   };
 }
 
@@ -290,31 +295,31 @@ export function validateRequired(value: any, fieldName: string): ValidationResul
  * Validate numeric values with range
  */
 export function validateNumeric(
-  value: string | number, 
-  min?: number, 
+  value: string | number,
+  min?: number,
   max?: number,
-  fieldName: string = 'Value'
+  fieldName = "Value"
 ): ValidationResult {
-  const numValue = typeof value === 'string' ? parseFloat(value) : value;
-  
-  if (isNaN(numValue)) {
+  const numValue = typeof value === "string" ? Number.parseFloat(value) : value;
+
+  if (Number.isNaN(numValue)) {
     return {
       isValid: false,
       errors: [`${fieldName} must be a valid number`],
       warnings: [],
       accessibility: {
         ariaLabel: `${fieldName} must be a number`,
-        role: 'alert'
-      }
+        role: "alert",
+      },
     };
   }
 
   const errors: string[] = [];
-  
+
   if (min !== undefined && numValue < min) {
     errors.push(`${fieldName} must be at least ${min}`);
   }
-  
+
   if (max !== undefined && numValue > max) {
     errors.push(`${fieldName} must be no more than ${max}`);
   }
@@ -325,9 +330,9 @@ export function validateNumeric(
     warnings: [],
     sanitizedValue: numValue,
     accessibility: {
-      ariaLabel: errors.length === 0 ? `Valid ${fieldName}` : errors.join(', '),
-      role: errors.length === 0 ? 'status' : 'alert'
-    }
+      ariaLabel: errors.length === 0 ? `Valid ${fieldName}` : errors.join(", "),
+      role: errors.length === 0 ? "status" : "alert",
+    },
   };
 }
 
@@ -341,8 +346,8 @@ export function validateGDPRConsent(consent: boolean, consentType: string): Vali
     warnings: [],
     accessibility: {
       ariaLabel: consent ? `${consentType} consent given` : `${consentType} consent required`,
-      role: consent ? 'status' : 'alert'
-    }
+      role: consent ? "status" : "alert",
+    },
   };
 }
 
@@ -355,31 +360,31 @@ export function validateGDPRConsent(consent: boolean, consentType: string): Vali
  */
 export function validateSerialNumber(serialNumber: string): ValidationResult {
   const sanitized = sanitizeInput(serialNumber).toUpperCase();
-  
+
   if (!sanitized) {
     return {
       isValid: false,
-      errors: ['Serial number is required'],
+      errors: ["Serial number is required"],
       warnings: [],
       accessibility: {
-        ariaLabel: 'Serial number required',
-        role: 'alert'
-      }
+        ariaLabel: "Serial number required",
+        role: "alert",
+      },
     };
   }
 
   // Basic serial number pattern (alphanumeric, 6-20 characters)
   const isValid = /^[A-Z0-9]{6,20}$/.test(sanitized);
-  
+
   return {
     isValid,
-    errors: isValid ? [] : ['Serial number must be 6-20 alphanumeric characters'],
+    errors: isValid ? [] : ["Serial number must be 6-20 alphanumeric characters"],
     warnings: [],
     sanitizedValue: sanitized,
     accessibility: {
-      ariaLabel: isValid ? 'Valid serial number' : 'Invalid serial number format',
-      role: isValid ? 'status' : 'alert'
-    }
+      ariaLabel: isValid ? "Valid serial number" : "Invalid serial number format",
+      role: isValid ? "status" : "alert",
+    },
   };
 }
 
@@ -387,27 +392,27 @@ export function validateSerialNumber(serialNumber: string): ValidationResult {
  * Validate HVAC equipment prices (Polish VAT included)
  */
 export function validateHVACPrice(price: string | number): ValidationResult {
-  const result = validateNumeric(price, 0, 1000000, 'Price');
-  
+  const result = validateNumeric(price, 0, 1000000, "Price");
+
   if (!result.isValid) {
     return result;
   }
 
   const numPrice = result.sanitizedValue as number;
-  
+
   // Add warnings for unusual prices
   const warnings: string[] = [];
   if (numPrice < 100) {
-    warnings.push('Price seems unusually low for HVAC equipment');
+    warnings.push("Price seems unusually low for HVAC equipment");
   }
   if (numPrice > 50000) {
-    warnings.push('Price seems unusually high - please verify');
+    warnings.push("Price seems unusually high - please verify");
   }
 
   return {
     ...result,
     warnings,
-    sanitizedValue: Math.round(numPrice * 100) / 100 // Round to 2 decimal places
+    sanitizedValue: Math.round(numPrice * 100) / 100, // Round to 2 decimal places
   };
 }
 
@@ -448,7 +453,7 @@ export function validateForm(
     }
 
     // Skip further validation if field is empty and not required
-    if (!value && !config.required) {
+    if (!(value || config.required)) {
       continue;
     }
 
@@ -461,12 +466,12 @@ export function validateForm(
         isValid: true,
         errors: [],
         warnings: [],
-        sanitizedValue: config.sanitize ? sanitizeInput(value) : value
+        sanitizedValue: config.sanitize ? sanitizeInput(value) : value,
       };
     }
 
     // Length validation
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       if (config.minLength && value.length < config.minLength) {
         result.errors.push(`Minimum length is ${config.minLength} characters`);
         result.isValid = false;
@@ -478,8 +483,8 @@ export function validateForm(
     }
 
     // Pattern validation
-    if (config.pattern && typeof value === 'string' && !config.pattern.test(value)) {
-      result.errors.push('Invalid format');
+    if (config.pattern && typeof value === "string" && !config.pattern.test(value)) {
+      result.errors.push("Invalid format");
       result.isValid = false;
     }
 
@@ -502,6 +507,6 @@ export function validateForm(
     errors,
     warnings,
     sanitizedData,
-    accessibility
+    accessibility,
   };
 }

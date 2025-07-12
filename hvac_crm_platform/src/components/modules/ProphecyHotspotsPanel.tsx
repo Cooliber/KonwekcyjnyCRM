@@ -1,19 +1,18 @@
-import { useState, useEffect } from "react";
 import { useAction } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { 
-  Brain, 
-  Zap, 
-  TrendingUp, 
-  MapPin, 
-  Clock, 
-  DollarSign,
-  RefreshCw,
+import {
   AlertTriangle,
+  Brain,
+  DollarSign,
+  MapPin,
+  RefreshCw,
+  Sparkles,
   Target,
-  Sparkles
+  TrendingUp,
+  Zap,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
 
 interface HotspotPrediction {
   district: string;
@@ -31,7 +30,10 @@ interface ProphecyHotspotsPanelProps {
   selectedDistrict?: string;
 }
 
-export function ProphecyHotspotsPanel({ onHotspotsGenerated, selectedDistrict }: ProphecyHotspotsPanelProps) {
+export function ProphecyHotspotsPanel({
+  onHotspotsGenerated,
+  selectedDistrict,
+}: ProphecyHotspotsPanelProps) {
   const [hotspots, setHotspots] = useState<HotspotPrediction[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [timeframe, setTimeframe] = useState<"week" | "month" | "season">("month");
@@ -46,13 +48,13 @@ export function ProphecyHotspotsPanel({ onHotspotsGenerated, selectedDistrict }:
       const result = await predictHotspots({
         timeframe,
         season,
-        district: selectedDistrict
+        district: selectedDistrict,
       });
 
       setHotspots(result.hotspots);
       setMetadata(result.metadata);
       onHotspotsGenerated(result.hotspots);
-      
+
       toast.success(`🔮 Prophecy complete! Found ${result.hotspots.length} service hotspots`);
     } catch (error) {
       console.error("Hotspot prediction failed:", error);
@@ -65,7 +67,7 @@ export function ProphecyHotspotsPanel({ onHotspotsGenerated, selectedDistrict }:
   // Auto-generate hotspots on component mount
   useEffect(() => {
     handleGenerateHotspots();
-  }, [selectedDistrict]);
+  }, [handleGenerateHotspots]);
 
   const getDemandColor = (demand: number) => {
     if (demand >= 0.8) return "text-red-600 bg-red-100";
@@ -99,15 +101,16 @@ export function ProphecyHotspotsPanel({ onHotspotsGenerated, selectedDistrict }:
             <p className="text-sm text-gray-600">AI-powered service hotspot predictions</p>
           </div>
         </div>
-        
+
         <button
           onClick={handleGenerateHotspots}
           disabled={isGenerating}
           className={`
             flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors
-            ${isGenerating
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-purple-600 text-white hover:bg-purple-700'
+            ${
+              isGenerating
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-purple-600 text-white hover:bg-purple-700"
             }
           `}
         >
@@ -143,9 +146,7 @@ export function ProphecyHotspotsPanel({ onHotspotsGenerated, selectedDistrict }:
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Season Context
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Season Context</label>
           <select
             value={season}
             onChange={(e) => setSeason(e.target.value as any)}
@@ -179,7 +180,9 @@ export function ProphecyHotspotsPanel({ onHotspotsGenerated, selectedDistrict }:
             </div>
             <div>
               <p className="text-purple-600 font-medium">Timeframe</p>
-              <p className="text-purple-900 font-semibold capitalize">{metadata.analysisTimeframe}</p>
+              <p className="text-purple-900 font-semibold capitalize">
+                {metadata.analysisTimeframe}
+              </p>
             </div>
           </div>
         </div>
@@ -200,7 +203,7 @@ export function ProphecyHotspotsPanel({ onHotspotsGenerated, selectedDistrict }:
           </div>
         ) : (
           <div className="space-y-3">
-            {hotspots.map((hotspot, index) => (
+            {hotspots.map((hotspot, _index) => (
               <div key={hotspot.district} className="border border-gray-200 rounded-lg p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center space-x-3">
@@ -208,7 +211,9 @@ export function ProphecyHotspotsPanel({ onHotspotsGenerated, selectedDistrict }:
                       <MapPin className="w-4 h-4 text-gray-400" />
                       <h5 className="font-medium text-gray-900">{hotspot.district}</h5>
                     </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDemandColor(hotspot.predictedDemand)}`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getDemandColor(hotspot.predictedDemand)}`}
+                    >
                       {getDemandLabel(hotspot.predictedDemand)} Demand
                     </span>
                   </div>
@@ -231,12 +236,16 @@ export function ProphecyHotspotsPanel({ onHotspotsGenerated, selectedDistrict }:
                   <div className="flex items-center space-x-2 text-sm">
                     <DollarSign className="w-4 h-4 text-green-600" />
                     <span className="text-gray-600">Affluence:</span>
-                    <span className="font-medium">{Math.round(hotspot.affluenceFactor * 100)}%</span>
+                    <span className="font-medium">
+                      {Math.round(hotspot.affluenceFactor * 100)}%
+                    </span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm">
                     <Zap className="w-4 h-4 text-orange-600" />
                     <span className="text-gray-600">Services:</span>
-                    <span className="font-medium">{hotspot.serviceTypes.slice(0, 2).join(", ")}</span>
+                    <span className="font-medium">
+                      {hotspot.serviceTypes.slice(0, 2).join(", ")}
+                    </span>
                   </div>
                 </div>
 

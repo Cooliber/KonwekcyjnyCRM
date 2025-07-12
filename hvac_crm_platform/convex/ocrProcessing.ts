@@ -1,12 +1,12 @@
-import { action, mutation, query } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
 import { api } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
+import { action, mutation, query } from "./_generated/server";
 
 /**
  * 🔮 Advanced OCR Processing System - 137/137 Godlike Quality
- * 
+ *
  * Features:
  * - 99% accuracy OCR for Polish invoices and documents
  * - Intelligent data extraction and categorization
@@ -21,10 +21,11 @@ import type { Id } from "./_generated/dataModel";
 // Enhanced OCR configuration for Polish documents
 const _OCR_CONFIG = {
   TESSERACT_OPTIONS: {
-    lang: 'pol+eng', // Polish + English language support
+    lang: "pol+eng", // Polish + English language support
     oem: 1, // LSTM OCR Engine Mode
     psm: 6, // Assume a single uniform block of text
-    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzĄĆĘŁŃÓŚŹŻąćęłńóśźż0123456789.,;:!?-()[]{}/@#$%^&*+=|\\<>"\' ',
+    tessedit_char_whitelist:
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzĄĆĘŁŃÓŚŹŻąćęłńóśźż0123456789.,;:!?-()[]{}/@#$%^&*+=|\\<>\"' ",
   },
   CONFIDENCE_THRESHOLD: 85, // Minimum confidence for reliable extraction
   POLISH_VAT_PATTERNS: {
@@ -34,12 +35,12 @@ const _OCR_CONFIG = {
     AMOUNT: /\b\d{1,3}(?:\s?\d{3})*(?:[,.]\d{2})?\s?(?:PLN|zł)\b/g,
   },
   DOCUMENT_TYPES: {
-    INVOICE: 'faktura',
-    RECEIPT: 'paragon',
-    CONTRACT: 'umowa',
-    BANK_STATEMENT: 'wyciąg',
-    QUOTE: 'oferta',
-  }
+    INVOICE: "faktura",
+    RECEIPT: "paragon",
+    CONTRACT: "umowa",
+    BANK_STATEMENT: "wyciąg",
+    QUOTE: "oferta",
+  },
 };
 
 // Polish invoice data extraction patterns
@@ -86,12 +87,14 @@ export const processDocumentWithAdvancedOCR = action({
     ),
     contactId: v.optional(v.id("contacts")),
     jobId: v.optional(v.id("jobs")),
-    processingOptions: v.optional(v.object({
-      enhanceImage: v.optional(v.boolean()),
-      useAIAssistance: v.optional(v.boolean()),
-      extractStructuredData: v.optional(v.boolean()),
-      validatePolishCompliance: v.optional(v.boolean()),
-    }))
+    processingOptions: v.optional(
+      v.object({
+        enhanceImage: v.optional(v.boolean()),
+        useAIAssistance: v.optional(v.boolean()),
+        extractStructuredData: v.optional(v.boolean()),
+        validatePolishCompliance: v.optional(v.boolean()),
+      })
+    ),
   },
   handler: async (ctx, _args): Promise<any> => {
     const userId = await getAuthUserId(_ctx);
@@ -151,12 +154,13 @@ export const processDocumentWithAdvancedOCR = action({
         confidence,
         insights,
         processingTime: Date.now(),
-        status: 'completed'
+        status: "completed",
       };
-
     } catch (error) {
       console.error("OCR processing failed:", error);
-      throw new Error(`Document processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Document processing failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
   },
 });
@@ -236,25 +240,23 @@ export const getOCRDocuments = query({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const _query = ctx.db.query("ocrDocuments");
+    let query = ctx.db.query("ocrDocuments");
 
     // Apply filters
     if (args.contactId) {
-      query = query.filter(q => q.eq(q.field("relatedContactId"), args.contactId));
+      query = query.filter((q) => q.eq(q.field("relatedContactId"), args.contactId));
     }
     if (args.jobId) {
-      query = query.filter(q => q.eq(q.field("relatedJobId"), args.jobId));
+      query = query.filter((q) => q.eq(q.field("relatedJobId"), args.jobId));
     }
     if (args.documentType) {
-      query = query.filter(q => q.eq(q.field("documentType"), args.documentType));
+      query = query.filter((q) => q.eq(q.field("documentType"), args.documentType));
     }
     if (args.processed !== undefined) {
-      query = query.filter(q => q.eq(q.field("processed"), args.processed));
+      query = query.filter((q) => q.eq(q.field("processed"), args.processed));
     }
 
-    const documents = await query
-      .order("desc")
-      .take(args.limit || 50);
+    const documents = await query.order("desc").take(args.limit || 50);
 
     return documents;
   },
@@ -275,7 +277,10 @@ export const getOCRDocument = query({
 });
 
 // Polish invoice processing function
-async function processPolishInvoice(fileUrl: string, options?: any): Promise<{ data: PolishInvoiceData; confidence: number }> {
+async function processPolishInvoice(
+  _fileUrl: string,
+  _options?: any
+): Promise<{ data: PolishInvoiceData; confidence: number }> {
   try {
     // Simulate advanced OCR processing for Polish invoices
     // In production, this would use Tesseract.js or cloud OCR service
@@ -294,19 +299,19 @@ async function processPolishInvoice(fileUrl: string, options?: any): Promise<{ d
         {
           description: "Montaż klimatyzacji split 3.5kW",
           quantity: 1,
-          unitPrice: 2500.00,
-          netValue: 2500.00,
+          unitPrice: 2500.0,
+          netValue: 2500.0,
           vatRate: 23,
-          vatAmount: 575.00,
-          grossValue: 3075.00
-        }
+          vatAmount: 575.0,
+          grossValue: 3075.0,
+        },
       ],
-      netAmount: 2500.00,
-      vatAmount: 575.00,
-      grossAmount: 3075.00,
+      netAmount: 2500.0,
+      vatAmount: 575.0,
+      grossAmount: 3075.0,
       vatRate: 23,
       paymentMethod: "przelew",
-      bankAccount: "12 3456 7890 1234 5678 9012 3456"
+      bankAccount: "12 3456 7890 1234 5678 9012 3456",
     };
 
     // Extract text patterns using Polish VAT patterns
@@ -314,7 +319,7 @@ async function processPolishInvoice(fileUrl: string, options?: any): Promise<{ d
 
     return {
       data: mockInvoiceData,
-      confidence
+      confidence,
     };
   } catch (error) {
     console.error("Polish invoice processing failed:", error);
@@ -323,27 +328,30 @@ async function processPolishInvoice(fileUrl: string, options?: any): Promise<{ d
 }
 
 // Contract processing function
-async function processContract(fileUrl: string, options?: any): Promise<{ data: any; confidence: number }> {
+async function processContract(
+  _fileUrl: string,
+  _options?: any
+): Promise<{ data: any; confidence: number }> {
   try {
     const mockContractData = {
       contractNumber: "UMW/2024/001",
       contractType: "Umowa serwisowa",
       parties: {
         contractor: "HVAC Pro Sp. z o.o.",
-        client: "Klient Testowy Sp. z o.o."
+        client: "Klient Testowy Sp. z o.o.",
       },
       startDate: "2024-01-01",
       endDate: "2024-12-31",
-      value: 12000.00,
+      value: 12000.0,
       currency: "PLN",
       paymentTerms: "30 dni",
       scope: "Serwis klimatyzacji - przeglądy kwartalne",
-      specialConditions: []
+      specialConditions: [],
     };
 
     return {
       data: mockContractData,
-      confidence: 90
+      confidence: 90,
     };
   } catch (error) {
     console.error("Contract processing failed:", error);
@@ -352,7 +360,10 @@ async function processContract(fileUrl: string, options?: any): Promise<{ data: 
 }
 
 // Generic document processing
-async function processGenericDocument(fileUrl: string, options?: any): Promise<{ data: any; confidence: number }> {
+async function processGenericDocument(
+  _fileUrl: string,
+  _options?: any
+): Promise<{ data: any; confidence: number }> {
   try {
     const mockGenericData = {
       documentType: "generic",
@@ -362,15 +373,15 @@ async function processGenericDocument(fileUrl: string, options?: any): Promise<{
         dates: ["2024-01-15"],
         amounts: ["2500.00 PLN"],
         companies: ["HVAC Pro"],
-        addresses: ["Warszawa"]
+        addresses: ["Warszawa"],
       },
       language: "pl",
-      confidence: 85
+      confidence: 85,
     };
 
     return {
       data: mockGenericData,
-      confidence: 85
+      confidence: 85,
     };
   } catch (error) {
     console.error("Generic document processing failed:", error);
@@ -379,12 +390,16 @@ async function processGenericDocument(fileUrl: string, options?: any): Promise<{
 }
 
 // Invoice matching function
-async function attemptInvoiceMatching(ctx: any, ocrDocumentId: Id<"ocrDocuments">, extractedData: any) {
+async function attemptInvoiceMatching(
+  ctx: any,
+  ocrDocumentId: Id<"ocrDocuments">,
+  extractedData: any
+) {
   try {
     // Search for existing contacts by NIP
     if (extractedData.sellerNIP) {
       const contacts = await ctx.runQuery(api.contacts.searchByNIP, {
-        nip: extractedData.sellerNIP
+        nip: extractedData.sellerNIP,
       });
 
       if (contacts.length > 0) {
@@ -392,7 +407,7 @@ async function attemptInvoiceMatching(ctx: any, ocrDocumentId: Id<"ocrDocuments"
         await ctx.db.patch(ocrDocumentId, {
           extractedData: {
             ...extractedData,
-            matchedContactId: contacts[0]._id
+            matchedContactId: contacts[0]._id,
           },
           confidence: extractedData.confidence || 90,
           processed: true,
@@ -417,7 +432,7 @@ async function generateDocumentInsights(extractedData: any, documentType: string
     recommendations: [] as string[],
     warnings: [] as string[],
     nextActions: [] as string[],
-    confidence: extractedData.confidence || 0
+    confidence: extractedData.confidence || 0,
   };
 
   if (documentType === "invoice") {
@@ -443,13 +458,16 @@ async function generateDocumentInsights(extractedData: any, documentType: string
 }
 
 // Internal helper functions for database operations
-async function createOCRDocumentInternal(ctx: any, args: {
-  fileName: string;
-  fileId: Id<"_storage">;
-  documentType: string;
-  contactId?: Id<"contacts">;
-  jobId?: Id<"jobs">;
-}): Promise<Id<"ocrDocuments">> {
+async function createOCRDocumentInternal(
+  ctx: any,
+  args: {
+    fileName: string;
+    fileId: Id<"_storage">;
+    documentType: string;
+    contactId?: Id<"contacts">;
+    jobId?: Id<"jobs">;
+  }
+): Promise<Id<"ocrDocuments">> {
   const userId = await getAuthUserId(ctx);
   if (!userId) throw new Error("Not authenticated");
 
@@ -462,11 +480,14 @@ async function createOCRDocumentInternal(ctx: any, args: {
   });
 }
 
-async function updateOCRDocumentInternal(ctx: any, args: {
-  id: Id<"ocrDocuments">;
-  extractedData: any;
-  confidence: number;
-  processed: boolean;
-}): Promise<void> {
+async function updateOCRDocumentInternal(
+  ctx: any,
+  args: {
+    id: Id<"ocrDocuments">;
+    extractedData: any;
+    confidence: number;
+    processed: boolean;
+  }
+): Promise<void> {
   await ctx.runMutation(updateOCRDocument, args);
 }

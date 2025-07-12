@@ -1,19 +1,17 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
-import { 
-  MapPin, 
-  DollarSign, 
-  Calendar, 
-  Route,
+import {
   Brain,
-  TrendingUp,
-  Thermometer,
+  Calendar,
+  DollarSign,
+  Info,
+  MapPin,
   Navigation,
+  Route,
   Star,
-  Info
-} from 'lucide-react';
-
+  Thermometer,
+  TrendingUp,
+} from "lucide-react";
+import { Button } from "../../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 
 interface WarsawDistrict {
   value: string;
@@ -35,49 +33,49 @@ interface WarsawSettingsPanelProps {
 
 export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelProps) {
   const warsawDistricts: WarsawDistrict[] = [
-    { value: '', label: 'All Districts' },
-    { value: 'Śródmieście', label: 'Śródmieście', affluence: 1.5 },
-    { value: 'Mokotów', label: 'Mokotów', affluence: 1.3 },
-    { value: 'Żoliborz', label: 'Żoliborz', affluence: 1.2 },
-    { value: 'Ochota', label: 'Ochota', affluence: 1.1 },
-    { value: 'Wola', label: 'Wola', affluence: 1.0 },
-    { value: 'Praga-Północ', label: 'Praga-Północ', affluence: 0.9 },
-    { value: 'Praga-Południe', label: 'Praga-Południe', affluence: 0.8 },
-    { value: 'Targówek', label: 'Targówek', affluence: 0.8 },
-    { value: 'Bemowo', label: 'Bemowo', affluence: 0.9 },
-    { value: 'Ursynów', label: 'Ursynów', affluence: 1.2 },
-    { value: 'Wilanów', label: 'Wilanów', affluence: 1.4 },
-    { value: 'Białołęka', label: 'Białołęka', affluence: 0.9 },
-    { value: 'Bielany', label: 'Bielany', affluence: 1.0 },
-    { value: 'Włochy', label: 'Włochy', affluence: 0.9 },
-    { value: 'Ursus', label: 'Ursus', affluence: 0.8 },
-    { value: 'Wawer', label: 'Wawer', affluence: 0.9 },
-    { value: 'Wesola', label: 'Wesola', affluence: 0.8 },
-    { value: 'Rembertów', label: 'Rembertów', affluence: 0.8 }
+    { value: "", label: "All Districts" },
+    { value: "Śródmieście", label: "Śródmieście", affluence: 1.5 },
+    { value: "Mokotów", label: "Mokotów", affluence: 1.3 },
+    { value: "Żoliborz", label: "Żoliborz", affluence: 1.2 },
+    { value: "Ochota", label: "Ochota", affluence: 1.1 },
+    { value: "Wola", label: "Wola", affluence: 1.0 },
+    { value: "Praga-Północ", label: "Praga-Północ", affluence: 0.9 },
+    { value: "Praga-Południe", label: "Praga-Południe", affluence: 0.8 },
+    { value: "Targówek", label: "Targówek", affluence: 0.8 },
+    { value: "Bemowo", label: "Bemowo", affluence: 0.9 },
+    { value: "Ursynów", label: "Ursynów", affluence: 1.2 },
+    { value: "Wilanów", label: "Wilanów", affluence: 1.4 },
+    { value: "Białołęka", label: "Białołęka", affluence: 0.9 },
+    { value: "Bielany", label: "Bielany", affluence: 1.0 },
+    { value: "Włochy", label: "Włochy", affluence: 0.9 },
+    { value: "Ursus", label: "Ursus", affluence: 0.8 },
+    { value: "Wawer", label: "Wawer", affluence: 0.9 },
+    { value: "Wesola", label: "Wesola", affluence: 0.8 },
+    { value: "Rembertów", label: "Rembertów", affluence: 0.8 },
   ];
 
   const handleSettingChange = (field: string, value: any) => {
     onChange({
       ...settings,
-      [field]: value
+      [field]: value,
     });
   };
 
   const getAffluenceColor = (affluence: number) => {
-    if (affluence >= 1.3) return 'text-green-600';
-    if (affluence >= 1.1) return 'text-blue-600';
-    if (affluence >= 0.9) return 'text-yellow-600';
-    return 'text-red-600';
+    if (affluence >= 1.3) return "text-green-600";
+    if (affluence >= 1.1) return "text-blue-600";
+    if (affluence >= 0.9) return "text-yellow-600";
+    return "text-red-600";
   };
 
   const getAffluenceLabel = (affluence: number) => {
-    if (affluence >= 1.3) return 'High';
-    if (affluence >= 1.1) return 'Above Average';
-    if (affluence >= 0.9) return 'Average';
-    return 'Below Average';
+    if (affluence >= 1.3) return "High";
+    if (affluence >= 1.1) return "Above Average";
+    if (affluence >= 0.9) return "Average";
+    return "Below Average";
   };
 
-  const selectedDistrict = warsawDistricts.find(d => d.value === settings.districtFilter);
+  const selectedDistrict = warsawDistricts.find((d) => d.value === settings.districtFilter);
 
   return (
     <Card className="h-fit">
@@ -86,9 +84,7 @@ export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelP
           <MapPin className="w-5 h-5 mr-2 text-blue-600" />
           Warsaw HVAC Intelligence
         </CardTitle>
-        <p className="text-xs text-gray-600">
-          Leverage Warsaw-specific data for enhanced insights
-        </p>
+        <p className="text-xs text-gray-600">Leverage Warsaw-specific data for enhanced insights</p>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* District Filter */}
@@ -98,19 +94,19 @@ export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelP
             District Filter
           </label>
           <select
-            value={settings.districtFilter || ''}
-            onChange={(e) => handleSettingChange('districtFilter', e.target.value)}
+            value={settings.districtFilter || ""}
+            onChange={(e) => handleSettingChange("districtFilter", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            {warsawDistricts.map(district => (
+            {warsawDistricts.map((district) => (
               <option key={district.value} value={district.value}>
                 {district.label}
                 {district.affluence && ` (${district.affluence}x)`}
               </option>
             ))}
           </select>
-          
-          {selectedDistrict && selectedDistrict.affluence && (
+
+          {selectedDistrict?.affluence && (
             <div className="mt-2 p-2 bg-gray-50 rounded-md">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-gray-600">Affluence Multiplier:</span>
@@ -127,8 +123,8 @@ export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelP
           <label className="flex items-center space-x-2 cursor-pointer">
             <input
               type="checkbox"
-              checked={settings.affluenceWeighting || false}
-              onChange={(e) => handleSettingChange('affluenceWeighting', e.target.checked)}
+              checked={settings.affluenceWeighting}
+              onChange={(e) => handleSettingChange("affluenceWeighting", e.target.checked)}
               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <div className="flex items-center">
@@ -139,7 +135,7 @@ export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelP
           <p className="text-xs text-gray-600 ml-6 mt-1">
             Apply district-based affluence multipliers to financial metrics
           </p>
-          
+
           {settings.affluenceWeighting && (
             <div className="ml-6 mt-2 p-2 bg-green-50 rounded-md">
               <div className="text-xs text-green-800">
@@ -159,8 +155,8 @@ export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelP
           <label className="flex items-center space-x-2 cursor-pointer">
             <input
               type="checkbox"
-              checked={settings.seasonalAdjustment || false}
-              onChange={(e) => handleSettingChange('seasonalAdjustment', e.target.checked)}
+              checked={settings.seasonalAdjustment}
+              onChange={(e) => handleSettingChange("seasonalAdjustment", e.target.checked)}
               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <div className="flex items-center">
@@ -171,7 +167,7 @@ export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelP
           <p className="text-xs text-gray-600 ml-6 mt-1">
             Apply Warsaw climate-based seasonal factors to demand predictions
           </p>
-          
+
           {settings.seasonalAdjustment && (
             <div className="ml-6 mt-2 p-2 bg-orange-50 rounded-md">
               <div className="text-xs text-orange-800">
@@ -192,8 +188,8 @@ export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelP
           <label className="flex items-center space-x-2 cursor-pointer">
             <input
               type="checkbox"
-              checked={settings.routeOptimization || false}
-              onChange={(e) => handleSettingChange('routeOptimization', e.target.checked)}
+              checked={settings.routeOptimization}
+              onChange={(e) => handleSettingChange("routeOptimization", e.target.checked)}
               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <div className="flex items-center">
@@ -204,7 +200,7 @@ export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelP
           <p className="text-xs text-gray-600 ml-6 mt-1">
             Include route efficiency metrics and travel time analysis
           </p>
-          
+
           {settings.routeOptimization && (
             <div className="ml-6 mt-2 p-2 bg-purple-50 rounded-md">
               <div className="text-xs text-purple-800">
@@ -231,7 +227,7 @@ export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelP
               <Info className="w-3 h-3" />
             </Button>
           </div>
-          
+
           <div className="space-y-2">
             <div className="flex items-center justify-between p-2 bg-purple-50 rounded-md">
               <div className="flex items-center">
@@ -240,7 +236,7 @@ export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelP
               </div>
               <span className="text-xs text-purple-600">90% accuracy</span>
             </div>
-            
+
             <div className="flex items-center justify-between p-2 bg-blue-50 rounded-md">
               <div className="flex items-center">
                 <Navigation className="w-3 h-3 mr-2 text-blue-600" />
@@ -248,7 +244,7 @@ export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelP
               </div>
               <span className="text-xs text-blue-600">20% efficiency</span>
             </div>
-            
+
             <div className="flex items-center justify-between p-2 bg-green-50 rounded-md">
               <div className="flex items-center">
                 <Star className="w-3 h-3 mr-2 text-green-600" />
@@ -260,7 +256,9 @@ export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelP
         </div>
 
         {/* Performance Impact */}
-        {(settings.affluenceWeighting || settings.seasonalAdjustment || settings.routeOptimization) && (
+        {(settings.affluenceWeighting ||
+          settings.seasonalAdjustment ||
+          settings.routeOptimization) && (
           <div className="pt-3 border-t border-gray-200">
             <div className="p-3 bg-blue-50 rounded-md">
               <div className="flex items-center mb-2">
@@ -271,9 +269,7 @@ export function WarsawSettingsPanel({ settings, onChange }: WarsawSettingsPanelP
                 <div>• Enhanced data processing: +50-100ms</div>
                 <div>• Warsaw-specific calculations: +25ms</div>
                 <div>• AI prophecy integration: +200ms</div>
-                <div className="font-medium pt-1">
-                  Total estimated impact: +275-325ms
-                </div>
+                <div className="font-medium pt-1">Total estimated impact: +275-325ms</div>
               </div>
             </div>
           </div>

@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { MessageBubble } from './chat/MessageBubble';
-import { MessageInput } from './chat/MessageInput';
-import { ChannelSidebar } from './chat/ChannelSidebar';
-import { ThreadPanel } from './chat/ThreadPanel';
-import { EmergencyAlert } from './chat/EmergencyAlert';
-import { DistrictNotifications } from './chat/DistrictNotifications';
-import { MessageSquare, Users, AlertTriangle, MapPin, Phone } from 'lucide-react';
+import { useMutation, useQuery } from "convex/react";
+import { AlertTriangle, MapPin, MessageSquare, Users } from "lucide-react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
+import { api } from "../../../convex/_generated/api";
+import { ChannelSidebar } from "./chat/ChannelSidebar";
+import { DistrictNotifications } from "./chat/DistrictNotifications";
+import { EmergencyAlert } from "./chat/EmergencyAlert";
+import { MessageBubble } from "./chat/MessageBubble";
+import { MessageInput } from "./chat/MessageInput";
+import { ThreadPanel } from "./chat/ThreadPanel";
 
 interface ChatModuleProps {
   initialChannelId?: string;
@@ -15,12 +16,8 @@ interface ChatModuleProps {
   contactId?: string;
 }
 
-export const ChatModule: React.FC<ChatModuleProps> = ({
-  initialChannelId,
-  jobId,
-  contactId
-}) => {
-  const [activeChannelId, setActiveChannelId] = useState(initialChannelId || 'general');
+export const ChatModule: React.FC<ChatModuleProps> = ({ initialChannelId, jobId, contactId }) => {
+  const [activeChannelId, setActiveChannelId] = useState(initialChannelId || "general");
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [showEmergencyPanel, setShowEmergencyPanel] = useState(false);
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
@@ -33,10 +30,10 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
     jobId,
     contactId,
     includeThreads: true,
-    limit: 50
+    limit: 50,
   });
   const districtChannels = useQuery(api.conversationChannels.getDistrictChannels, {});
-  const threadMessages = activeThreadId 
+  const threadMessages = activeThreadId
     ? useQuery(api.messages.getThread, { threadId: activeThreadId })
     : null;
 
@@ -48,25 +45,28 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
   // Mark messages as read when channel changes
   useEffect(() => {
     if (messages && messages.length > 0) {
-      const unreadMessages = messages.filter(msg => !msg.isRead);
-      unreadMessages.forEach(msg => {
+      const unreadMessages = messages.filter((msg) => !msg.isRead);
+      unreadMessages.forEach((msg) => {
         markAsRead({ messageId: msg._id });
       });
     }
-  }, [activeChannelId, messages, markAsRead]);
+  }, [messages, markAsRead]);
 
-  const handleSendMessage = async (content: string, options?: {
-    priority?: 'low' | 'normal' | 'high' | 'urgent';
-    mentions?: string[];
-    location?: { lat: number; lng: number; address?: string };
-    scheduledFor?: number;
-  }) => {
+  const handleSendMessage = async (
+    content: string,
+    options?: {
+      priority?: "low" | "normal" | "high" | "urgent";
+      mentions?: string[];
+      location?: { lat: number; lng: number; address?: string };
+      scheduledFor?: number;
+    }
+  ) => {
     if (!content.trim()) return;
 
     try {
@@ -75,19 +75,21 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
         channelId: activeChannelId,
         jobId,
         contactId,
-        priority: options?.priority || 'normal',
+        priority: options?.priority || "normal",
         mentions: options?.mentions,
         location: options?.location,
         scheduledFor: options?.scheduledFor,
         // Add district context if in district channel
-        districtContext: selectedDistrict ? {
-          district: selectedDistrict,
-          urgencyLevel: options?.priority === 'urgent' ? 'emergency' : 'medium',
-          routeOptimized: false
-        } : undefined
+        districtContext: selectedDistrict
+          ? {
+              district: selectedDistrict,
+              urgencyLevel: options?.priority === "urgent" ? "emergency" : "medium",
+              routeOptimized: false,
+            }
+          : undefined,
       });
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error("Failed to send message:", error);
     }
   };
 
@@ -96,12 +98,12 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
       await sendUrgentMessage({
         content,
         district,
-        urgencyLevel: 'emergency',
-        estimatedResponseTime: 15 // 15 minutes for emergency response
+        urgencyLevel: "emergency",
+        estimatedResponseTime: 15, // 15 minutes for emergency response
       });
       setShowEmergencyPanel(false);
     } catch (error) {
-      console.error('Failed to send urgent message:', error);
+      console.error("Failed to send urgent message:", error);
     }
   };
 
@@ -109,21 +111,21 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
     try {
       const result = await startThread({
         messageId,
-        initialReply: reply
+        initialReply: reply,
       });
       setActiveThreadId(result.threadId);
     } catch (error) {
-      console.error('Failed to start thread:', error);
+      console.error("Failed to start thread:", error);
     }
   };
 
   const handleChannelChange = (channelId: string) => {
     setActiveChannelId(channelId);
     setActiveThreadId(null);
-    
+
     // Set district context if it's a district channel
-    const channel = channels?.find(ch => ch.name === channelId);
-    if (channel?.type === 'district') {
+    const channel = channels?.find((ch) => ch.name === channelId);
+    if (channel?.type === "district") {
       setSelectedDistrict(channel.district || null);
     } else {
       setSelectedDistrict(null);
@@ -165,7 +167,7 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <h3 className="text-lg font-medium text-gray-900">
-                {channels?.find(ch => ch.name === activeChannelId)?.name || activeChannelId}
+                {channels?.find((ch) => ch.name === activeChannelId)?.name || activeChannelId}
               </h3>
               {selectedDistrict && (
                 <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full flex items-center">
@@ -177,7 +179,8 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-500 flex items-center">
                 <Users className="w-4 h-4 mr-1" />
-                {channels?.find(ch => ch.name === activeChannelId)?.onlineParticipants || 0} online
+                {channels?.find((ch) => ch.name === activeChannelId)?.onlineParticipants || 0}{" "}
+                online
               </span>
               {jobId && (
                 <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
@@ -189,9 +192,7 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
         </div>
 
         {/* District Notifications */}
-        {selectedDistrict && (
-          <DistrictNotifications district={selectedDistrict} />
-        )}
+        {selectedDistrict && <DistrictNotifications district={selectedDistrict} />}
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -225,11 +226,11 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
           threadId={activeThreadId}
           messages={threadMessages || []}
           onClose={() => setActiveThreadId(null)}
-          onSendMessage={(content) => 
+          onSendMessage={(content) =>
             sendMessage({
               content,
               threadId: activeThreadId,
-              channelId: activeChannelId
+              channelId: activeChannelId,
             })
           }
         />
@@ -238,7 +239,7 @@ export const ChatModule: React.FC<ChatModuleProps> = ({
       {/* Emergency Alert Panel */}
       {showEmergencyPanel && (
         <EmergencyAlert
-          districts={districtChannels?.map(d => d.name) || []}
+          districts={districtChannels?.map((d) => d.name) || []}
           onSendUrgent={handleSendUrgentMessage}
           onClose={() => setShowEmergencyPanel(false)}
         />

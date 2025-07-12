@@ -4,8 +4,8 @@
  * Targets: <800KB bundle, <300ms response, >95% mobile score
  */
 
-import React, { lazy, ComponentType, LazyExoticComponent } from 'react';
-import { toast } from 'sonner';
+import React, { type ComponentType, type LazyExoticComponent, lazy } from "react";
+import { toast } from "sonner";
 
 // Performance monitoring
 interface PerformanceMetrics {
@@ -23,19 +23,19 @@ export function createLazyComponent<T extends ComponentType<any>>(
 ): LazyExoticComponent<T> {
   const LazyComponent = lazy(async () => {
     const startTime = performance.now();
-    
+
     try {
       const module = await importFn();
       const loadTime = performance.now() - startTime;
-      
+
       // Log performance metrics
       console.log(`🚀 Lazy loaded ${componentName} in ${loadTime.toFixed(2)}ms`);
-      
+
       // Alert if loading is slow
       if (loadTime > 1000) {
         toast.warning(`Slow component load: ${componentName} took ${loadTime.toFixed(0)}ms`);
       }
-      
+
       return module;
     } catch (error) {
       console.error(`❌ Failed to load ${componentName}:`, error);
@@ -45,8 +45,8 @@ export function createLazyComponent<T extends ComponentType<any>>(
   });
 
   // Preload component if condition is met
-  if (preloadCondition && preloadCondition()) {
-    importFn().catch(error => {
+  if (preloadCondition?.()) {
+    importFn().catch((error) => {
       console.warn(`Preload failed for ${componentName}:`, error);
     });
   }
@@ -62,17 +62,19 @@ export function createMemoizedComponent<T extends ComponentType<any>>(
 ): T {
   const MemoizedComponent = React.memo(Component, (prevProps, nextProps) => {
     const startTime = performance.now();
-    
+
     // Default shallow comparison
     const isEqual = areEqual ? areEqual(prevProps, nextProps) : shallowEqual(prevProps, nextProps);
-    
+
     const compareTime = performance.now() - startTime;
-    
+
     // Log expensive comparisons
     if (compareTime > 5) {
-      console.warn(`🐌 Expensive memo comparison for ${componentName || Component.name}: ${compareTime.toFixed(2)}ms`);
+      console.warn(
+        `🐌 Expensive memo comparison for ${componentName || Component.name}: ${compareTime.toFixed(2)}ms`
+      );
     }
-    
+
     return isEqual;
   });
 
@@ -124,16 +126,16 @@ export function createOptimizedDebounce<T extends (...args: any[]) => any>(
     lastArgs = undefined as any;
     lastThis = undefined;
     lastInvokeTime = time;
-    
+
     const startTime = performance.now();
     result = func.apply(thisArg, args);
     const executeTime = performance.now() - startTime;
-    
+
     // Log slow function executions
     if (executeTime > 100) {
       console.warn(`🐌 Slow debounced function execution: ${executeTime.toFixed(2)}ms`);
     }
-    
+
     return result;
   }
 
@@ -251,7 +253,7 @@ export function calculateVirtualScrollItems(
   containerHeight: number,
   itemHeight: number,
   scrollTop: number,
-  overscan: number = 5
+  overscan = 5
 ) {
   const visibleItemCount = Math.ceil(containerHeight / itemHeight);
   const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
@@ -273,25 +275,25 @@ export function optimizeImageLoading(
     width?: number;
     height?: number;
     quality?: number;
-    format?: 'webp' | 'avif' | 'jpg' | 'png';
+    format?: "webp" | "avif" | "jpg" | "png";
     lazy?: boolean;
   } = {}
 ): {
   src: string;
   srcSet?: string;
-  loading?: 'lazy' | 'eager';
-  decoding?: 'async' | 'sync' | 'auto';
+  loading?: "lazy" | "eager";
+  decoding?: "async" | "sync" | "auto";
 } {
-  const { width, height, quality = 85, format = 'webp', lazy = true } = options;
+  const { width, height, quality = 85, format = "webp", lazy = true } = options;
 
   // Generate optimized URL (this would integrate with your image optimization service)
   let optimizedSrc = src;
   const params = new URLSearchParams();
 
-  if (width) params.append('w', width.toString());
-  if (height) params.append('h', height.toString());
-  if (quality !== 85) params.append('q', quality.toString());
-  if (format !== 'webp') params.append('f', format);
+  if (width) params.append("w", width.toString());
+  if (height) params.append("h", height.toString());
+  if (quality !== 85) params.append("q", quality.toString());
+  if (format !== "webp") params.append("f", format);
 
   if (params.toString()) {
     optimizedSrc = `${src}?${params.toString()}`;
@@ -299,17 +301,16 @@ export function optimizeImageLoading(
 
   // Generate srcSet for responsive images
   const srcSet = width
-    ? [
-        `${optimizedSrc} 1x`,
-        `${optimizedSrc.replace(`w=${width}`, `w=${width * 2}`)} 2x`,
-      ].join(', ')
+    ? [`${optimizedSrc} 1x`, `${optimizedSrc.replace(`w=${width}`, `w=${width * 2}`)} 2x`].join(
+        ", "
+      )
     : undefined;
 
   return {
     src: optimizedSrc,
     srcSet,
-    loading: lazy ? 'lazy' : 'eager',
-    decoding: 'async',
+    loading: lazy ? "lazy" : "eager",
+    decoding: "async",
   };
 }
 
@@ -320,20 +321,20 @@ export function analyzeBundleSize(): Promise<{
   recommendations: string[];
 }> {
   return new Promise((resolve) => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       resolve({ totalSize: 0, chunks: [], recommendations: [] });
       return;
     }
 
-    const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+    const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
     const chunks: Array<{ name: string; size: number }> = [];
     let totalSize = 0;
 
     resources.forEach((resource) => {
-      if (resource.name.includes('.js') || resource.name.includes('.css')) {
+      if (resource.name.includes(".js") || resource.name.includes(".css")) {
         const size = resource.transferSize || 0;
-        const name = resource.name.split('/').pop() || 'unknown';
-        
+        const name = resource.name.split("/").pop() || "unknown";
+
         chunks.push({ name, size });
         totalSize += size;
       }
@@ -343,12 +344,12 @@ export function analyzeBundleSize(): Promise<{
     const recommendations: string[] = [];
 
     if (totalSizeKB > 800) {
-      recommendations.push('Bundle size exceeds 800KB target. Consider code splitting.');
+      recommendations.push("Bundle size exceeds 800KB target. Consider code splitting.");
     }
 
-    const largeChunks = chunks.filter(chunk => chunk.size > 100 * 1024); // >100KB
+    const largeChunks = chunks.filter((chunk) => chunk.size > 100 * 1024); // >100KB
     if (largeChunks.length > 0) {
-      recommendations.push(`Large chunks detected: ${largeChunks.map(c => c.name).join(', ')}`);
+      recommendations.push(`Large chunks detected: ${largeChunks.map((c) => c.name).join(", ")}`);
     }
 
     resolve({
@@ -366,12 +367,15 @@ export function withPerformanceMonitoring<T extends ComponentType<any>>(
 ): T {
   const PerformanceMonitoredComponent = (props: any) => {
     const startTime = performance.now();
-    
+
     React.useEffect(() => {
       const renderTime = performance.now() - startTime;
-      
-      if (renderTime > 16) { // >16ms = potential 60fps issue
-        console.warn(`🐌 Slow render: ${componentName || Component.name} took ${renderTime.toFixed(2)}ms`);
+
+      if (renderTime > 16) {
+        // >16ms = potential 60fps issue
+        console.warn(
+          `🐌 Slow render: ${componentName || Component.name} took ${renderTime.toFixed(2)}ms`
+        );
       }
     });
 
@@ -383,7 +387,7 @@ export function withPerformanceMonitoring<T extends ComponentType<any>>(
 
 // Memory leak detector
 export function detectMemoryLeaks() {
-  if (typeof window === 'undefined' || !('memory' in performance)) {
+  if (typeof window === "undefined" || !("memory" in performance)) {
     return null;
   }
 
@@ -395,8 +399,9 @@ export function detectMemoryLeaks() {
   };
 
   // Alert if memory usage is high
-  if (memoryInfo.usedJSHeapSize > 100) { // >100MB
-    console.warn('🚨 High memory usage detected:', memoryInfo);
+  if (memoryInfo.usedJSHeapSize > 100) {
+    // >100MB
+    console.warn("🚨 High memory usage detected:", memoryInfo);
     toast.warning(`High memory usage: ${memoryInfo.usedJSHeapSize.toFixed(1)}MB`);
   }
 

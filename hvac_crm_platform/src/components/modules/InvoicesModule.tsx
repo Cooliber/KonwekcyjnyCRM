@@ -1,24 +1,22 @@
-import React, { useState, useRef } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { 
-  FileText, 
-  Plus, 
-  Download, 
-  Eye, 
-  Edit, 
-  DollarSign,
-  TrendingUp,
-  MapPin,
-  Calendar,
-  Filter,
-  Search,
+import { useMutation, useQuery } from "convex/react";
+import {
+  AlertTriangle,
   CheckCircle,
   Clock,
-  AlertTriangle,
-  Euro
-} from 'lucide-react';
-import { toast } from 'sonner';
+  DollarSign,
+  Download,
+  Edit,
+  Euro,
+  Eye,
+  FileText,
+  MapPin,
+  Plus,
+  TrendingUp,
+} from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
 
 interface InvoiceFilters {
   status?: string;
@@ -30,23 +28,23 @@ interface InvoiceFilters {
 export const InvoicesModule: React.FC = () => {
   const [filters, setFilters] = useState<InvoiceFilters>({});
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [_showCreateModal, setShowCreateModal] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
 
   // Get invoices with filters
   const invoices = useQuery(api.invoices.list, filters);
-  
+
   // Get revenue analytics
   const revenueAnalytics = useQuery(api.invoices.getRevenueAnalytics, {
     dateFrom: Date.now() - 30 * 24 * 60 * 60 * 1000, // Last 30 days
     dateTo: Date.now(),
-    groupBy: "district"
+    groupBy: "district",
   });
 
   // Get revenue boost simulation
   const revenueBoost = useQuery(api.invoices.simulateRevenueBoost, {
     dateFrom: Date.now() - 30 * 24 * 60 * 60 * 1000,
-    dateTo: Date.now()
+    dateTo: Date.now(),
   });
 
   // Mutations
@@ -57,46 +55,62 @@ export const InvoicesModule: React.FC = () => {
   );
 
   const warsawDistricts = [
-    'Śródmieście', 'Mokotów', 'Wilanów', 'Żoliborz', 
-    'Ursynów', 'Wola', 'Praga-Południe', 'Targówek'
+    "Śródmieście",
+    "Mokotów",
+    "Wilanów",
+    "Żoliborz",
+    "Ursynów",
+    "Wola",
+    "Praga-Południe",
+    "Targówek",
   ];
 
   const invoiceStatuses = [
-    { value: 'draft', label: 'Draft', color: 'gray', icon: <Edit className="w-4 h-4" /> },
-    { value: 'sent', label: 'Sent', color: 'blue', icon: <Clock className="w-4 h-4" /> },
-    { value: 'paid', label: 'Paid', color: 'green', icon: <CheckCircle className="w-4 h-4" /> },
-    { value: 'overdue', label: 'Overdue', color: 'red', icon: <AlertTriangle className="w-4 h-4" /> },
-    { value: 'canceled', label: 'Canceled', color: 'gray', icon: <AlertTriangle className="w-4 h-4" /> }
+    { value: "draft", label: "Draft", color: "gray", icon: <Edit className="w-4 h-4" /> },
+    { value: "sent", label: "Sent", color: "blue", icon: <Clock className="w-4 h-4" /> },
+    { value: "paid", label: "Paid", color: "green", icon: <CheckCircle className="w-4 h-4" /> },
+    {
+      value: "overdue",
+      label: "Overdue",
+      color: "red",
+      icon: <AlertTriangle className="w-4 h-4" />,
+    },
+    {
+      value: "canceled",
+      label: "Canceled",
+      color: "gray",
+      icon: <AlertTriangle className="w-4 h-4" />,
+    },
   ];
 
   const handleStatusUpdate = async (invoiceId: string, status: string) => {
     try {
       await updateInvoiceStatus({ id: invoiceId as any, status: status as any });
-      toast.success('Invoice status updated successfully');
-    } catch (error) {
-      toast.error('Failed to update invoice status');
+      toast.success("Invoice status updated successfully");
+    } catch (_error) {
+      toast.error("Failed to update invoice status");
     }
   };
 
-  const handleExportPDF = async (invoice: any) => {
+  const handleExportPDF = async (_invoice: any) => {
     try {
       // In a real implementation, this would generate and download a PDF
-      toast.success('PDF export initiated');
-      console.log('PDF Data:', generatePDFData);
-    } catch (error) {
-      toast.error('Failed to export PDF');
+      toast.success("PDF export initiated");
+      console.log("PDF Data:", generatePDFData);
+    } catch (_error) {
+      toast.error("Failed to export PDF");
     }
   };
 
   const getStatusColor = (status: string) => {
-    const statusConfig = invoiceStatuses.find(s => s.value === status);
-    return statusConfig?.color || 'gray';
+    const statusConfig = invoiceStatuses.find((s) => s.value === status);
+    return statusConfig?.color || "gray";
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('pl-PL', {
-      style: 'currency',
-      currency: 'PLN'
+    return new Intl.NumberFormat("pl-PL", {
+      style: "currency",
+      currency: "PLN",
     }).format(amount);
   };
 
@@ -116,19 +130,26 @@ export const InvoicesModule: React.FC = () => {
             )}
           </div>
         </div>
-        
+
         <div className="text-right">
           <p className="text-lg font-semibold text-gray-900">
             {formatCurrency(invoice.totalAmount)}
           </p>
-          <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-            getStatusColor(invoice.status) === 'green' ? 'bg-green-100 text-green-800' :
-            getStatusColor(invoice.status) === 'blue' ? 'bg-blue-100 text-blue-800' :
-            getStatusColor(invoice.status) === 'red' ? 'bg-red-100 text-red-800' :
-            'bg-gray-100 text-gray-800'
-          }`}>
-            {invoiceStatuses.find(s => s.value === invoice.status)?.icon}
-            <span className="ml-1">{invoiceStatuses.find(s => s.value === invoice.status)?.label}</span>
+          <div
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+              getStatusColor(invoice.status) === "green"
+                ? "bg-green-100 text-green-800"
+                : getStatusColor(invoice.status) === "blue"
+                  ? "bg-blue-100 text-blue-800"
+                  : getStatusColor(invoice.status) === "red"
+                    ? "bg-red-100 text-red-800"
+                    : "bg-gray-100 text-gray-800"
+            }`}
+          >
+            {invoiceStatuses.find((s) => s.value === invoice.status)?.icon}
+            <span className="ml-1">
+              {invoiceStatuses.find((s) => s.value === invoice.status)?.label}
+            </span>
           </div>
         </div>
       </div>
@@ -136,11 +157,11 @@ export const InvoicesModule: React.FC = () => {
       <div className="space-y-2 mb-4">
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Issue Date:</span>
-          <span>{new Date(invoice.issueDate).toLocaleDateString('pl-PL')}</span>
+          <span>{new Date(invoice.issueDate).toLocaleDateString("pl-PL")}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Due Date:</span>
-          <span>{new Date(invoice.dueDate).toLocaleDateString('pl-PL')}</span>
+          <span>{new Date(invoice.dueDate).toLocaleDateString("pl-PL")}</span>
         </div>
         {invoice.efficiencyDiscount > 0 && (
           <div className="flex justify-between text-sm">
@@ -167,14 +188,16 @@ export const InvoicesModule: React.FC = () => {
             <Download className="w-4 h-4" />
           </button>
         </div>
-        
+
         <select
           value={invoice.status}
           onChange={(e) => handleStatusUpdate(invoice._id, e.target.value)}
           className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
-          {invoiceStatuses.map(status => (
-            <option key={status.value} value={status.value}>{status.label}</option>
+          {invoiceStatuses.map((status) => (
+            <option key={status.value} value={status.value}>
+              {status.label}
+            </option>
           ))}
         </select>
       </div>
@@ -194,7 +217,9 @@ export const InvoicesModule: React.FC = () => {
                   <p className="text-blue-100">Revenue Boost</p>
                   <p className="text-2xl font-bold">
                     {revenueBoost.revenueBoost}%
-                    {revenueBoost.targetMet && <span className="text-green-300 ml-2">✓ Target Met</span>}
+                    {revenueBoost.targetMet && (
+                      <span className="text-green-300 ml-2">✓ Target Met</span>
+                    )}
                   </p>
                 </div>
                 <div>
@@ -309,14 +334,14 @@ export const InvoicesModule: React.FC = () => {
           </h1>
           <p className="text-gray-600">Dynamic pricing with Warsaw district optimization</p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowAnalytics(!showAnalytics)}
             className={`px-4 py-2 rounded-lg transition-colors ${
-              showAnalytics 
-                ? 'bg-purple-600 text-white' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              showAnalytics
+                ? "bg-purple-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             <TrendingUp className="w-4 h-4 inline mr-2" />
@@ -341,13 +366,15 @@ export const InvoicesModule: React.FC = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <select
-              value={filters.status || ''}
+              value={filters.status || ""}
               onChange={(e) => setFilters({ ...filters, status: e.target.value || undefined })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">All Statuses</option>
-              {invoiceStatuses.map(status => (
-                <option key={status.value} value={status.value}>{status.label}</option>
+              {invoiceStatuses.map((status) => (
+                <option key={status.value} value={status.value}>
+                  {status.label}
+                </option>
               ))}
             </select>
           </div>
@@ -355,13 +382,15 @@ export const InvoicesModule: React.FC = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">District</label>
             <select
-              value={filters.district || ''}
+              value={filters.district || ""}
               onChange={(e) => setFilters({ ...filters, district: e.target.value || undefined })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">All Districts</option>
-              {warsawDistricts.map(district => (
-                <option key={district} value={district}>{district}</option>
+              {warsawDistricts.map((district) => (
+                <option key={district} value={district}>
+                  {district}
+                </option>
               ))}
             </select>
           </div>
@@ -370,10 +399,12 @@ export const InvoicesModule: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Date From</label>
             <input
               type="date"
-              onChange={(e) => setFilters({ 
-                ...filters, 
-                dateFrom: e.target.value ? new Date(e.target.value).getTime() : undefined 
-              })}
+              onChange={(e) =>
+                setFilters({
+                  ...filters,
+                  dateFrom: e.target.value ? new Date(e.target.value).getTime() : undefined,
+                })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -382,10 +413,12 @@ export const InvoicesModule: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Date To</label>
             <input
               type="date"
-              onChange={(e) => setFilters({ 
-                ...filters, 
-                dateTo: e.target.value ? new Date(e.target.value).getTime() : undefined 
-              })}
+              onChange={(e) =>
+                setFilters({
+                  ...filters,
+                  dateTo: e.target.value ? new Date(e.target.value).getTime() : undefined,
+                })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -430,7 +463,7 @@ export const InvoicesModule: React.FC = () => {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6">
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -443,12 +476,15 @@ export const InvoicesModule: React.FC = () => {
                     <p className="text-gray-900">{selectedInvoice.contact?.district}</p>
                   </div>
                 </div>
-                
+
                 <div className="border-t border-gray-200 pt-4">
                   <h3 className="font-medium text-gray-900 mb-3">Items</h3>
                   <div className="space-y-2">
                     {selectedInvoice.items.map((item: any, index: number) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                      >
                         <div>
                           <p className="font-medium">{item.description}</p>
                           <p className="text-sm text-gray-600">
@@ -462,7 +498,7 @@ export const InvoicesModule: React.FC = () => {
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="border-t border-gray-200 pt-4">
                   <div className="space-y-2">
                     <div className="flex justify-between">

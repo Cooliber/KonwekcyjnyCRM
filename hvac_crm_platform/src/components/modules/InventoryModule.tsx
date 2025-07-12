@@ -1,24 +1,19 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { 
-  Package, 
-  Plus, 
-  Minus, 
-  ArrowRightLeft, 
+import { useMutation, useQuery } from "convex/react";
+import {
   AlertTriangle,
-  TrendingDown,
-  TrendingUp,
-  MapPin,
-  Truck,
+  ArrowRightLeft,
   BarChart3,
-  Filter,
-  Search,
+  MapPin,
+  Minus,
+  Package,
+  Plus,
   RefreshCw,
-  CheckCircle,
-  Clock
-} from 'lucide-react';
-import { toast } from 'sonner';
+  TrendingUp,
+} from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
 
 interface InventoryFilters {
   district?: string;
@@ -32,16 +27,16 @@ export const InventoryModule: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [quantityChange, setQuantityChange] = useState(0);
+  const [_quantityChange, _setQuantityChange] = useState(0);
   const [transferQuantity, setTransferQuantity] = useState(0);
-  const [targetWarehouse, setTargetWarehouse] = useState('');
+  const [targetWarehouse, setTargetWarehouse] = useState("");
 
   // Get inventory with filters
   const inventory = useQuery(api.inventory.list, filters);
-  
+
   // Get inventory analytics
   const analytics = useQuery(api.inventory.getInventoryAnalytics, {
-    district: filters.district
+    district: filters.district,
   });
 
   // Get warehouses for transfer
@@ -52,13 +47,27 @@ export const InventoryModule: React.FC = () => {
   const transferStock = useMutation(api.inventory.transferStock);
 
   const warsawDistricts = [
-    'Śródmieście', 'Mokotów', 'Wilanów', 'Żoliborz', 
-    'Ursynów', 'Wola', 'Praga-Południe', 'Targówek'
+    "Śródmieście",
+    "Mokotów",
+    "Wilanów",
+    "Żoliborz",
+    "Ursynów",
+    "Wola",
+    "Praga-Południe",
+    "Targówek",
   ];
 
   const equipmentCategories = [
-    'split_ac', 'multi_split', 'vrf_system', 'heat_pump',
-    'thermostat', 'ductwork', 'filter', 'parts', 'tools', 'refrigerant'
+    "split_ac",
+    "multi_split",
+    "vrf_system",
+    "heat_pump",
+    "thermostat",
+    "ductwork",
+    "filter",
+    "parts",
+    "tools",
+    "refrigerant",
   ];
 
   const handleQuantityUpdate = async (itemId: string, change: number, reason: string) => {
@@ -67,17 +76,17 @@ export const InventoryModule: React.FC = () => {
         id: itemId as any,
         quantityChange: change,
         reason: reason as any,
-        notes: `Manual adjustment: ${change > 0 ? 'added' : 'removed'} ${Math.abs(change)} units`
+        notes: `Manual adjustment: ${change > 0 ? "added" : "removed"} ${Math.abs(change)} units`,
       });
-      toast.success('Inventory updated successfully');
-    } catch (error) {
-      toast.error('Failed to update inventory');
+      toast.success("Inventory updated successfully");
+    } catch (_error) {
+      toast.error("Failed to update inventory");
     }
   };
 
   const handleTransfer = async () => {
-    if (!selectedItem || !targetWarehouse || transferQuantity <= 0) {
-      toast.error('Please fill all transfer details');
+    if (!(selectedItem && targetWarehouse) || transferQuantity <= 0) {
+      toast.error("Please fill all transfer details");
       return;
     }
 
@@ -86,25 +95,30 @@ export const InventoryModule: React.FC = () => {
         fromInventoryId: selectedItem._id,
         toWarehouseId: targetWarehouse as any,
         quantity: transferQuantity,
-        reason: 'Manual transfer between warehouses'
+        reason: "Manual transfer between warehouses",
       });
-      toast.success('Stock transferred successfully');
+      toast.success("Stock transferred successfully");
       setShowTransferModal(false);
       setSelectedItem(null);
       setTransferQuantity(0);
-      setTargetWarehouse('');
-    } catch (error) {
-      toast.error('Failed to transfer stock');
+      setTargetWarehouse("");
+    } catch (_error) {
+      toast.error("Failed to transfer stock");
     }
   };
 
   const getStockStatusColor = (status: string) => {
     switch (status) {
-      case 'critical': return 'text-red-600 bg-red-100';
-      case 'low': return 'text-orange-600 bg-orange-100';
-      case 'adequate': return 'text-yellow-600 bg-yellow-100';
-      case 'optimal': return 'text-green-600 bg-green-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case "critical":
+        return "text-red-600 bg-red-100";
+      case "low":
+        return "text-orange-600 bg-orange-100";
+      case "adequate":
+        return "text-yellow-600 bg-yellow-100";
+      case "optimal":
+        return "text-green-600 bg-green-100";
+      default:
+        return "text-gray-600 bg-gray-100";
     }
   };
 
@@ -113,17 +127,23 @@ export const InventoryModule: React.FC = () => {
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <h3 className="font-semibold text-gray-900">{item.equipment?.name}</h3>
-          <p className="text-sm text-gray-600">{item.equipment?.brand} {item.equipment?.model}</p>
+          <p className="text-sm text-gray-600">
+            {item.equipment?.brand} {item.equipment?.model}
+          </p>
           <div className="flex items-center space-x-2 mt-1">
             <MapPin className="w-3 h-3 text-gray-400" />
-            <span className="text-xs text-gray-500">{item.warehouse?.name} • {item.district}</span>
+            <span className="text-xs text-gray-500">
+              {item.warehouse?.name} • {item.district}
+            </span>
           </div>
         </div>
-        
+
         <div className="text-right">
           <p className="text-2xl font-semibold text-gray-900">{item.quantity}</p>
           <p className="text-xs text-gray-500">units</p>
-          <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStockStatusColor(item.stockStatus)}`}>
+          <div
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStockStatusColor(item.stockStatus)}`}
+          >
             {item.stockStatus}
           </div>
         </div>
@@ -132,7 +152,7 @@ export const InventoryModule: React.FC = () => {
       <div className="space-y-2 mb-4">
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Category:</span>
-          <span className="capitalize">{item.equipment?.category?.replace('_', ' ')}</span>
+          <span className="capitalize">{item.equipment?.category?.replace("_", " ")}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Min Stock:</span>
@@ -155,7 +175,7 @@ export const InventoryModule: React.FC = () => {
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => handleQuantityUpdate(item._id, -1, 'usage')}
+            onClick={() => handleQuantityUpdate(item._id, -1, "usage")}
             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             title="Remove 1 unit"
             disabled={item.quantity <= 0}
@@ -163,7 +183,7 @@ export const InventoryModule: React.FC = () => {
             <Minus className="w-4 h-4" />
           </button>
           <button
-            onClick={() => handleQuantityUpdate(item._id, 1, 'restock')}
+            onClick={() => handleQuantityUpdate(item._id, 1, "restock")}
             className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
             title="Add 1 unit"
           >
@@ -180,9 +200,9 @@ export const InventoryModule: React.FC = () => {
             <ArrowRightLeft className="w-4 h-4" />
           </button>
         </div>
-        
+
         <div className="text-xs text-gray-500">
-          Last updated: {new Date(item.lastRestocked).toLocaleDateString('pl-PL')}
+          Last updated: {new Date(item.lastRestocked).toLocaleDateString("pl-PL")}
         </div>
       </div>
     </div>
@@ -214,9 +234,9 @@ export const InventoryModule: React.FC = () => {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Value</p>
                   <p className="text-2xl font-semibold text-gray-900">
-                    {new Intl.NumberFormat('pl-PL', {
-                      style: 'currency',
-                      currency: 'PLN'
+                    {new Intl.NumberFormat("pl-PL", {
+                      style: "currency",
+                      currency: "PLN",
                     }).format(analytics.totalValue)}
                   </p>
                 </div>
@@ -258,7 +278,7 @@ export const InventoryModule: React.FC = () => {
                 {Object.entries(analytics.byCategory).map(([category, data]: [string, any]) => (
                   <div key={category} className="p-4 bg-gray-50 rounded-lg">
                     <h4 className="font-medium text-gray-900 capitalize mb-2">
-                      {category.replace('_', ' ')}
+                      {category.replace("_", " ")}
                     </h4>
                     <div className="space-y-1 text-sm">
                       <div className="flex justify-between">
@@ -272,9 +292,9 @@ export const InventoryModule: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-gray-600">Value:</span>
                         <span>
-                          {new Intl.NumberFormat('pl-PL', {
-                            style: 'currency',
-                            currency: 'PLN'
+                          {new Intl.NumberFormat("pl-PL", {
+                            style: "currency",
+                            currency: "PLN",
                           }).format(data.totalValue)}
                         </span>
                       </div>
@@ -311,9 +331,9 @@ export const InventoryModule: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-gray-600">Value:</span>
                         <span>
-                          {new Intl.NumberFormat('pl-PL', {
-                            style: 'currency',
-                            currency: 'PLN'
+                          {new Intl.NumberFormat("pl-PL", {
+                            style: "currency",
+                            currency: "PLN",
                           }).format(data.totalValue)}
                         </span>
                       </div>
@@ -337,16 +357,18 @@ export const InventoryModule: React.FC = () => {
             <Package className="w-6 h-6 mr-2 text-blue-600" />
             Inventory Management
           </h1>
-          <p className="text-gray-600">Stock tracking per Warsaw district with delivery optimization</p>
+          <p className="text-gray-600">
+            Stock tracking per Warsaw district with delivery optimization
+          </p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowAnalytics(!showAnalytics)}
             className={`px-4 py-2 rounded-lg transition-colors ${
-              showAnalytics 
-                ? 'bg-purple-600 text-white' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              showAnalytics
+                ? "bg-purple-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             <BarChart3 className="w-4 h-4 inline mr-2" />
@@ -355,9 +377,9 @@ export const InventoryModule: React.FC = () => {
           <button
             onClick={() => setFilters({ ...filters, lowStock: !filters.lowStock })}
             className={`px-4 py-2 rounded-lg transition-colors ${
-              filters.lowStock 
-                ? 'bg-red-600 text-white' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              filters.lowStock
+                ? "bg-red-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             <AlertTriangle className="w-4 h-4 inline mr-2" />
@@ -375,13 +397,15 @@ export const InventoryModule: React.FC = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">District</label>
             <select
-              value={filters.district || ''}
+              value={filters.district || ""}
               onChange={(e) => setFilters({ ...filters, district: e.target.value || undefined })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">All Districts</option>
-              {warsawDistricts.map(district => (
-                <option key={district} value={district}>{district}</option>
+              {warsawDistricts.map((district) => (
+                <option key={district} value={district}>
+                  {district}
+                </option>
               ))}
             </select>
           </div>
@@ -389,14 +413,14 @@ export const InventoryModule: React.FC = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
             <select
-              value={filters.category || ''}
+              value={filters.category || ""}
               onChange={(e) => setFilters({ ...filters, category: e.target.value || undefined })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">All Categories</option>
-              {equipmentCategories.map(category => (
+              {equipmentCategories.map((category) => (
                 <option key={category} value={category}>
-                  {category.replace('_', ' ').toUpperCase()}
+                  {category.replace("_", " ").toUpperCase()}
                 </option>
               ))}
             </select>
@@ -437,7 +461,7 @@ export const InventoryModule: React.FC = () => {
               <h2 className="text-xl font-semibold text-gray-900">Transfer Stock</h2>
               <p className="text-gray-600">{selectedItem.equipment?.name}</p>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -453,11 +477,13 @@ export const InventoryModule: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select warehouse</option>
-                  {warehouses?.filter(w => w._id !== selectedItem.warehouseId).map(warehouse => (
-                    <option key={warehouse._id} value={warehouse._id}>
-                      {warehouse.name} ({warehouse.district})
-                    </option>
-                  ))}
+                  {warehouses
+                    ?.filter((w) => w._id !== selectedItem.warehouseId)
+                    .map((warehouse) => (
+                      <option key={warehouse._id} value={warehouse._id}>
+                        {warehouse.name} ({warehouse.district})
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -468,7 +494,7 @@ export const InventoryModule: React.FC = () => {
                   min="1"
                   max={selectedItem.quantity}
                   value={transferQuantity}
-                  onChange={(e) => setTransferQuantity(parseInt(e.target.value) || 0)}
+                  onChange={(e) => setTransferQuantity(Number.parseInt(e.target.value) || 0)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -480,7 +506,7 @@ export const InventoryModule: React.FC = () => {
                   setShowTransferModal(false);
                   setSelectedItem(null);
                   setTransferQuantity(0);
-                  setTargetWarehouse('');
+                  setTargetWarehouse("");
                 }}
                 className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
               >
@@ -488,7 +514,11 @@ export const InventoryModule: React.FC = () => {
               </button>
               <button
                 onClick={handleTransfer}
-                disabled={!targetWarehouse || transferQuantity <= 0 || transferQuantity > selectedItem.quantity}
+                disabled={
+                  !targetWarehouse ||
+                  transferQuantity <= 0 ||
+                  transferQuantity > selectedItem.quantity
+                }
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Transfer

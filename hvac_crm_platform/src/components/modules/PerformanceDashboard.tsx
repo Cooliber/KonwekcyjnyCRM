@@ -1,34 +1,22 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
+import { useMutation, useQuery } from "convex/react";
 import {
   Activity,
-  Zap,
-  Database,
-  Clock,
-  TrendingUp,
-  TrendingDown,
   AlertTriangle,
-  CheckCircle,
   BarChart3,
+  CheckCircle,
+  Clock,
+  Database,
   PieChart,
   RefreshCw,
-  Settings,
   Target,
-  Server,
-  Monitor,
-  Smartphone,
-  Wifi,
-  HardDrive,
-  Cpu,
-  MemoryStick
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Progress } from '../ui/progress';
-import { cacheManager } from '../../lib/cacheStrategy';
-import { toast } from 'sonner';
+  TrendingDown,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { api } from "../../../convex/_generated/api";
+import { cacheManager } from "../../lib/cacheStrategy";
 
 interface PerformanceMetrics {
   totalRequests: number;
@@ -90,11 +78,11 @@ interface EnhancedPerformanceMetrics extends PerformanceMetrics {
 export const PerformanceDashboard: React.FC = () => {
   const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [selectedTimeRange, setSelectedTimeRange] = useState('1h');
+  const [_selectedTimeRange, _setSelectedTimeRange] = useState("1h");
 
   // Get performance metrics from Convex
   const performanceMetrics = useQuery(api.performanceOptimization.getPerformanceMetrics, {});
-  
+
   // Get cache statistics from client-side cache
   const [cacheStats, setCacheStats] = useState(cacheManager.getStats());
 
@@ -128,7 +116,7 @@ export const PerformanceDashboard: React.FC = () => {
       await resetMetrics({});
       setCacheStats(cacheManager.getStats());
     } catch (error) {
-      console.error('Failed to reset metrics:', error);
+      console.error("Failed to reset metrics:", error);
     }
   };
 
@@ -144,48 +132,55 @@ export const PerformanceDashboard: React.FC = () => {
     const rateLimitOk = metrics.rateLimitViolations < 10;
 
     if (cacheHitRateOk && responseTimeOk && rateLimitOk) {
-      return { status: 'healthy', color: 'text-green-600', bgColor: 'bg-green-100' };
+      return { status: "healthy", color: "text-green-600", bgColor: "bg-green-100" };
     } else if (cacheHitRateOk || responseTimeOk) {
-      return { status: 'warning', color: 'text-yellow-600', bgColor: 'bg-yellow-100' };
+      return { status: "warning", color: "text-yellow-600", bgColor: "bg-yellow-100" };
     } else {
-      return { status: 'critical', color: 'text-red-600', bgColor: 'bg-red-100' };
+      return { status: "critical", color: "text-red-600", bgColor: "bg-red-100" };
     }
   };
 
   const renderMetricCard = (
-    title: string, 
-    value: string | number, 
-    target?: string | number, 
+    title: string,
+    value: string | number,
+    target?: string | number,
     icon: React.ReactNode,
-    trend?: 'up' | 'down' | 'stable'
+    trend?: "up" | "down" | "stable"
   ) => {
-    const isTargetMet = target ? (typeof value === 'number' && typeof target === 'number' ? value >= target : true) : true;
-    
+    const isTargetMet = target
+      ? typeof value === "number" && typeof target === "number"
+        ? value >= target
+        : true
+      : true;
+
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-600">{title}</p>
-            <p className={`text-2xl font-semibold ${isTargetMet ? 'text-gray-900' : 'text-red-600'}`}>
+            <p
+              className={`text-2xl font-semibold ${isTargetMet ? "text-gray-900" : "text-red-600"}`}
+            >
               {value}
             </p>
-            {target && (
-              <p className="text-xs text-gray-500">Target: {target}</p>
-            )}
+            {target && <p className="text-xs text-gray-500">Target: {target}</p>}
           </div>
           <div className="flex items-center space-x-2">
             {trend && (
-              <div className={`p-1 rounded ${
-                trend === 'up' ? 'text-green-600' : 
-                trend === 'down' ? 'text-red-600' : 'text-gray-600'
-              }`}>
-                {trend === 'up' && <TrendingUp className="w-4 h-4" />}
-                {trend === 'down' && <TrendingDown className="w-4 h-4" />}
+              <div
+                className={`p-1 rounded ${
+                  trend === "up"
+                    ? "text-green-600"
+                    : trend === "down"
+                      ? "text-red-600"
+                      : "text-gray-600"
+                }`}
+              >
+                {trend === "up" && <TrendingUp className="w-4 h-4" />}
+                {trend === "down" && <TrendingDown className="w-4 h-4" />}
               </div>
             )}
-            <div className="p-3 rounded-lg bg-gray-100">
-              {icon}
-            </div>
+            <div className="p-3 rounded-lg bg-gray-100">{icon}</div>
           </div>
         </div>
       </div>
@@ -195,7 +190,7 @@ export const PerformanceDashboard: React.FC = () => {
   if (!performanceMetrics) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     );
   }
@@ -213,7 +208,7 @@ export const PerformanceDashboard: React.FC = () => {
           </h1>
           <p className="text-gray-600">Real-time system performance and optimization metrics</p>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           {/* Auto-refresh toggle */}
           <label className="flex items-center space-x-2">
@@ -252,15 +247,20 @@ export const PerformanceDashboard: React.FC = () => {
       {/* System Health Status */}
       <div className={`rounded-lg p-4 ${healthStatus.bgColor}`}>
         <div className="flex items-center space-x-3">
-          {healthStatus.status === 'healthy' && <CheckCircle className={`w-6 h-6 ${healthStatus.color}`} />}
-          {healthStatus.status !== 'healthy' && <AlertTriangle className={`w-6 h-6 ${healthStatus.color}`} />}
+          {healthStatus.status === "healthy" && (
+            <CheckCircle className={`w-6 h-6 ${healthStatus.color}`} />
+          )}
+          {healthStatus.status !== "healthy" && (
+            <AlertTriangle className={`w-6 h-6 ${healthStatus.color}`} />
+          )}
           <div>
             <h3 className={`font-semibold ${healthStatus.color}`}>
-              System Status: {healthStatus.status.charAt(0).toUpperCase() + healthStatus.status.slice(1)}
+              System Status:{" "}
+              {healthStatus.status.charAt(0).toUpperCase() + healthStatus.status.slice(1)}
             </h3>
             <p className="text-sm text-gray-600">
-              Uptime: {formatUptime(performanceMetrics.uptime)} | 
-              Last updated: {new Date().toLocaleTimeString()}
+              Uptime: {formatUptime(performanceMetrics.uptime)} | Last updated:{" "}
+              {new Date().toLocaleTimeString()}
             </p>
           </div>
         </div>
@@ -269,35 +269,39 @@ export const PerformanceDashboard: React.FC = () => {
       {/* Key Performance Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {renderMetricCard(
-          'Cache Hit Rate',
+          "Cache Hit Rate",
           `${Math.round(performanceMetrics.cacheHitRate * 100)}%`,
           `${Math.round(performanceMetrics.targetMetrics.cacheHitRate * 100)}%`,
           <Database className="w-6 h-6 text-blue-600" />,
-          performanceMetrics.cacheHitRate >= performanceMetrics.targetMetrics.cacheHitRate ? 'up' : 'down'
+          performanceMetrics.cacheHitRate >= performanceMetrics.targetMetrics.cacheHitRate
+            ? "up"
+            : "down"
         )}
 
         {renderMetricCard(
-          'Avg Response Time',
+          "Avg Response Time",
           `${Math.round(performanceMetrics.averageResponseTime)}ms`,
           `${performanceMetrics.targetMetrics.maxResponseTime}ms`,
           <Clock className="w-6 h-6 text-green-600" />,
-          performanceMetrics.averageResponseTime <= performanceMetrics.targetMetrics.maxResponseTime ? 'up' : 'down'
+          performanceMetrics.averageResponseTime <= performanceMetrics.targetMetrics.maxResponseTime
+            ? "up"
+            : "down"
         )}
 
         {renderMetricCard(
-          'Total Requests',
+          "Total Requests",
           performanceMetrics.totalRequests.toLocaleString(),
           undefined,
           <BarChart3 className="w-6 h-6 text-purple-600" />,
-          'up'
+          "up"
         )}
 
         {renderMetricCard(
-          'Rate Limit Violations',
+          "Rate Limit Violations",
           performanceMetrics.rateLimitViolations,
-          '< 10',
+          "< 10",
           <AlertTriangle className="w-6 h-6 text-red-600" />,
-          performanceMetrics.rateLimitViolations < 10 ? 'stable' : 'down'
+          performanceMetrics.rateLimitViolations < 10 ? "stable" : "down"
         )}
       </div>
 
@@ -308,7 +312,7 @@ export const PerformanceDashboard: React.FC = () => {
             <Database className="w-5 h-5 mr-2 text-blue-600" />
             Cache Performance
           </h3>
-          
+
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">L1 Cache Size</span>
@@ -324,7 +328,9 @@ export const PerformanceDashboard: React.FC = () => {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Hit Rate</span>
-              <span className={`font-medium ${cacheStats.hitRate >= 0.8 ? 'text-green-600' : 'text-red-600'}`}>
+              <span
+                className={`font-medium ${cacheStats.hitRate >= 0.8 ? "text-green-600" : "text-red-600"}`}
+              >
                 {Math.round(cacheStats.hitRate * 100)}%
               </span>
             </div>
@@ -336,7 +342,7 @@ export const PerformanceDashboard: React.FC = () => {
             <Target className="w-5 h-5 mr-2 text-green-600" />
             Performance Targets
           </h3>
-          
+
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Uptime Target</span>
@@ -348,11 +354,15 @@ export const PerformanceDashboard: React.FC = () => {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Max Response Time</span>
-              <span className="font-medium">{performanceMetrics.targetMetrics.maxResponseTime}ms</span>
+              <span className="font-medium">
+                {performanceMetrics.targetMetrics.maxResponseTime}ms
+              </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Max Concurrent Users</span>
-              <span className="font-medium">{performanceMetrics.targetMetrics.maxConcurrentUsers}</span>
+              <span className="font-medium">
+                {performanceMetrics.targetMetrics.maxConcurrentUsers}
+              </span>
             </div>
           </div>
         </div>
@@ -365,10 +375,13 @@ export const PerformanceDashboard: React.FC = () => {
             <PieChart className="w-5 h-5 mr-2 text-purple-600" />
             Most Accessed Cache Keys
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {cacheStats.topKeys.slice(0, 10).map((key, index) => (
-              <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div
+                key={key}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
                 <span className="text-sm font-medium text-gray-900">#{index + 1}</span>
                 <span className="text-sm text-gray-600 truncate flex-1 mx-3">{key}</span>
                 <span className="text-xs text-gray-500">Frequent</span>
@@ -384,49 +397,59 @@ export const PerformanceDashboard: React.FC = () => {
           <Zap className="w-5 h-5 mr-2 text-yellow-600" />
           Performance Recommendations
         </h3>
-        
+
         <div className="space-y-3">
           {performanceMetrics.cacheHitRate < 0.8 && (
             <div className="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg">
               <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-yellow-800">Low Cache Hit Rate</p>
-                <p className="text-xs text-yellow-700">Consider increasing cache TTL for frequently accessed data</p>
+                <p className="text-xs text-yellow-700">
+                  Consider increasing cache TTL for frequently accessed data
+                </p>
               </div>
             </div>
           )}
-          
-          {performanceMetrics.averageResponseTime > performanceMetrics.targetMetrics.maxResponseTime && (
+
+          {performanceMetrics.averageResponseTime >
+            performanceMetrics.targetMetrics.maxResponseTime && (
             <div className="flex items-start space-x-3 p-3 bg-red-50 rounded-lg">
               <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-red-800">High Response Time</p>
-                <p className="text-xs text-red-700">Optimize database queries and increase caching</p>
+                <p className="text-xs text-red-700">
+                  Optimize database queries and increase caching
+                </p>
               </div>
             </div>
           )}
-          
+
           {performanceMetrics.rateLimitViolations > 5 && (
             <div className="flex items-start space-x-3 p-3 bg-orange-50 rounded-lg">
               <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-orange-800">Rate Limit Violations Detected</p>
-                <p className="text-xs text-orange-700">Review API usage patterns and implement request batching</p>
+                <p className="text-sm font-medium text-orange-800">
+                  Rate Limit Violations Detected
+                </p>
+                <p className="text-xs text-orange-700">
+                  Review API usage patterns and implement request batching
+                </p>
               </div>
             </div>
           )}
-          
-          {performanceMetrics.cacheHitRate >= 0.8 && 
-           performanceMetrics.averageResponseTime <= performanceMetrics.targetMetrics.maxResponseTime && 
-           performanceMetrics.rateLimitViolations <= 5 && (
-            <div className="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
-              <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-green-800">System Performance Optimal</p>
-                <p className="text-xs text-green-700">All performance targets are being met</p>
+
+          {performanceMetrics.cacheHitRate >= 0.8 &&
+            performanceMetrics.averageResponseTime <=
+              performanceMetrics.targetMetrics.maxResponseTime &&
+            performanceMetrics.rateLimitViolations <= 5 && (
+              <div className="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-green-800">System Performance Optimal</p>
+                  <p className="text-xs text-green-700">All performance targets are being met</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       </div>
     </div>

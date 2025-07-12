@@ -1,6 +1,6 @@
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 export const list = query({
   args: {
@@ -12,16 +12,14 @@ export const list = query({
     scheduledAfter: v.optional(v.number()),
     scheduledBefore: v.optional(v.number()),
   },
-  handler: async (ctx, _args) => {
-    const userId = await getAuthUserId(_ctx);
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     if (args.search) {
       return await ctx.db
         .query("jobs")
-        .withSearchIndex("search_jobs", (q) => 
-          q.search("title", args.search!)
-        )
+        .withSearchIndex("search_jobs", (q) => q.search("title", args.search!))
         .collect();
     }
 
@@ -45,9 +43,7 @@ export const list = query({
     let filteredJobs = jobs;
 
     if (args.assignedToMe) {
-      filteredJobs = jobs.filter(job => 
-        job.assignedTechnicians.includes(userId)
-      );
+      filteredJobs = jobs.filter((job) => job.assignedTechnicians.includes(userId));
     }
 
     // Add contact information to each job
@@ -65,7 +61,7 @@ export const list = query({
 
     // Filter by date range
     if (args.scheduledAfter || args.scheduledBefore) {
-      finalJobs = finalJobs.filter(job => {
+      finalJobs = finalJobs.filter((job) => {
         if (!job.scheduledDate) return false;
         if (args.scheduledAfter && job.scheduledDate < args.scheduledAfter) return false;
         if (args.scheduledBefore && job.scheduledDate > args.scheduledBefore) return false;
@@ -74,9 +70,7 @@ export const list = query({
     }
 
     if (args.district) {
-      finalJobs = finalJobs.filter(job =>
-        job.contact?.district === args.district
-      );
+      finalJobs = finalJobs.filter((job) => job.contact?.district === args.district);
     }
 
     return finalJobs;
@@ -148,19 +142,30 @@ export const create = mutation({
       v.literal("emergency"),
       v.literal("warranty")
     ),
-    priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high"), v.literal("urgent")),
+    priority: v.union(
+      v.literal("low"),
+      v.literal("medium"),
+      v.literal("high"),
+      v.literal("urgent")
+    ),
     scheduledDate: v.optional(v.number()),
     estimatedHours: v.optional(v.number()),
     assignedTechnicians: v.array(v.id("users")),
-    equipmentUsed: v.optional(v.array(v.object({
-      equipmentId: v.id("equipment"),
-      quantity: v.number()
-    }))),
-    aiQuoteData: v.optional(v.object({
-      transcriptId: v.optional(v.id("transcriptions")),
-      estimatedCost: v.optional(v.number()),
-      confidence: v.optional(v.number())
-    })),
+    equipmentUsed: v.optional(
+      v.array(
+        v.object({
+          equipmentId: v.id("equipment"),
+          quantity: v.number(),
+        })
+      )
+    ),
+    aiQuoteData: v.optional(
+      v.object({
+        transcriptId: v.optional(v.id("transcriptions")),
+        estimatedCost: v.optional(v.number()),
+        confidence: v.optional(v.number()),
+      })
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -206,26 +211,32 @@ export const update = mutation({
     id: v.id("jobs"),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
-    type: v.optional(v.union(
-      v.literal("installation"),
-      v.literal("repair"),
-      v.literal("maintenance"),
-      v.literal("inspection"),
-      v.literal("emergency"),
-      v.literal("warranty")
-    )),
-    priority: v.optional(v.union(v.literal("low"), v.literal("medium"), v.literal("high"), v.literal("urgent"))),
-    status: v.optional(v.union(
-      v.literal("lead"),
-      v.literal("quoted"),
-      v.literal("approved"),
-      v.literal("scheduled"),
-      v.literal("in_progress"),
-      v.literal("completed"),
-      v.literal("invoiced"),
-      v.literal("paid"),
-      v.literal("cancelled")
-    )),
+    type: v.optional(
+      v.union(
+        v.literal("installation"),
+        v.literal("repair"),
+        v.literal("maintenance"),
+        v.literal("inspection"),
+        v.literal("emergency"),
+        v.literal("warranty")
+      )
+    ),
+    priority: v.optional(
+      v.union(v.literal("low"), v.literal("medium"), v.literal("high"), v.literal("urgent"))
+    ),
+    status: v.optional(
+      v.union(
+        v.literal("lead"),
+        v.literal("quoted"),
+        v.literal("approved"),
+        v.literal("scheduled"),
+        v.literal("in_progress"),
+        v.literal("completed"),
+        v.literal("invoiced"),
+        v.literal("paid"),
+        v.literal("cancelled")
+      )
+    ),
     scheduledDate: v.optional(v.number()),
     completedDate: v.optional(v.number()),
     estimatedHours: v.optional(v.number()),
@@ -244,16 +255,16 @@ export const update = mutation({
 
     const { id, ...updates } = args;
     const job = await ctx.db.get(id);
-    
+
     if (!job) throw new Error("Job not found");
 
     // If status is being updated to completed, set completion date
     if (updates.status === "completed" && !updates.completedDate) {
       updates.completedDate = Date.now();
-      
+
       // Set next service date for maintenance jobs
       if (job.type === "maintenance" || job.type === "installation") {
-        const nextService = Date.now() + (365 * 24 * 60 * 60 * 1000); // 1 year
+        const nextService = Date.now() + 365 * 24 * 60 * 60 * 1000; // 1 year
         updates.nextServiceDue = nextService;
       }
     }
@@ -262,8 +273,8 @@ export const update = mutation({
 
     // Create notifications for status changes
     if (updates.status && updates.status !== job.status) {
-      const contact = await ctx.db.get(job.contactId);
-      
+      const _contact = await ctx.db.get(job.contactId);
+
       // Notify assigned technicians
       for (const techId of job.assignedTechnicians) {
         await ctx.db.insert("notifications", {
@@ -281,9 +292,9 @@ export const update = mutation({
     // Handle technician reassignment
     if (updates.assignedTechnicians && updates.assignedTechnicians !== job.assignedTechnicians) {
       const newTechnicians = updates.assignedTechnicians.filter(
-        techId => !job.assignedTechnicians.includes(techId)
+        (techId) => !job.assignedTechnicians.includes(techId)
       );
-      
+
       for (const techId of newTechnicians) {
         await ctx.db.insert("notifications", {
           userId: techId,
@@ -307,12 +318,12 @@ export const getUpcoming = query({
 
     const now = Date.now();
     const daysAhead = args.days || 7;
-    const futureDate = now + (daysAhead * 24 * 60 * 60 * 1000);
+    const futureDate = now + daysAhead * 24 * 60 * 60 * 1000;
 
     const jobs = await ctx.db
       .query("jobs")
       .withIndex("by_scheduled_date")
-      .filter((q) => 
+      .filter((q) =>
         q.and(
           q.gte(q.field("scheduledDate"), now),
           q.lte(q.field("scheduledDate"), futureDate),
@@ -339,16 +350,13 @@ export const getServiceDue = query({
     if (!userId) throw new Error("Not authenticated");
 
     const now = Date.now();
-    const nextMonth = now + (30 * 24 * 60 * 60 * 1000);
+    const nextMonth = now + 30 * 24 * 60 * 60 * 1000;
 
     return await ctx.db
       .query("jobs")
       .withIndex("by_next_service")
-      .filter((q) => 
-        q.and(
-          q.lte(q.field("nextServiceDue"), nextMonth),
-          q.gte(q.field("nextServiceDue"), now)
-        )
+      .filter((q) =>
+        q.and(q.lte(q.field("nextServiceDue"), nextMonth), q.gte(q.field("nextServiceDue"), now))
       )
       .collect();
   },
@@ -378,7 +386,7 @@ export const optimizeRoute = mutation({
     const jobs = await Promise.all(
       args.jobIds.map(async (jobId) => {
         const job = await ctx.db.get(jobId);
-        const contact = await ctx.db.get(job!.contactId);
+        const contact = await ctx.db.get(job?.contactId);
         return { job, contact };
       })
     );
@@ -393,12 +401,12 @@ export const optimizeRoute = mutation({
 
     // Update route order for each job
     for (let i = 0; i < optimizedJobs.length; i++) {
-      await ctx.db.patch(optimizedJobs[i].job!._id, {
+      await ctx.db.patch(optimizedJobs[i].job?._id, {
         routeOrder: i + 1,
       });
     }
 
-    return optimizedJobs.map(({ job }) => job!._id);
+    return optimizedJobs.map(({ job }) => job?._id);
   },
 });
 
@@ -449,7 +457,7 @@ export const listScheduled = query({
 
     // Filter by date range
     if (args.scheduledAfter || args.scheduledBefore) {
-      jobs = jobs.filter(job => {
+      jobs = jobs.filter((job) => {
         if (!job.scheduledDate) return false;
         if (args.scheduledAfter && job.scheduledDate < args.scheduledAfter) return false;
         if (args.scheduledBefore && job.scheduledDate > args.scheduledBefore) return false;
@@ -459,9 +467,7 @@ export const listScheduled = query({
 
     // Filter by technician
     if (args.technicianId) {
-      jobs = jobs.filter(job =>
-        job.assignedTechnicians.includes(args.technicianId!)
-      );
+      jobs = jobs.filter((job) => job.assignedTechnicians.includes(args.technicianId!));
     }
 
     // Add contact information
@@ -502,9 +508,7 @@ export const getScheduleForDate = query({
 
     // Filter by technician if specified
     if (args.technicianId) {
-      jobs = jobs.filter(job =>
-        job.assignedTechnicians.includes(args.technicianId!)
-      );
+      jobs = jobs.filter((job) => job.assignedTechnicians.includes(args.technicianId!));
     }
 
     // Add contact information
@@ -524,8 +528,8 @@ export const getScheduledForDate = query({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const startOfDay = new Date(args.date + "T00:00:00.000Z").getTime();
-    const endOfDay = new Date(args.date + "T23:59:59.999Z").getTime();
+    const startOfDay = new Date(`${args.date}T00:00:00.000Z`).getTime();
+    const endOfDay = new Date(`${args.date}T23:59:59.999Z`).getTime();
 
     const jobs = await ctx.db
       .query("jobs")
@@ -543,7 +547,7 @@ export const getScheduledForDate = query({
           contact,
           coordinates: contact?.coordinates,
           address: contact?.address,
-          district: contact?.district
+          district: contact?.district,
         };
       })
     );

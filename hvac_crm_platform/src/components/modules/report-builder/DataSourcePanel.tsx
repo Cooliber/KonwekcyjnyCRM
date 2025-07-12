@@ -1,23 +1,19 @@
-import React, { useState } from 'react';
-import { useDrag } from 'react-dnd';
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
-import { 
-  Database, 
-  Table, 
-  Search, 
-  ChevronDown, 
+import {
+  Brain,
+  ChevronDown,
   ChevronRight,
-  Plus,
+  Cloud,
+  Database,
+  FileText,
+  Package,
+  Search,
   Users,
   Wrench,
-  Package,
-  FileText,
-  MapPin,
-  Brain,
-  Cloud,
-  HardDrive
-} from 'lucide-react';
+} from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import { useDrag } from "react-dnd";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 
 interface DataSourcePanelProps {
   dataSources: any[];
@@ -33,8 +29,8 @@ interface DraggableFieldProps {
 
 function DraggableField({ table, field, type, icon: Icon }: DraggableFieldProps) {
   const [{ isDragging }, drag] = useDrag({
-    type: 'field',
-    item: { type: 'field', table, field, dataType: type },
+    type: "field",
+    item: { type: "field", table, field, dataType: type },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -44,9 +40,7 @@ function DraggableField({ table, field, type, icon: Icon }: DraggableFieldProps)
     <div
       ref={drag}
       className={`flex items-center space-x-2 p-2 rounded cursor-move transition-colors ${
-        isDragging 
-          ? 'opacity-50 bg-blue-100' 
-          : 'hover:bg-gray-50'
+        isDragging ? "opacity-50 bg-blue-100" : "hover:bg-gray-50"
       }`}
     >
       <Icon className="w-4 h-4 text-gray-500" />
@@ -57,133 +51,133 @@ function DraggableField({ table, field, type, icon: Icon }: DraggableFieldProps)
 }
 
 export function DataSourcePanel({ dataSources, onChange }: DataSourcePanelProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [expandedSources, setExpandedSources] = useState<Set<string>>(new Set(['convex']));
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedSources, setExpandedSources] = useState<Set<string>>(new Set(["convex"]));
   const [expandedTables, setExpandedTables] = useState<Set<string>>(new Set());
 
   const dataSourceTypes = [
     {
-      id: 'convex',
-      name: 'Convex Database',
+      id: "convex",
+      name: "Convex Database",
       icon: Database,
-      color: 'text-blue-600',
+      color: "text-blue-600",
       tables: [
         {
-          name: 'contacts',
+          name: "contacts",
           icon: Users,
           fields: [
-            { name: 'name', type: 'string' },
-            { name: 'email', type: 'string' },
-            { name: 'phone', type: 'string' },
-            { name: 'company', type: 'string' },
-            { name: 'district', type: 'string' },
-            { name: 'type', type: 'string' },
-            { name: 'status', type: 'string' },
-            { name: 'createdAt', type: 'date' },
-            { name: 'lastContactDate', type: 'date' }
-          ]
+            { name: "name", type: "string" },
+            { name: "email", type: "string" },
+            { name: "phone", type: "string" },
+            { name: "company", type: "string" },
+            { name: "district", type: "string" },
+            { name: "type", type: "string" },
+            { name: "status", type: "string" },
+            { name: "createdAt", type: "date" },
+            { name: "lastContactDate", type: "date" },
+          ],
         },
         {
-          name: 'jobs',
+          name: "jobs",
           icon: Wrench,
           fields: [
-            { name: 'title', type: 'string' },
-            { name: 'description', type: 'string' },
-            { name: 'type', type: 'string' },
-            { name: 'status', type: 'string' },
-            { name: 'priority', type: 'string' },
-            { name: 'scheduledDate', type: 'date' },
-            { name: 'estimatedHours', type: 'number' },
-            { name: 'actualHours', type: 'number' },
-            { name: 'totalCost', type: 'number' }
-          ]
+            { name: "title", type: "string" },
+            { name: "description", type: "string" },
+            { name: "type", type: "string" },
+            { name: "status", type: "string" },
+            { name: "priority", type: "string" },
+            { name: "scheduledDate", type: "date" },
+            { name: "estimatedHours", type: "number" },
+            { name: "actualHours", type: "number" },
+            { name: "totalCost", type: "number" },
+          ],
         },
         {
-          name: 'equipment',
+          name: "equipment",
           icon: Package,
           fields: [
-            { name: 'name', type: 'string' },
-            { name: 'brand', type: 'string' },
-            { name: 'model', type: 'string' },
-            { name: 'category', type: 'string' },
-            { name: 'quantity', type: 'number' },
-            { name: 'minStock', type: 'number' },
-            { name: 'purchasePrice', type: 'number' },
-            { name: 'sellPrice', type: 'number' }
-          ]
+            { name: "name", type: "string" },
+            { name: "brand", type: "string" },
+            { name: "model", type: "string" },
+            { name: "category", type: "string" },
+            { name: "quantity", type: "number" },
+            { name: "minStock", type: "number" },
+            { name: "purchasePrice", type: "number" },
+            { name: "sellPrice", type: "number" },
+          ],
         },
         {
-          name: 'quotes',
+          name: "quotes",
           icon: FileText,
           fields: [
-            { name: 'quoteNumber', type: 'string' },
-            { name: 'title', type: 'string' },
-            { name: 'status', type: 'string' },
-            { name: 'subtotal', type: 'number' },
-            { name: 'totalTax', type: 'number' },
-            { name: 'totalAmount', type: 'number' },
-            { name: 'validUntil', type: 'date' }
-          ]
-        }
-      ]
+            { name: "quoteNumber", type: "string" },
+            { name: "title", type: "string" },
+            { name: "status", type: "string" },
+            { name: "subtotal", type: "number" },
+            { name: "totalTax", type: "number" },
+            { name: "totalAmount", type: "number" },
+            { name: "validUntil", type: "date" },
+          ],
+        },
+      ],
     },
     {
-      id: 'supabase',
-      name: 'Supabase Analytics',
+      id: "supabase",
+      name: "Supabase Analytics",
       icon: Cloud,
-      color: 'text-green-600',
+      color: "text-green-600",
       tables: [
         {
-          name: 'file_analytics',
+          name: "file_analytics",
           icon: FileText,
           fields: [
-            { name: 'file_name', type: 'string' },
-            { name: 'file_size', type: 'number' },
-            { name: 'download_count', type: 'number' },
-            { name: 'upload_date', type: 'date' }
-          ]
+            { name: "file_name", type: "string" },
+            { name: "file_size", type: "number" },
+            { name: "download_count", type: "number" },
+            { name: "upload_date", type: "date" },
+          ],
         },
         {
-          name: 'user_sessions',
+          name: "user_sessions",
           icon: Users,
           fields: [
-            { name: 'session_id', type: 'string' },
-            { name: 'user_id', type: 'string' },
-            { name: 'duration', type: 'number' },
-            { name: 'page_views', type: 'number' }
-          ]
-        }
-      ]
+            { name: "session_id", type: "string" },
+            { name: "user_id", type: "string" },
+            { name: "duration", type: "number" },
+            { name: "page_views", type: "number" },
+          ],
+        },
+      ],
     },
     {
-      id: 'weaviate',
-      name: 'Weaviate Vector DB',
+      id: "weaviate",
+      name: "Weaviate Vector DB",
       icon: Brain,
-      color: 'text-purple-600',
+      color: "text-purple-600",
       tables: [
         {
-          name: 'service_predictions',
+          name: "service_predictions",
           icon: Brain,
           fields: [
-            { name: 'district', type: 'string' },
-            { name: 'service_type', type: 'string' },
-            { name: 'confidence', type: 'number' },
-            { name: 'predicted_demand', type: 'number' },
-            { name: 'seasonal_factor', type: 'number' }
-          ]
+            { name: "district", type: "string" },
+            { name: "service_type", type: "string" },
+            { name: "confidence", type: "number" },
+            { name: "predicted_demand", type: "number" },
+            { name: "seasonal_factor", type: "number" },
+          ],
         },
         {
-          name: 'customer_insights',
+          name: "customer_insights",
           icon: Users,
           fields: [
-            { name: 'customer_segment', type: 'string' },
-            { name: 'affluence_score', type: 'number' },
-            { name: 'lifetime_value', type: 'number' },
-            { name: 'churn_probability', type: 'number' }
-          ]
-        }
-      ]
-    }
+            { name: "customer_segment", type: "string" },
+            { name: "affluence_score", type: "number" },
+            { name: "lifetime_value", type: "number" },
+            { name: "churn_probability", type: "number" },
+          ],
+        },
+      ],
+    },
   ];
 
   const toggleSource = (sourceId: string) => {
@@ -206,17 +200,22 @@ export function DataSourcePanel({ dataSources, onChange }: DataSourcePanelProps)
     setExpandedTables(newExpanded);
   };
 
-  const filteredSources = dataSourceTypes.map(source => ({
-    ...source,
-    tables: source.tables.map(table => ({
-      ...table,
-      fields: table.fields.filter(field =>
-        searchQuery === '' ||
-        field.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        table.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    })).filter(table => table.fields.length > 0)
-  })).filter(source => source.tables.length > 0);
+  const filteredSources = dataSourceTypes
+    .map((source) => ({
+      ...source,
+      tables: source.tables
+        .map((table) => ({
+          ...table,
+          fields: table.fields.filter(
+            (field) =>
+              searchQuery === "" ||
+              field.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              table.name.toLowerCase().includes(searchQuery.toLowerCase())
+          ),
+        }))
+        .filter((table) => table.fields.length > 0),
+    }))
+    .filter((source) => source.tables.length > 0);
 
   return (
     <Card className="h-fit">
@@ -238,10 +237,10 @@ export function DataSourcePanel({ dataSources, onChange }: DataSourcePanelProps)
       </CardHeader>
       <CardContent className="p-0">
         <div className="max-h-96 overflow-y-auto">
-          {filteredSources.map(source => {
+          {filteredSources.map((source) => {
             const isExpanded = expandedSources.has(source.id);
             const SourceIcon = source.icon;
-            
+
             return (
               <div key={source.id} className="border-b border-gray-100 last:border-b-0">
                 <button
@@ -251,9 +250,7 @@ export function DataSourcePanel({ dataSources, onChange }: DataSourcePanelProps)
                   <div className="flex items-center space-x-2">
                     <SourceIcon className={`w-4 h-4 ${source.color}`} />
                     <span className="font-medium text-sm">{source.name}</span>
-                    <span className="text-xs text-gray-500">
-                      ({source.tables.length} tables)
-                    </span>
+                    <span className="text-xs text-gray-500">({source.tables.length} tables)</span>
                   </div>
                   {isExpanded ? (
                     <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -261,14 +258,14 @@ export function DataSourcePanel({ dataSources, onChange }: DataSourcePanelProps)
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                   )}
                 </button>
-                
+
                 {isExpanded && (
                   <div className="pl-4 pb-2">
-                    {source.tables.map(table => {
+                    {source.tables.map((table) => {
                       const tableId = `${source.id}.${table.name}`;
                       const isTableExpanded = expandedTables.has(tableId);
                       const TableIcon = table.icon;
-                      
+
                       return (
                         <div key={table.name} className="mb-2">
                           <button
@@ -288,10 +285,10 @@ export function DataSourcePanel({ dataSources, onChange }: DataSourcePanelProps)
                               <ChevronRight className="w-3 h-3 text-gray-400" />
                             )}
                           </button>
-                          
+
                           {isTableExpanded && (
                             <div className="pl-6 space-y-1">
-                              {table.fields.map(field => (
+                              {table.fields.map((field) => (
                                 <DraggableField
                                   key={field.name}
                                   table={table.name}

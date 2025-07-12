@@ -4,8 +4,8 @@
  * Targets: <800KB bundle, <300ms response, >95% mobile score
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { toast } from 'sonner';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 interface PerformanceTargets {
   bundleSize: 800; // KB
@@ -22,18 +22,18 @@ interface RealTimeMetrics {
   cls: number; // Cumulative Layout Shift
   fcp: number; // First Contentful Paint
   ttfb: number; // Time to First Byte
-  
+
   // Resource metrics
   bundleSize: number; // KB
   memoryUsage: number; // MB
   cpuUsage: number; // percentage
   networkLatency: number; // ms
-  
+
   // User experience
   mobileScore: number;
   pwaCompliant: boolean;
   offlineCapable: boolean;
-  
+
   // Performance scores
   performanceScore: number; // 0-100
   accessibilityScore: number; // 0-100
@@ -42,7 +42,7 @@ interface RealTimeMetrics {
 }
 
 interface PerformanceAlert {
-  type: 'warning' | 'error' | 'info';
+  type: "warning" | "error" | "info";
   metric: string;
   value: number;
   threshold: number;
@@ -69,7 +69,7 @@ export function usePerformanceMonitoring() {
     bestPracticesScore: 0,
     seoScore: 0,
   });
-  
+
   const [alerts, setAlerts] = useState<PerformanceAlert[]>([]);
   const [isMonitoring, setIsMonitoring] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -85,34 +85,34 @@ export function usePerformanceMonitoring() {
 
   // Core Web Vitals measurement
   const measureCoreWebVitals = useCallback(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     // Largest Contentful Paint (LCP)
-    if ('PerformanceObserver' in window) {
+    if ("PerformanceObserver" in window) {
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1] as any;
         if (lastEntry) {
-          setMetrics(prev => ({ ...prev, lcp: lastEntry.startTime }));
+          setMetrics((prev) => ({ ...prev, lcp: lastEntry.startTime }));
         }
       });
-      lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+      lcpObserver.observe({ entryTypes: ["largest-contentful-paint"] });
       observerRef.current = lcpObserver;
     }
 
     // First Input Delay (FID)
-    if ('PerformanceObserver' in window) {
+    if ("PerformanceObserver" in window) {
       const fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         entries.forEach((entry: any) => {
-          setMetrics(prev => ({ ...prev, fid: entry.processingStart - entry.startTime }));
+          setMetrics((prev) => ({ ...prev, fid: entry.processingStart - entry.startTime }));
         });
       });
-      fidObserver.observe({ entryTypes: ['first-input'] });
+      fidObserver.observe({ entryTypes: ["first-input"] });
     }
 
     // Cumulative Layout Shift (CLS)
-    if ('PerformanceObserver' in window) {
+    if ("PerformanceObserver" in window) {
       let clsValue = 0;
       const clsObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
@@ -121,85 +121,85 @@ export function usePerformanceMonitoring() {
             clsValue += entry.value;
           }
         });
-        setMetrics(prev => ({ ...prev, cls: clsValue }));
+        setMetrics((prev) => ({ ...prev, cls: clsValue }));
       });
-      clsObserver.observe({ entryTypes: ['layout-shift'] });
+      clsObserver.observe({ entryTypes: ["layout-shift"] });
     }
 
     // First Contentful Paint (FCP)
-    if ('PerformanceObserver' in window) {
+    if ("PerformanceObserver" in window) {
       const fcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         entries.forEach((entry: any) => {
-          if (entry.name === 'first-contentful-paint') {
-            setMetrics(prev => ({ ...prev, fcp: entry.startTime }));
+          if (entry.name === "first-contentful-paint") {
+            setMetrics((prev) => ({ ...prev, fcp: entry.startTime }));
           }
         });
       });
-      fcpObserver.observe({ entryTypes: ['paint'] });
+      fcpObserver.observe({ entryTypes: ["paint"] });
     }
   }, []);
 
   // Memory and CPU monitoring
   const measureResourceUsage = useCallback(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     // Memory usage (if available)
-    if ('memory' in performance) {
+    if ("memory" in performance) {
       const memory = (performance as any).memory;
       const memoryUsageMB = memory.usedJSHeapSize / (1024 * 1024);
-      setMetrics(prev => ({ ...prev, memoryUsage: memoryUsageMB }));
+      setMetrics((prev) => ({ ...prev, memoryUsage: memoryUsageMB }));
     }
 
     // Network latency estimation
     const startTime = performance.now();
-    fetch('/api/ping', { method: 'HEAD' })
+    fetch("/api/ping", { method: "HEAD" })
       .then(() => {
         const latency = performance.now() - startTime;
-        setMetrics(prev => ({ ...prev, networkLatency: latency }));
+        setMetrics((prev) => ({ ...prev, networkLatency: latency }));
       })
       .catch(() => {
         // Fallback: estimate based on navigation timing
-        const navigation = performance.getEntriesByType('navigation')[0] as any;
+        const navigation = performance.getEntriesByType("navigation")[0] as any;
         if (navigation) {
           const latency = navigation.responseStart - navigation.requestStart;
-          setMetrics(prev => ({ ...prev, networkLatency: latency }));
+          setMetrics((prev) => ({ ...prev, networkLatency: latency }));
         }
       });
   }, []);
 
   // Bundle size calculation
   const calculateBundleSize = useCallback(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
-    const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+    const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
     let totalSize = 0;
 
     resources.forEach((resource) => {
-      if (resource.name.includes('.js') || resource.name.includes('.css')) {
+      if (resource.name.includes(".js") || resource.name.includes(".css")) {
         totalSize += resource.transferSize || 0;
       }
     });
 
     const bundleSizeKB = totalSize / 1024;
-    setMetrics(prev => ({ ...prev, bundleSize: bundleSizeKB }));
+    setMetrics((prev) => ({ ...prev, bundleSize: bundleSizeKB }));
   }, []);
 
   // PWA compliance check
   const checkPWACompliance = useCallback(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
-    const hasSW = 'serviceWorker' in navigator;
+    const hasSW = "serviceWorker" in navigator;
     const hasManifest = document.querySelector('link[rel="manifest"]') !== null;
-    const isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost';
-    
-    const pwaCompliant = hasSW && hasManifest && isHTTPS;
-    const offlineCapable = hasSW && 'caches' in window;
+    const isHTTPS = location.protocol === "https:" || location.hostname === "localhost";
 
-    setMetrics(prev => ({ 
-      ...prev, 
+    const pwaCompliant = hasSW && hasManifest && isHTTPS;
+    const offlineCapable = hasSW && "caches" in window;
+
+    setMetrics((prev) => ({
+      ...prev,
       pwaCompliant,
-      offlineCapable 
+      offlineCapable,
     }));
   }, []);
 
@@ -228,7 +228,7 @@ export function usePerformanceMonitoring() {
     else if (currentMetrics.memoryUsage > TARGETS.memoryUsage) score -= 5;
 
     return Math.max(0, score);
-  }, [TARGETS]);
+  }, []);
 
   // Alert generation
   const checkThresholds = useCallback((currentMetrics: RealTimeMetrics) => {
@@ -237,8 +237,8 @@ export function usePerformanceMonitoring() {
     // Bundle size alert
     if (currentMetrics.bundleSize > TARGETS.bundleSize) {
       newAlerts.push({
-        type: currentMetrics.bundleSize > TARGETS.bundleSize * 1.2 ? 'error' : 'warning',
-        metric: 'Bundle Size',
+        type: currentMetrics.bundleSize > TARGETS.bundleSize * 1.2 ? "error" : "warning",
+        metric: "Bundle Size",
         value: currentMetrics.bundleSize,
         threshold: TARGETS.bundleSize,
         message: `Bundle size (${currentMetrics.bundleSize.toFixed(1)}KB) exceeds target (${TARGETS.bundleSize}KB)`,
@@ -249,8 +249,8 @@ export function usePerformanceMonitoring() {
     // LCP alert
     if (currentMetrics.lcp > 2500) {
       newAlerts.push({
-        type: currentMetrics.lcp > 4000 ? 'error' : 'warning',
-        metric: 'Largest Contentful Paint',
+        type: currentMetrics.lcp > 4000 ? "error" : "warning",
+        metric: "Largest Contentful Paint",
         value: currentMetrics.lcp,
         threshold: 2500,
         message: `LCP (${currentMetrics.lcp.toFixed(0)}ms) is slower than recommended (2.5s)`,
@@ -261,8 +261,8 @@ export function usePerformanceMonitoring() {
     // Memory usage alert
     if (currentMetrics.memoryUsage > TARGETS.memoryUsage) {
       newAlerts.push({
-        type: currentMetrics.memoryUsage > TARGETS.memoryUsage * 1.5 ? 'error' : 'warning',
-        metric: 'Memory Usage',
+        type: currentMetrics.memoryUsage > TARGETS.memoryUsage * 1.5 ? "error" : "warning",
+        metric: "Memory Usage",
         value: currentMetrics.memoryUsage,
         threshold: TARGETS.memoryUsage,
         message: `Memory usage (${currentMetrics.memoryUsage.toFixed(1)}MB) exceeds target (${TARGETS.memoryUsage}MB)`,
@@ -271,18 +271,18 @@ export function usePerformanceMonitoring() {
     }
 
     if (newAlerts.length > 0) {
-      setAlerts(prev => [...prev.slice(-9), ...newAlerts]); // Keep last 10 alerts
-      
+      setAlerts((prev) => [...prev.slice(-9), ...newAlerts]); // Keep last 10 alerts
+
       // Show toast for critical alerts
-      newAlerts.forEach(alert => {
-        if (alert.type === 'error') {
+      newAlerts.forEach((alert) => {
+        if (alert.type === "error") {
           toast.error(`Performance Alert: ${alert.message}`);
-        } else if (alert.type === 'warning') {
+        } else if (alert.type === "warning") {
           toast.warning(`Performance Warning: ${alert.message}`);
         }
       });
     }
-  }, [TARGETS]);
+  }, []);
 
   // Start monitoring
   const startMonitoring = useCallback(() => {
@@ -295,26 +295,34 @@ export function usePerformanceMonitoring() {
     intervalRef.current = setInterval(() => {
       measureResourceUsage();
       calculateBundleSize();
-      
-      setMetrics(currentMetrics => {
+
+      setMetrics((currentMetrics) => {
         const performanceScore = calculatePerformanceScore(currentMetrics);
         const updatedMetrics = { ...currentMetrics, performanceScore };
-        
+
         checkThresholds(updatedMetrics);
         return updatedMetrics;
       });
     }, 5000); // Update every 5 seconds
-  }, [isMonitoring, measureCoreWebVitals, measureResourceUsage, calculateBundleSize, checkPWACompliance, calculatePerformanceScore, checkThresholds]);
+  }, [
+    isMonitoring,
+    measureCoreWebVitals,
+    measureResourceUsage,
+    calculateBundleSize,
+    checkPWACompliance,
+    calculatePerformanceScore,
+    checkThresholds,
+  ]);
 
   // Stop monitoring
   const stopMonitoring = useCallback(() => {
     setIsMonitoring(false);
-    
+
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    
+
     if (observerRef.current) {
       observerRef.current.disconnect();
       observerRef.current = null;

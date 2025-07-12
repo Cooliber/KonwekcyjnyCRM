@@ -8,11 +8,7 @@
  * @module
  */
 
-import type {
-  ApiFromModules,
-  FilterApi,
-  FunctionReference,
-} from "convex/server";
+import type { ApiFromModules, FilterApi, FunctionReference } from "convex/server";
 import type * as advancedAnalytics from "../advancedAnalytics.js";
 import type * as ai from "../ai.js";
 import type * as analytics from "../analytics.js";
@@ -92,11 +88,5 @@ declare const fullApi: ApiFromModules<{
   weaviateOptimization: typeof weaviateOptimization;
   workflows: typeof workflows;
 }>;
-export declare const api: FilterApi<
-  typeof fullApi,
-  FunctionReference<any, "public">
->;
-export declare const internal: FilterApi<
-  typeof fullApi,
-  FunctionReference<any, "internal">
->;
+export declare const api: FilterApi<typeof fullApi, FunctionReference<any, "public">>;
+export declare const internal: FilterApi<typeof fullApi, FunctionReference<any, "internal">>;

@@ -1,24 +1,23 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
-import { 
-  Copy, 
-  Star, 
-  Wrench,
-  DollarSign,
-  Users,
-  Package,
-  MapPin,
-  TrendingUp,
-  BarChart3,
-  PieChart,
-  LineChart,
-  Gauge,
+import {
   Activity,
+  BarChart3,
   Calendar,
-  Filter,
-  Zap
-} from 'lucide-react';
+  Copy,
+  DollarSign,
+  Gauge,
+  LineChart,
+  MapPin,
+  Package,
+  PieChart,
+  Star,
+  TrendingUp,
+  Users,
+  Wrench,
+  Zap,
+} from "lucide-react";
+import { useState } from "react";
+import { Button } from "../../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 
 interface ReportTemplatesProps {
   templates: any[];
@@ -26,145 +25,189 @@ interface ReportTemplatesProps {
 }
 
 export function ReportTemplates({ templates, onUseTemplate }: ReportTemplatesProps) {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   const templateCategories = [
-    { value: 'all', label: 'All Templates', icon: BarChart3 },
-    { value: 'hvac_performance', label: 'HVAC Performance', icon: Wrench },
-    { value: 'financial', label: 'Financial', icon: DollarSign },
-    { value: 'operational', label: 'Operational', icon: Activity },
-    { value: 'customer', label: 'Customer', icon: Users },
-    { value: 'equipment', label: 'Equipment', icon: Package },
-    { value: 'district_analysis', label: 'District Analysis', icon: MapPin }
+    { value: "all", label: "All Templates", icon: BarChart3 },
+    { value: "hvac_performance", label: "HVAC Performance", icon: Wrench },
+    { value: "financial", label: "Financial", icon: DollarSign },
+    { value: "operational", label: "Operational", icon: Activity },
+    { value: "customer", label: "Customer", icon: Users },
+    { value: "equipment", label: "Equipment", icon: Package },
+    { value: "district_analysis", label: "District Analysis", icon: MapPin },
   ];
 
   // Predefined templates for demonstration
   const predefinedTemplates = [
     {
-      _id: 'template_hvac_performance',
-      name: 'HVAC System Performance Dashboard',
-      description: 'Comprehensive overview of HVAC system efficiency, maintenance schedules, and performance metrics across Warsaw districts.',
-      category: 'hvac_performance',
-      type: 'dashboard',
+      _id: "template_hvac_performance",
+      name: "HVAC System Performance Dashboard",
+      description:
+        "Comprehensive overview of HVAC system efficiency, maintenance schedules, and performance metrics across Warsaw districts.",
+      category: "hvac_performance",
+      type: "dashboard",
       icon: Wrench,
-      features: ['District-based analysis', 'Seasonal adjustments', 'Efficiency tracking', 'Maintenance alerts'],
-      visualization: 'dashboard',
-      dataSources: ['jobs', 'equipment', 'contacts'],
+      features: [
+        "District-based analysis",
+        "Seasonal adjustments",
+        "Efficiency tracking",
+        "Maintenance alerts",
+      ],
+      visualization: "dashboard",
+      dataSources: ["jobs", "equipment", "contacts"],
       warsawOptimized: true,
-      difficulty: 'Beginner',
-      estimatedTime: '5 min'
+      difficulty: "Beginner",
+      estimatedTime: "5 min",
     },
     {
-      _id: 'template_revenue_analysis',
-      name: 'Revenue Analysis by District',
-      description: 'Financial performance analysis with affluence weighting and seasonal factors for Warsaw HVAC market.',
-      category: 'financial',
-      type: 'chart',
+      _id: "template_revenue_analysis",
+      name: "Revenue Analysis by District",
+      description:
+        "Financial performance analysis with affluence weighting and seasonal factors for Warsaw HVAC market.",
+      category: "financial",
+      type: "chart",
       icon: DollarSign,
-      features: ['Affluence weighting', 'Revenue forecasting', 'Profit margins', 'Payment tracking'],
-      visualization: 'bar_chart',
-      dataSources: ['quotes', 'jobs', 'contacts'],
+      features: [
+        "Affluence weighting",
+        "Revenue forecasting",
+        "Profit margins",
+        "Payment tracking",
+      ],
+      visualization: "bar_chart",
+      dataSources: ["quotes", "jobs", "contacts"],
       warsawOptimized: true,
-      difficulty: 'Intermediate',
-      estimatedTime: '8 min'
+      difficulty: "Intermediate",
+      estimatedTime: "8 min",
     },
     {
-      _id: 'template_customer_insights',
-      name: 'Customer Behavior & Satisfaction',
-      description: 'Deep dive into customer patterns, satisfaction scores, and retention metrics with AI-powered insights.',
-      category: 'customer',
-      type: 'dashboard',
+      _id: "template_customer_insights",
+      name: "Customer Behavior & Satisfaction",
+      description:
+        "Deep dive into customer patterns, satisfaction scores, and retention metrics with AI-powered insights.",
+      category: "customer",
+      type: "dashboard",
       icon: Users,
-      features: ['Customer segmentation', 'Satisfaction tracking', 'Retention analysis', 'AI predictions'],
-      visualization: 'dashboard',
-      dataSources: ['contacts', 'jobs', 'weaviate'],
+      features: [
+        "Customer segmentation",
+        "Satisfaction tracking",
+        "Retention analysis",
+        "AI predictions",
+      ],
+      visualization: "dashboard",
+      dataSources: ["contacts", "jobs", "weaviate"],
       warsawOptimized: true,
-      difficulty: 'Advanced',
-      estimatedTime: '12 min'
+      difficulty: "Advanced",
+      estimatedTime: "12 min",
     },
     {
-      _id: 'template_equipment_efficiency',
-      name: 'Equipment Efficiency Tracker',
-      description: 'Monitor equipment performance, maintenance costs, and replacement recommendations.',
-      category: 'equipment',
-      type: 'table',
+      _id: "template_equipment_efficiency",
+      name: "Equipment Efficiency Tracker",
+      description:
+        "Monitor equipment performance, maintenance costs, and replacement recommendations.",
+      category: "equipment",
+      type: "table",
       icon: Package,
-      features: ['Performance metrics', 'Maintenance costs', 'Replacement alerts', 'ROI analysis'],
-      visualization: 'table',
-      dataSources: ['equipment', 'jobs'],
+      features: ["Performance metrics", "Maintenance costs", "Replacement alerts", "ROI analysis"],
+      visualization: "table",
+      dataSources: ["equipment", "jobs"],
       warsawOptimized: false,
-      difficulty: 'Beginner',
-      estimatedTime: '4 min'
+      difficulty: "Beginner",
+      estimatedTime: "4 min",
     },
     {
-      _id: 'template_route_optimization',
-      name: 'Route Optimization Analysis',
-      description: 'Analyze technician routes, travel times, and efficiency across Warsaw districts.',
-      category: 'operational',
-      type: 'chart',
+      _id: "template_route_optimization",
+      name: "Route Optimization Analysis",
+      description:
+        "Analyze technician routes, travel times, and efficiency across Warsaw districts.",
+      category: "operational",
+      type: "chart",
       icon: MapPin,
-      features: ['Route efficiency', 'Travel time analysis', 'Fuel cost tracking', 'District clustering'],
-      visualization: 'line_chart',
-      dataSources: ['jobs', 'contacts'],
+      features: [
+        "Route efficiency",
+        "Travel time analysis",
+        "Fuel cost tracking",
+        "District clustering",
+      ],
+      visualization: "line_chart",
+      dataSources: ["jobs", "contacts"],
       warsawOptimized: true,
-      difficulty: 'Intermediate',
-      estimatedTime: '10 min'
+      difficulty: "Intermediate",
+      estimatedTime: "10 min",
     },
     {
-      _id: 'template_seasonal_demand',
-      name: 'Seasonal Demand Forecasting',
-      description: 'Predict HVAC service demand based on Warsaw weather patterns and historical data.',
-      category: 'hvac_performance',
-      type: 'chart',
+      _id: "template_seasonal_demand",
+      name: "Seasonal Demand Forecasting",
+      description:
+        "Predict HVAC service demand based on Warsaw weather patterns and historical data.",
+      category: "hvac_performance",
+      type: "chart",
       icon: Calendar,
-      features: ['Weather correlation', 'Demand prediction', 'Capacity planning', 'Seasonal pricing'],
-      visualization: 'area_chart',
-      dataSources: ['jobs', 'weaviate'],
+      features: [
+        "Weather correlation",
+        "Demand prediction",
+        "Capacity planning",
+        "Seasonal pricing",
+      ],
+      visualization: "area_chart",
+      dataSources: ["jobs", "weaviate"],
       warsawOptimized: true,
-      difficulty: 'Advanced',
-      estimatedTime: '15 min'
+      difficulty: "Advanced",
+      estimatedTime: "15 min",
     },
     {
-      _id: 'template_kpi_overview',
-      name: 'Executive KPI Dashboard',
-      description: 'High-level KPIs for executives including revenue, efficiency, and growth metrics.',
-      category: 'financial',
-      type: 'kpi',
+      _id: "template_kpi_overview",
+      name: "Executive KPI Dashboard",
+      description:
+        "High-level KPIs for executives including revenue, efficiency, and growth metrics.",
+      category: "financial",
+      type: "kpi",
       icon: TrendingUp,
-      features: ['Executive summary', 'Growth metrics', 'Efficiency KPIs', 'Trend analysis'],
-      visualization: 'kpi_card',
-      dataSources: ['jobs', 'quotes', 'contacts'],
+      features: ["Executive summary", "Growth metrics", "Efficiency KPIs", "Trend analysis"],
+      visualization: "kpi_card",
+      dataSources: ["jobs", "quotes", "contacts"],
       warsawOptimized: true,
-      difficulty: 'Beginner',
-      estimatedTime: '3 min'
-    }
+      difficulty: "Beginner",
+      estimatedTime: "3 min",
+    },
   ];
 
   const allTemplates = [...predefinedTemplates, ...templates];
 
-  const filteredTemplates = allTemplates.filter(template => 
-    selectedCategory === 'all' || template.category === selectedCategory
+  const filteredTemplates = allTemplates.filter(
+    (template) => selectedCategory === "all" || template.category === selectedCategory
   );
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'Beginner': return 'bg-green-100 text-green-800';
-      case 'Intermediate': return 'bg-yellow-100 text-yellow-800';
-      case 'Advanced': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "Beginner":
+        return "bg-green-100 text-green-800";
+      case "Intermediate":
+        return "bg-yellow-100 text-yellow-800";
+      case "Advanced":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getVisualizationIcon = (type: string) => {
     switch (type) {
-      case 'dashboard': return Activity;
-      case 'bar_chart': return BarChart3;
-      case 'line_chart': return LineChart;
-      case 'pie_chart': return PieChart;
-      case 'area_chart': return Activity;
-      case 'gauge': return Gauge;
-      case 'kpi_card': return TrendingUp;
-      default: return BarChart3;
+      case "dashboard":
+        return Activity;
+      case "bar_chart":
+        return BarChart3;
+      case "line_chart":
+        return LineChart;
+      case "pie_chart":
+        return PieChart;
+      case "area_chart":
+        return Activity;
+      case "gauge":
+        return Gauge;
+      case "kpi_card":
+        return TrendingUp;
+      default:
+        return BarChart3;
     }
   };
 
@@ -172,7 +215,7 @@ export function ReportTemplates({ templates, onUseTemplate }: ReportTemplatesPro
     <div className="space-y-6">
       {/* Category Filter */}
       <div className="flex items-center space-x-2 overflow-x-auto pb-2">
-        {templateCategories.map(category => {
+        {templateCategories.map((category) => {
           const CategoryIcon = category.icon;
           return (
             <button
@@ -180,8 +223,8 @@ export function ReportTemplates({ templates, onUseTemplate }: ReportTemplatesPro
               onClick={() => setSelectedCategory(category.value)}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-colors whitespace-nowrap ${
                 selectedCategory === category.value
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                  ? "border-blue-500 bg-blue-50 text-blue-700"
+                  : "border-gray-200 hover:border-gray-300 text-gray-600"
               }`}
             >
               <CategoryIcon className="w-4 h-4" />
@@ -193,10 +236,10 @@ export function ReportTemplates({ templates, onUseTemplate }: ReportTemplatesPro
 
       {/* Templates Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredTemplates.map(template => {
+        {filteredTemplates.map((template) => {
           const TemplateIcon = template.icon || getVisualizationIcon(template.visualization);
           const VisualizationIcon = getVisualizationIcon(template.visualization);
-          
+
           return (
             <Card key={template._id} className="hover:shadow-lg transition-shadow">
               <CardHeader className="pb-3">
@@ -208,7 +251,9 @@ export function ReportTemplates({ templates, onUseTemplate }: ReportTemplatesPro
                     <div>
                       <CardTitle className="text-sm font-semibold">{template.name}</CardTitle>
                       <div className="flex items-center space-x-2 mt-1">
-                        <span className={`text-xs px-2 py-1 rounded ${getDifficultyColor(template.difficulty)}`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${getDifficultyColor(template.difficulty)}`}
+                        >
                           {template.difficulty}
                         </span>
                         {template.warsawOptimized && (
@@ -223,18 +268,16 @@ export function ReportTemplates({ templates, onUseTemplate }: ReportTemplatesPro
                   <Star className="w-4 h-4 text-gray-400 hover:text-yellow-500 cursor-pointer" />
                 </div>
               </CardHeader>
-              
+
               <CardContent className="space-y-4">
-                <p className="text-sm text-gray-600 line-clamp-3">
-                  {template.description}
-                </p>
+                <p className="text-sm text-gray-600 line-clamp-3">{template.description}</p>
 
                 {/* Features */}
                 <div>
                   <div className="text-xs font-medium text-gray-700 mb-2">Key Features:</div>
                   <div className="flex flex-wrap gap-1">
                     {template.features?.slice(0, 3).map((feature: string, index: number) => (
-                      <span 
+                      <span
                         key={index}
                         className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded"
                       >
@@ -254,7 +297,7 @@ export function ReportTemplates({ templates, onUseTemplate }: ReportTemplatesPro
                   <div className="text-xs font-medium text-gray-700 mb-2">Data Sources:</div>
                   <div className="flex flex-wrap gap-1">
                     {template.dataSources?.map((source: string, index: number) => (
-                      <span 
+                      <span
                         key={index}
                         className="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded"
                       >
@@ -268,7 +311,7 @@ export function ReportTemplates({ templates, onUseTemplate }: ReportTemplatesPro
                 <div className="flex items-center justify-between text-xs text-gray-600">
                   <div className="flex items-center">
                     <VisualizationIcon className="w-3 h-3 mr-1" />
-                    {template.visualization.replace('_', ' ').toUpperCase()}
+                    {template.visualization.replace("_", " ").toUpperCase()}
                   </div>
                   <div className="flex items-center">
                     <Calendar className="w-3 h-3 mr-1" />
@@ -278,11 +321,7 @@ export function ReportTemplates({ templates, onUseTemplate }: ReportTemplatesPro
 
                 {/* Actions */}
                 <div className="flex items-center space-x-2 pt-2">
-                  <Button
-                    onClick={() => onUseTemplate(template._id)}
-                    className="flex-1"
-                    size="sm"
-                  >
+                  <Button onClick={() => onUseTemplate(template._id)} className="flex-1" size="sm">
                     <Copy className="w-4 h-4 mr-2" />
                     Use Template
                   </Button>
@@ -314,9 +353,9 @@ export function ReportTemplates({ templates, onUseTemplate }: ReportTemplatesPro
             <div>
               <h4 className="font-medium text-blue-900 mb-1">Warsaw HVAC Intelligence</h4>
               <p className="text-sm text-blue-800">
-                Templates marked with "Warsaw AI" include district-specific optimizations, 
-                affluence weighting, seasonal adjustments, and route optimization features 
-                tailored for the Warsaw HVAC market.
+                Templates marked with "Warsaw AI" include district-specific optimizations, affluence
+                weighting, seasonal adjustments, and route optimization features tailored for the
+                Warsaw HVAC market.
               </p>
             </div>
           </div>

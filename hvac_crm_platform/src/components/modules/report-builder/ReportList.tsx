@@ -1,29 +1,26 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
-import { 
-  Search, 
-  Filter, 
-  MoreVertical,
-  Edit,
-  Trash2,
-  Play,
-  Share,
-  Copy,
-  Star,
-  StarOff,
-  Calendar,
-  User,
-  BarChart3,
-  Table,
-  PieChart,
-  LineChart,
-  Gauge,
+import {
   Activity,
+  BarChart3,
+  Calendar,
+  Download,
+  Edit,
   Eye,
-  Download
-} from 'lucide-react';
-import { formatDate } from '../../../lib/utils';
+  Gauge,
+  LineChart,
+  MoreVertical,
+  PieChart,
+  Play,
+  Search,
+  Share,
+  Star,
+  Table,
+  Trash2,
+  User,
+} from "lucide-react";
+import { useState } from "react";
+import { formatDate } from "../../../lib/utils";
+import { Button } from "../../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 
 interface ReportListProps {
   reports: any[];
@@ -33,50 +30,63 @@ interface ReportListProps {
 }
 
 export function ReportList({ reports, onEdit, onDelete, onExecute }: ReportListProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [sortBy, setSortBy] = useState('updated');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [sortBy, setSortBy] = useState("updated");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const getVisualizationIcon = (type: string) => {
     switch (type) {
-      case 'table': return Table;
-      case 'bar_chart': return BarChart3;
-      case 'line_chart': return LineChart;
-      case 'pie_chart': return PieChart;
-      case 'area_chart': return Activity;
-      case 'gauge': return Gauge;
-      default: return BarChart3;
+      case "table":
+        return Table;
+      case "bar_chart":
+        return BarChart3;
+      case "line_chart":
+        return LineChart;
+      case "pie_chart":
+        return PieChart;
+      case "area_chart":
+        return Activity;
+      case "gauge":
+        return Gauge;
+      default:
+        return BarChart3;
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'dashboard': return 'bg-blue-100 text-blue-800';
-      case 'table': return 'bg-gray-100 text-gray-800';
-      case 'chart': return 'bg-green-100 text-green-800';
-      case 'kpi': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "dashboard":
+        return "bg-blue-100 text-blue-800";
+      case "table":
+        return "bg-gray-100 text-gray-800";
+      case "chart":
+        return "bg-green-100 text-green-800";
+      case "kpi":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const filteredReports = reports
-    .filter(report => {
-      const matchesSearch = searchQuery === '' || 
+    .filter((report) => {
+      const matchesSearch =
+        searchQuery === "" ||
         report.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         report.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesType = filterType === 'all' || report.type === filterType;
-      
+
+      const matchesType = filterType === "all" || report.type === filterType;
+
       return matchesSearch && matchesType;
     })
     .sort((a, b) => {
       switch (sortBy) {
-        case 'name':
+        case "name":
           return a.name.localeCompare(b.name);
-        case 'type':
+        case "type":
           return a.type.localeCompare(b.type);
-        case 'updated':
+        case "updated":
           return (b._creationTime || 0) - (a._creationTime || 0);
         default:
           return 0;
@@ -84,8 +94,8 @@ export function ReportList({ reports, onEdit, onDelete, onExecute }: ReportListP
     });
 
   const ReportCard = ({ report }: { report: any }) => {
-    const VisualizationIcon = getVisualizationIcon(report.config?.visualization?.type || 'table');
-    
+    const VisualizationIcon = getVisualizationIcon(report.config?.visualization?.type || "table");
+
     return (
       <Card className="hover:shadow-md transition-shadow">
         <CardHeader className="pb-3">
@@ -103,9 +113,7 @@ export function ReportList({ reports, onEdit, onDelete, onExecute }: ReportListP
                       Template
                     </span>
                   )}
-                  {report.isFavorite && (
-                    <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                  )}
+                  {report.isFavorite && <Star className="w-3 h-3 text-yellow-500 fill-current" />}
                 </div>
               </div>
             </div>
@@ -118,11 +126,9 @@ export function ReportList({ reports, onEdit, onDelete, onExecute }: ReportListP
         </CardHeader>
         <CardContent className="pt-0">
           {report.description && (
-            <p className="text-xs text-gray-600 mb-3 line-clamp-2">
-              {report.description}
-            </p>
+            <p className="text-xs text-gray-600 mb-3 line-clamp-2">{report.description}</p>
           )}
-          
+
           <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
             <div className="flex items-center">
               <Calendar className="w-3 h-3 mr-1" />
@@ -140,10 +146,7 @@ export function ReportList({ reports, onEdit, onDelete, onExecute }: ReportListP
               <div className="text-xs font-medium text-gray-700 mb-1">Data Sources:</div>
               <div className="flex flex-wrap gap-1">
                 {report.config.dataSources.slice(0, 3).map((ds: any, index: number) => (
-                  <span 
-                    key={index}
-                    className="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded"
-                  >
+                  <span key={index} className="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded">
                     {ds.table || ds.type}
                   </span>
                 ))}
@@ -176,24 +179,13 @@ export function ReportList({ reports, onEdit, onDelete, onExecute }: ReportListP
               <Play className="w-3 h-3 mr-1" />
               Run
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(report._id)}
-            >
+            <Button variant="outline" size="sm" onClick={() => onEdit(report._id)}>
               <Edit className="w-3 h-3" />
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-            >
+            <Button variant="outline" size="sm">
               <Share className="w-3 h-3" />
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onDelete(report._id)}
-            >
+            <Button variant="outline" size="sm" onClick={() => onDelete(report._id)}>
               <Trash2 className="w-3 h-3" />
             </Button>
           </div>
@@ -203,8 +195,8 @@ export function ReportList({ reports, onEdit, onDelete, onExecute }: ReportListP
   };
 
   const ReportRow = ({ report }: { report: any }) => {
-    const VisualizationIcon = getVisualizationIcon(report.config?.visualization?.type || 'table');
-    
+    const VisualizationIcon = getVisualizationIcon(report.config?.visualization?.type || "table");
+
     return (
       <tr className="border-b border-gray-100 hover:bg-gray-50">
         <td className="p-3">
@@ -224,11 +216,9 @@ export function ReportList({ reports, onEdit, onDelete, onExecute }: ReportListP
         <td className="p-3 text-xs text-gray-600">
           {report.config?.dataSources?.length || 0} sources
         </td>
+        <td className="p-3 text-xs text-gray-600">{formatDate(report._creationTime)}</td>
         <td className="p-3 text-xs text-gray-600">
-          {formatDate(report._creationTime)}
-        </td>
-        <td className="p-3 text-xs text-gray-600">
-          {report.lastExecuted ? formatDate(report.lastExecuted) : 'Never'}
+          {report.lastExecuted ? formatDate(report.lastExecuted) : "Never"}
         </td>
         <td className="p-3">
           <div className="flex items-center space-x-1">
@@ -268,7 +258,7 @@ export function ReportList({ reports, onEdit, onDelete, onExecute }: ReportListP
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          
+
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
@@ -294,16 +284,16 @@ export function ReportList({ reports, onEdit, onDelete, onExecute }: ReportListP
 
         <div className="flex items-center space-x-2">
           <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
+            variant={viewMode === "grid" ? "default" : "outline"}
             size="sm"
-            onClick={() => setViewMode('grid')}
+            onClick={() => setViewMode("grid")}
           >
             Grid
           </Button>
           <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
+            variant={viewMode === "list" ? "default" : "outline"}
             size="sm"
-            onClick={() => setViewMode('list')}
+            onClick={() => setViewMode("list")}
           >
             List
           </Button>
@@ -316,15 +306,14 @@ export function ReportList({ reports, onEdit, onDelete, onExecute }: ReportListP
           <BarChart3 className="w-16 h-16 mx-auto mb-4 text-gray-400" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No reports found</h3>
           <p className="text-gray-600 mb-4">
-            {searchQuery || filterType !== 'all' 
-              ? 'Try adjusting your search or filters'
-              : 'Create your first report to get started'
-            }
+            {searchQuery || filterType !== "all"
+              ? "Try adjusting your search or filters"
+              : "Create your first report to get started"}
           </p>
         </div>
-      ) : viewMode === 'grid' ? (
+      ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredReports.map(report => (
+          {filteredReports.map((report) => (
             <ReportCard key={report._id} report={report} />
           ))}
         </div>
@@ -355,7 +344,7 @@ export function ReportList({ reports, onEdit, onDelete, onExecute }: ReportListP
                 </tr>
               </thead>
               <tbody>
-                {filteredReports.map(report => (
+                {filteredReports.map((report) => (
                   <ReportRow key={report._id} report={report} />
                 ))}
               </tbody>

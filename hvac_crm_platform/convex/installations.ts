@@ -1,6 +1,6 @@
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 export const list = query({
   args: {
@@ -12,12 +12,12 @@ export const list = query({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    let installations;
-    
+    let installations: any;
+
     if (args.district) {
       installations = await ctx.db
         .query("installations")
-        .withIndex("by_district", (q) => q.eq("district", args.district!))
+        .withIndex("by_district", (q) => q.eq("district", args.district))
         .collect();
     } else if (args.status) {
       installations = await ctx.db
@@ -30,8 +30,8 @@ export const list = query({
 
     // Filter by contact if specified
     if (args.contactId) {
-      installations = installations.filter(installation => 
-        installation.contactId === args.contactId
+      installations = installations.filter(
+        (installation) => installation.contactId === args.contactId
       );
     }
 
@@ -41,7 +41,7 @@ export const list = query({
         const contact = await ctx.db.get(installation.contactId);
         const job = await ctx.db.get(installation.jobId);
         const equipment = await ctx.db.get(installation.equipmentId);
-        
+
         return {
           ...installation,
           contact,
@@ -95,7 +95,7 @@ export const create = mutation({
     equipmentId: v.id("equipment"),
     coordinates: v.object({
       lat: v.number(),
-      lng: v.number()
+      lng: v.number(),
     }),
     address: v.string(),
     district: v.string(),
@@ -136,12 +136,14 @@ export const create = mutation({
 export const update = mutation({
   args: {
     id: v.id("installations"),
-    status: v.optional(v.union(
-      v.literal("active"),
-      v.literal("needs_service"),
-      v.literal("warranty_expired"),
-      v.literal("removed")
-    )),
+    status: v.optional(
+      v.union(
+        v.literal("active"),
+        v.literal("needs_service"),
+        v.literal("warranty_expired"),
+        v.literal("removed")
+      )
+    ),
     lastServiceDate: v.optional(v.number()),
     nextServiceDue: v.optional(v.number()),
     notes: v.optional(v.string()),
@@ -212,7 +214,7 @@ export const getServiceDue = query({
     if (!userId) throw new Error("Not authenticated");
 
     const beforeDate = args.beforeDate || Date.now();
-    
+
     const installations = await ctx.db
       .query("installations")
       .withIndex("by_next_service")
@@ -245,11 +247,11 @@ export const getDistrictStats = query({
     if (!userId) throw new Error("Not authenticated");
 
     const installations = await ctx.db.query("installations").collect();
-    
+
     // Group by district
     const districtStats: Record<string, any> = {};
-    
-    installations.forEach(installation => {
+
+    installations.forEach((installation) => {
       const district = installation.district;
       if (!districtStats[district]) {
         districtStats[district] = {
@@ -260,9 +262,9 @@ export const getDistrictStats = query({
           removed: 0,
         };
       }
-      
+
       districtStats[district].total++;
-      districtStats[district][installation.status.replace('_', '')]++;
+      districtStats[district][installation.status.replace("_", "")]++;
     });
 
     return districtStats;

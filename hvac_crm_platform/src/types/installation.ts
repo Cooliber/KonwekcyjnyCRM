@@ -4,7 +4,7 @@
  * Features: Configurable statuses, color coding, automatic actions
  */
 
-import { Id } from "../../convex/_generated/dataModel";
+import type { Id } from "../../convex/_generated/dataModel";
 
 // Installation status configuration (inspired by RRUP)
 export interface InstallationStatus {
@@ -21,8 +21,8 @@ export interface InstallationStatus {
 // Automatic actions for installation statuses
 export interface InstallationAction {
   id: string;
-  type: 'email' | 'sms' | 'task' | 'notification' | 'webhook';
-  recipient: 'client' | 'technician' | 'manager' | 'team' | 'custom';
+  type: "email" | "sms" | "task" | "notification" | "webhook";
+  recipient: "client" | "technician" | "manager" | "team" | "custom";
   template: string; // Message template with placeholders
   delay?: number; // Delay in minutes before executing
   conditions?: ActionCondition[];
@@ -31,24 +31,24 @@ export interface InstallationAction {
 // Conditions for automatic actions
 export interface ActionCondition {
   field: string;
-  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains';
+  operator: "equals" | "not_equals" | "greater_than" | "less_than" | "contains";
   value: any;
 }
 
 // Installation priority levels
-export type InstallationPriority = 'low' | 'normal' | 'high' | 'urgent' | 'emergency';
+export type InstallationPriority = "low" | "normal" | "high" | "urgent" | "emergency";
 
 // Installation categories
-export type InstallationCategory = 
-  | 'split_ac' 
-  | 'central_ac' 
-  | 'heat_pump' 
-  | 'ventilation' 
-  | 'heating' 
-  | 'cooling' 
-  | 'maintenance' 
-  | 'repair'
-  | 'upgrade';
+export type InstallationCategory =
+  | "split_ac"
+  | "central_ac"
+  | "heat_pump"
+  | "ventilation"
+  | "heating"
+  | "cooling"
+  | "maintenance"
+  | "repair"
+  | "upgrade";
 
 // Main installation interface
 export interface Installation {
@@ -56,23 +56,23 @@ export interface Installation {
   installationNumber: string; // Auto-generated unique number
   contactId: Id<"contacts">;
   jobId?: Id<"jobs">;
-  
+
   // Basic information
   title: string;
   description: string;
   category: InstallationCategory;
   priority: InstallationPriority;
-  
+
   // Status management
   status: string; // References InstallationStatus.id
   statusHistory: StatusHistoryEntry[];
-  
+
   // Scheduling
   scheduledDate?: number;
   estimatedDuration: number; // in minutes
   actualStartDate?: number;
   actualEndDate?: number;
-  
+
   // Location and technician
   address: string;
   district: string;
@@ -82,27 +82,27 @@ export interface Installation {
   };
   assignedTechnicians: Id<"users">[];
   teamLeader?: Id<"users">;
-  
+
   // Equipment and materials
   equipmentList: InstallationEquipment[];
   materialsList: InstallationMaterial[];
-  
+
   // Documentation
   photos: Id<"_storage">[];
   documents: Id<"documents">[];
   notes: string;
-  
+
   // Quality and compliance
   qualityChecklist: QualityCheckItem[];
   certifications: Certification[];
   warrantyInfo?: WarrantyInfo;
-  
+
   // Financial
   estimatedCost: number;
   actualCost?: number;
   vatAmount: number; // 23% Polish VAT
   totalAmount: number;
-  
+
   // Tracking
   createdBy: Id<"users">;
   createdAt: number;
@@ -148,7 +148,7 @@ export interface InstallationMaterial {
 export interface QualityCheckItem {
   id: string;
   description: string;
-  category: 'safety' | 'functionality' | 'aesthetics' | 'compliance';
+  category: "safety" | "functionality" | "aesthetics" | "compliance";
   isRequired: boolean;
   isCompleted: boolean;
   completedBy?: Id<"users">;
@@ -160,7 +160,7 @@ export interface QualityCheckItem {
 // Certifications and compliance
 export interface Certification {
   id: string;
-  type: 'energy_efficiency' | 'safety' | 'environmental' | 'warranty' | 'compliance';
+  type: "energy_efficiency" | "safety" | "environmental" | "warranty" | "compliance";
   name: string;
   issuer: string;
   certificateNumber: string;
@@ -240,8 +240,21 @@ export interface InstallationMetrics {
 }
 
 // Export utility types
-export type InstallationFormData = Omit<Installation, '_id' | 'createdAt' | 'lastModified' | 'statusHistory'>;
-export type InstallationUpdateData = Partial<Pick<Installation, 
-  'title' | 'description' | 'priority' | 'scheduledDate' | 'assignedTechnicians' | 
-  'notes' | 'estimatedCost' | 'actualCost' | 'status'
->>;
+export type InstallationFormData = Omit<
+  Installation,
+  "_id" | "createdAt" | "lastModified" | "statusHistory"
+>;
+export type InstallationUpdateData = Partial<
+  Pick<
+    Installation,
+    | "title"
+    | "description"
+    | "priority"
+    | "scheduledDate"
+    | "assignedTechnicians"
+    | "notes"
+    | "estimatedCost"
+    | "actualCost"
+    | "status"
+  >
+>;

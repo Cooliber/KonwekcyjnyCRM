@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "recharts": "^3.1.0"
+    "recharts": "^3.1.0",
+    "convex": "^1.4.0"
   }
 }

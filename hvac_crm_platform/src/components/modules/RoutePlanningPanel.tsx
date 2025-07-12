@@ -1,20 +1,17 @@
-import { useState } from "react";
-import { useQuery, useAction } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { 
-  Route, 
-  Clock, 
-  MapPin, 
-  Users, 
-  Zap, 
-  DollarSign, 
+import { useAction, useQuery } from "convex/react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
   Navigation,
   Play,
   RefreshCw,
-  CheckCircle,
-  AlertTriangle
+  Route,
+  Zap,
 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
 
 // Type definitions for route planning
 interface RoutePoint {
@@ -23,7 +20,7 @@ interface RoutePoint {
   lng: number;
   address: string;
   estimatedDuration: number;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  priority: "low" | "medium" | "high" | "urgent";
   jobType: string;
 }
 
@@ -51,10 +48,10 @@ export function RoutePlanningPanel({ selectedDate, onRouteOptimized }: RoutePlan
 
   // Get available technicians
   const technicians = useQuery(api.users.getTechnicians, { isActive: true });
-  
+
   // Get scheduled jobs for the selected date
   const scheduledJobs = useQuery(api.jobs.getScheduledForDate, { date: selectedDate });
-  
+
   // Get existing optimized routes for the date
   const existingRoutes = useQuery(api.routes.getRoutesForDate, { date: selectedDate });
 
@@ -78,7 +75,7 @@ export function RoutePlanningPanel({ selectedDate, onRouteOptimized }: RoutePlan
         date: selectedDate,
         technicianIds: selectedTechnicians as any,
         maxJobsPerTechnician: maxJobsPerTech,
-        prioritizeUrgent
+        prioritizeUrgent,
       });
 
       toast.success(`Routes optimized! ${result.routes.length} routes created`);
@@ -92,20 +89,21 @@ export function RoutePlanningPanel({ selectedDate, onRouteOptimized }: RoutePlan
   };
 
   const handleTechnicianToggle = (techId: string) => {
-    setSelectedTechnicians(prev => 
-      prev.includes(techId) 
-        ? prev.filter(id => id !== techId)
-        : [...prev, techId]
+    setSelectedTechnicians((prev) =>
+      prev.includes(techId) ? prev.filter((id) => id !== techId) : [...prev, techId]
     );
   };
 
   const getJobsByPriority = () => {
     if (!scheduledJobs) return { urgent: 0, high: 0, medium: 0, low: 0 };
-    
-    return scheduledJobs.reduce((acc, job) => {
-      acc[job.priority] = (acc[job.priority] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+
+    return scheduledJobs.reduce(
+      (acc, job) => {
+        acc[job.priority] = (acc[job.priority] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
   };
 
   const jobsByPriority = getJobsByPriority();
@@ -120,15 +118,16 @@ export function RoutePlanningPanel({ selectedDate, onRouteOptimized }: RoutePlan
             <p className="text-sm text-gray-600">Optimize technician routes for {selectedDate}</p>
           </div>
         </div>
-        
+
         <button
           onClick={handleOptimizeRoutes}
           disabled={isOptimizing || !scheduledJobs || scheduledJobs.length === 0}
           className={`
             flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors
-            ${isOptimizing || !scheduledJobs || scheduledJobs.length === 0
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
+            ${
+              isOptimizing || !scheduledJobs || scheduledJobs.length === 0
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700"
             }
           `}
         >
@@ -155,7 +154,7 @@ export function RoutePlanningPanel({ selectedDate, onRouteOptimized }: RoutePlan
           </div>
           <p className="text-xl font-semibold text-red-900">{jobsByPriority.urgent || 0}</p>
         </div>
-        
+
         <div className="bg-orange-50 rounded-lg p-3">
           <div className="flex items-center space-x-2">
             <Zap className="w-4 h-4 text-orange-600" />
@@ -163,7 +162,7 @@ export function RoutePlanningPanel({ selectedDate, onRouteOptimized }: RoutePlan
           </div>
           <p className="text-xl font-semibold text-orange-900">{jobsByPriority.high || 0}</p>
         </div>
-        
+
         <div className="bg-blue-50 rounded-lg p-3">
           <div className="flex items-center space-x-2">
             <Clock className="w-4 h-4 text-blue-600" />
@@ -171,7 +170,7 @@ export function RoutePlanningPanel({ selectedDate, onRouteOptimized }: RoutePlan
           </div>
           <p className="text-xl font-semibold text-blue-900">{jobsByPriority.medium || 0}</p>
         </div>
-        
+
         <div className="bg-gray-50 rounded-lg p-3">
           <div className="flex items-center space-x-2">
             <CheckCircle className="w-4 h-4 text-gray-600" />
@@ -184,12 +183,13 @@ export function RoutePlanningPanel({ selectedDate, onRouteOptimized }: RoutePlan
       {/* Optimization Settings */}
       <div className="space-y-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Technicians
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Select Technicians</label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {technicians?.map((tech) => (
-              <label key={tech._id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50">
+              <label
+                key={tech._id}
+                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50"
+              >
                 <input
                   type="checkbox"
                   checked={selectedTechnicians.includes(tech._id)}
@@ -217,7 +217,7 @@ export function RoutePlanningPanel({ selectedDate, onRouteOptimized }: RoutePlan
               min="1"
               max="15"
               value={maxJobsPerTech}
-              onChange={(e) => setMaxJobsPerTech(parseInt(e.target.value))}
+              onChange={(e) => setMaxJobsPerTech(Number.parseInt(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -240,10 +240,15 @@ export function RoutePlanningPanel({ selectedDate, onRouteOptimized }: RoutePlan
       {/* Existing Routes Summary */}
       {existingRoutes && existingRoutes.length > 0 && (
         <div className="border-t border-gray-200 pt-4">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Existing Routes for {selectedDate}</h4>
+          <h4 className="text-sm font-medium text-gray-900 mb-3">
+            Existing Routes for {selectedDate}
+          </h4>
           <div className="space-y-2">
             {existingRoutes.map((route, index) => (
-              <div key={route._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div
+                key={route._id}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
                 <div className="flex items-center space-x-3">
                   <Navigation className="w-4 h-4 text-blue-600" />
                   <div>
@@ -251,7 +256,8 @@ export function RoutePlanningPanel({ selectedDate, onRouteOptimized }: RoutePlan
                       Route {index + 1} • {route.points.length} jobs
                     </p>
                     <p className="text-xs text-gray-500">
-                      {route.totalDistance}km • {Math.round(route.totalDuration/60)}h {route.totalDuration%60}m
+                      {route.totalDistance}km • {Math.round(route.totalDuration / 60)}h{" "}
+                      {route.totalDuration % 60}m
                     </p>
                   </div>
                 </div>
@@ -259,9 +265,7 @@ export function RoutePlanningPanel({ selectedDate, onRouteOptimized }: RoutePlan
                   <span className="text-green-600 font-medium">
                     {Math.round(route.efficiency * 100)}% efficient
                   </span>
-                  <span className="text-gray-600">
-                    {route.estimatedCost} PLN
-                  </span>
+                  <span className="text-gray-600">{route.estimatedCost} PLN</span>
                 </div>
               </div>
             ))}

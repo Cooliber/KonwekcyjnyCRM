@@ -1,6 +1,6 @@
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 // Notification types with priorities
 const NOTIFICATION_PRIORITIES = {
@@ -8,13 +8,19 @@ const NOTIFICATION_PRIORITIES = {
   urgent: { level: 4, color: "orange", icon: "⚠️" },
   high: { level: 3, color: "yellow", icon: "🔔" },
   medium: { level: 2, color: "blue", icon: "📢" },
-  low: { level: 1, color: "gray", icon: "ℹ️" }
+  low: { level: 1, color: "gray", icon: "ℹ️" },
 };
 
 // Warsaw districts for location-based notifications
 const _WARSAW_DISTRICTS = [
-  'Śródmieście', 'Mokotów', 'Wilanów', 'Żoliborz',
-  'Ursynów', 'Wola', 'Praga-Południe', 'Targówek'
+  "Śródmieście",
+  "Mokotów",
+  "Wilanów",
+  "Żoliborz",
+  "Ursynów",
+  "Wola",
+  "Praga-Południe",
+  "Targówek",
 ];
 
 // Get notifications for current user
@@ -38,21 +44,20 @@ export const list = query({
 
     // Apply filters
     if (args.unreadOnly) {
-      notifications = notifications.filter(n => !n.read);
+      notifications = notifications.filter((n) => !n.read);
     }
 
     if (args.type) {
-      notifications = notifications.filter(n => n.type === args.type);
+      notifications = notifications.filter((n) => n.type === args.type);
     }
 
     if (args.priority) {
-      notifications = notifications.filter(n => n.priority === args.priority);
+      notifications = notifications.filter((n) => n.priority === args.priority);
     }
 
     if (args.district) {
-      notifications = notifications.filter(n =>
-        n.district === args.district ||
-        n.districtContext?.district === args.district
+      notifications = notifications.filter(
+        (n) => n.district === args.district || n.districtContext?.district === args.district
       );
     }
 
@@ -99,8 +104,9 @@ export const list = query({
         return {
           ...notification,
           relatedData,
-          priorityInfo: NOTIFICATION_PRIORITIES[notification.priority] || NOTIFICATION_PRIORITIES.medium,
-          timeAgo: getTimeAgo(notification._creationTime)
+          priorityInfo:
+            NOTIFICATION_PRIORITIES[notification.priority] || NOTIFICATION_PRIORITIES.medium,
+          timeAgo: getTimeAgo(notification._creationTime),
         };
       })
     );
@@ -121,29 +127,35 @@ export const getStats = query({
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
 
-    const unreadCount = notifications.filter(n => !n.read).length;
-    const urgentCount = notifications.filter(n =>
-      !n.read && (n.priority === "emergency" || n.priority === "urgent")
+    const unreadCount = notifications.filter((n) => !n.read).length;
+    const urgentCount = notifications.filter(
+      (n) => !n.read && (n.priority === "emergency" || n.priority === "urgent")
     ).length;
 
     // Count by type
-    const typeBreakdown = notifications.reduce((acc, notification) => {
-      if (!notification.read) {
-        acc[notification.type] = (acc[notification.type] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<string, number>);
+    const typeBreakdown = notifications.reduce(
+      (acc, notification) => {
+        if (!notification.read) {
+          acc[notification.type] = (acc[notification.type] || 0) + 1;
+        }
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     // Count by district
-    const districtBreakdown = notifications.reduce((acc, notification) => {
-      if (!notification.read) {
-        const district = notification.district || notification.districtContext?.district;
-        if (district) {
-          acc[district] = (acc[district] || 0) + 1;
+    const districtBreakdown = notifications.reduce(
+      (acc, notification) => {
+        if (!notification.read) {
+          const district = notification.district || notification.districtContext?.district;
+          if (district) {
+            acc[district] = (acc[district] || 0) + 1;
+          }
         }
-      }
-      return acc;
-    }, {} as Record<string, number>);
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     return {
       total: notifications.length,
@@ -151,7 +163,7 @@ export const getStats = query({
       urgent: urgentCount,
       typeBreakdown,
       districtBreakdown,
-      hasEmergency: notifications.some(n => !n.read && n.priority === "emergency")
+      hasEmergency: notifications.some((n) => !n.read && n.priority === "emergency"),
     };
   },
 });
@@ -174,7 +186,7 @@ export const markAsRead = mutation({
 
     await ctx.db.patch(args.id, {
       read: true,
-      readAt: Date.now()
+      readAt: Date.now(),
     });
 
     return true;
@@ -199,22 +211,21 @@ export const markAllAsRead = mutation({
 
     // Apply filters
     if (args.type) {
-      notifications = notifications.filter(n => n.type === args.type);
+      notifications = notifications.filter((n) => n.type === args.type);
     }
 
     if (args.district) {
-      notifications = notifications.filter(n =>
-        n.district === args.district ||
-        n.districtContext?.district === args.district
+      notifications = notifications.filter(
+        (n) => n.district === args.district || n.districtContext?.district === args.district
       );
     }
 
     // Update all matching notifications
     await Promise.all(
-      notifications.map(notification =>
+      notifications.map((notification) =>
         ctx.db.patch(notification._id, {
           read: true,
-          readAt: Date.now()
+          readAt: Date.now(),
         })
       )
     );
@@ -249,13 +260,15 @@ export const create = mutation({
       v.literal("emergency"),
       v.literal("system")
     ),
-    priority: v.optional(v.union(
-      v.literal("emergency"),
-      v.literal("urgent"),
-      v.literal("high"),
-      v.literal("medium"),
-      v.literal("low")
-    )),
+    priority: v.optional(
+      v.union(
+        v.literal("emergency"),
+        v.literal("urgent"),
+        v.literal("high"),
+        v.literal("medium"),
+        v.literal("low")
+      )
+    ),
     district: v.optional(v.string()),
     relatedId: v.optional(v.string()),
     actionUrl: v.optional(v.string()),
@@ -287,7 +300,7 @@ export const create = mutation({
         message: args.message,
         priority: args.priority,
         actionUrl: args.actionUrl,
-        district: args.district
+        district: args.district,
       });
     }
 
@@ -308,13 +321,15 @@ export const createBulk = mutation({
       v.literal("maintenance_due"),
       v.literal("inventory_alert")
     ),
-    priority: v.optional(v.union(
-      v.literal("emergency"),
-      v.literal("urgent"),
-      v.literal("high"),
-      v.literal("medium"),
-      v.literal("low")
-    )),
+    priority: v.optional(
+      v.union(
+        v.literal("emergency"),
+        v.literal("urgent"),
+        v.literal("high"),
+        v.literal("medium"),
+        v.literal("low")
+      )
+    ),
     district: v.optional(v.string()),
     relatedId: v.optional(v.string()),
   },
@@ -323,7 +338,7 @@ export const createBulk = mutation({
     if (!currentUserId) throw new Error("Not authenticated");
 
     const notificationIds = await Promise.all(
-      args.userIds.map(userId =>
+      args.userIds.map((userId) =>
         ctx.db.insert("notifications", {
           userId,
           title: args.title,
@@ -372,15 +387,9 @@ export const cleanupExpired = mutation({
 
     const now = Date.now();
     const allNotifications = await ctx.db.query("notifications").collect();
-    const expiredNotifications = allNotifications.filter(n =>
-      n.expiresAt && n.expiresAt < now
-    );
+    const expiredNotifications = allNotifications.filter((n) => n.expiresAt && n.expiresAt < now);
 
-    await Promise.all(
-      expiredNotifications.map(notification =>
-        ctx.db.delete(notification._id)
-      )
-    );
+    await Promise.all(expiredNotifications.map((notification) => ctx.db.delete(notification._id)));
 
     return expiredNotifications.length;
   },
@@ -403,20 +412,19 @@ export const getByDistrict = query({
       .collect();
 
     // Filter to only show notifications for current user or public district alerts
-    notifications = notifications.filter(n =>
-      n.userId === userId ||
-      n.type === "district_alert" ||
-      n.type === "emergency"
+    notifications = notifications.filter(
+      (n) => n.userId === userId || n.type === "district_alert" || n.type === "emergency"
     );
 
     if (args.limit) {
       notifications = notifications.slice(0, args.limit);
     }
 
-    return notifications.map(notification => ({
+    return notifications.map((notification) => ({
       ...notification,
-      priorityInfo: NOTIFICATION_PRIORITIES[notification.priority] || NOTIFICATION_PRIORITIES.medium,
-      timeAgo: getTimeAgo(notification._creationTime)
+      priorityInfo:
+        NOTIFICATION_PRIORITIES[notification.priority] || NOTIFICATION_PRIORITIES.medium,
+      timeAgo: getTimeAgo(notification._creationTime),
     }));
   },
 });
@@ -438,7 +446,7 @@ export const createEmergencyAlert = mutation({
     if (!userIds) {
       const users = await ctx.db.query("users").collect();
       // For now, send to all users (TODO: implement user district filtering)
-      userIds = users.map(user => user._id);
+      userIds = users.map((user) => user._id);
     }
 
     if (userIds.length === 0) {
@@ -446,7 +454,7 @@ export const createEmergencyAlert = mutation({
     }
 
     const notificationIds = await Promise.all(
-      userIds.map(userId =>
+      userIds.map((userId) =>
         ctx.db.insert("notifications", {
           userId,
           title: `🚨 EMERGENCY: ${args.title}`,
@@ -456,7 +464,7 @@ export const createEmergencyAlert = mutation({
           district: args.district,
           read: false,
           createdBy: currentUserId,
-          expiresAt: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
+          expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
         })
       )
     );
@@ -486,7 +494,7 @@ function getTimeAgo(timestamp: number): string {
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
 
-  return new Date(timestamp).toLocaleDateString('pl-PL');
+  return new Date(timestamp).toLocaleDateString("pl-PL");
 }
 
 /**
@@ -498,7 +506,7 @@ async function sendPushNotification({
   message,
   priority,
   actionUrl,
-  district
+  district,
 }: {
   userId: string;
   title: string;
@@ -512,21 +520,21 @@ async function sendPushNotification({
     console.log(`🔴 REAL-TIME NOTIFICATION: ${title} for user ${userId}`);
 
     // 2. SMS notification for emergency (Warsaw-specific)
-    if (priority === 'emergency' && district) {
+    if (priority === "emergency" && district) {
       await sendSMSNotification({
         userId,
         message: `🚨 EMERGENCY: ${title} - ${message}`,
-        district
+        district,
       });
     }
 
     // 3. Email notification for urgent/emergency
-    if (priority === 'emergency' || priority === 'urgent') {
+    if (priority === "emergency" || priority === "urgent") {
       await sendEmailNotification({
         userId,
         subject: `[${priority.toUpperCase()}] ${title}`,
         body: message,
-        actionUrl
+        actionUrl,
       });
     }
 
@@ -543,7 +551,7 @@ async function sendPushNotification({
 async function sendSMSNotification({
   userId,
   message,
-  district
+  district,
 }: {
   userId: string;
   message: string;
@@ -557,8 +565,8 @@ async function sendSMSNotification({
     const smsPayload = {
       to: `user-${userId}`, // Would be actual phone number
       message: message.substring(0, 160), // SMS character limit
-      sender: 'HVAC-CRM',
-      district: district
+      sender: "HVAC-CRM",
+      district: district,
     };
 
     console.log(`📤 SMS payload:`, smsPayload);
@@ -574,7 +582,7 @@ async function sendEmailNotification({
   userId,
   subject,
   body,
-  actionUrl
+  actionUrl,
 }: {
   userId: string;
   subject: string;
@@ -592,11 +600,11 @@ async function sendEmailNotification({
         <div style="font-family: Arial, sans-serif; max-width: 600px;">
           <h2 style="color: #1A3E7C;">${subject}</h2>
           <p>${body}</p>
-          ${actionUrl ? `<a href="${actionUrl}" style="background: #F2994A; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Details</a>` : ''}
+          ${actionUrl ? `<a href="${actionUrl}" style="background: #F2994A; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Details</a>` : ""}
           <hr style="margin: 20px 0;">
           <p style="color: #666; font-size: 12px;">HVAC CRM Platform - Warsaw District Optimization</p>
         </div>
-      `
+      `,
     };
 
     console.log(`📤 Email payload:`, emailPayload);

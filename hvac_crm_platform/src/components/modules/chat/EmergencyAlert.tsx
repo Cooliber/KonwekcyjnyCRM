@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { AlertTriangle, X, MapPin, Clock } from 'lucide-react';
+import { AlertTriangle, Clock, MapPin, X } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 
 interface EmergencyAlertProps {
   districts: string[];
@@ -10,11 +11,11 @@ interface EmergencyAlertProps {
 export const EmergencyAlert: React.FC<EmergencyAlertProps> = ({
   districts,
   onSendUrgent,
-  onClose
+  onClose,
 }) => {
-  const [selectedDistrict, setSelectedDistrict] = useState('');
-  const [message, setMessage] = useState('');
-  const [urgencyLevel, setUrgencyLevel] = useState<'high' | 'emergency'>('high');
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [message, setMessage] = useState("");
+  const [urgencyLevel, setUrgencyLevel] = useState<"high" | "emergency">("high");
 
   const handleSend = () => {
     if (message.trim() && selectedDistrict) {
@@ -31,10 +32,7 @@ export const EmergencyAlert: React.FC<EmergencyAlertProps> = ({
             <AlertTriangle className="w-6 h-6 text-red-600 mr-2" />
             <h3 className="text-lg font-semibold text-red-900">Emergency Alert</h3>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-600 rounded"
-          >
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 rounded">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -43,9 +41,7 @@ export const EmergencyAlert: React.FC<EmergencyAlertProps> = ({
         <div className="p-4 space-y-4">
           {/* Urgency Level */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Urgency Level
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Urgency Level</label>
             <select
               value={urgencyLevel}
               onChange={(e) => setUrgencyLevel(e.target.value as any)}
@@ -68,7 +64,7 @@ export const EmergencyAlert: React.FC<EmergencyAlertProps> = ({
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
             >
               <option value="">Select district...</option>
-              {districts.map(district => (
+              {districts.map((district) => (
                 <option key={district} value={district}>
                   {district}
                 </option>
@@ -96,7 +92,10 @@ export const EmergencyAlert: React.FC<EmergencyAlertProps> = ({
               <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2 mt-0.5" />
               <div className="text-sm text-yellow-800">
                 <p className="font-medium">Warning:</p>
-                <p>This will immediately notify all technicians and managers in the selected district.</p>
+                <p>
+                  This will immediately notify all technicians and managers in the selected
+                  district.
+                </p>
               </div>
             </div>
           </div>
@@ -118,7 +117,7 @@ export const EmergencyAlert: React.FC<EmergencyAlertProps> = ({
           </button>
           <button
             onClick={handleSend}
-            disabled={!message.trim() || !selectedDistrict}
+            disabled={!(message.trim() && selectedDistrict)}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             <AlertTriangle className="w-4 h-4 mr-2" />

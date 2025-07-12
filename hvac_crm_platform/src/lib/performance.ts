@@ -41,7 +41,7 @@ class PerformanceMonitor {
       console.warn(`Timer for ${operation} was not started`);
       return 0;
     }
-    
+
     const duration = performance.now() - startTime;
     this.timers.delete(operation);
     return duration;
@@ -64,7 +64,7 @@ class PerformanceMonitor {
     };
 
     this.metrics.push(fullMetrics);
-    
+
     // Keep only last 100 metrics to prevent memory issues
     if (this.metrics.length > 100) {
       this.metrics = this.metrics.slice(-100);
@@ -138,23 +138,33 @@ class PerformanceMonitor {
     };
 
     if (metrics.routeOptimizationTime > thresholds.routeOptimizationTime) {
-      console.warn(`Route optimization took ${metrics.routeOptimizationTime}ms (threshold: ${thresholds.routeOptimizationTime}ms)`);
+      console.warn(
+        `Route optimization took ${metrics.routeOptimizationTime}ms (threshold: ${thresholds.routeOptimizationTime}ms)`
+      );
     }
 
     if (metrics.mapRenderTime > thresholds.mapRenderTime) {
-      console.warn(`Map rendering took ${metrics.mapRenderTime}ms (threshold: ${thresholds.mapRenderTime}ms)`);
+      console.warn(
+        `Map rendering took ${metrics.mapRenderTime}ms (threshold: ${thresholds.mapRenderTime}ms)`
+      );
     }
 
     if (metrics.hotspotPredictionTime > thresholds.hotspotPredictionTime) {
-      console.warn(`Hotspot prediction took ${metrics.hotspotPredictionTime}ms (threshold: ${thresholds.hotspotPredictionTime}ms)`);
+      console.warn(
+        `Hotspot prediction took ${metrics.hotspotPredictionTime}ms (threshold: ${thresholds.hotspotPredictionTime}ms)`
+      );
     }
 
     if (metrics.routingAccuracy < thresholds.minRoutingAccuracy) {
-      console.warn(`Routing accuracy is ${(metrics.routingAccuracy * 100).toFixed(1)}% (target: ${(thresholds.minRoutingAccuracy * 100)}%)`);
+      console.warn(
+        `Routing accuracy is ${(metrics.routingAccuracy * 100).toFixed(1)}% (target: ${thresholds.minRoutingAccuracy * 100}%)`
+      );
     }
 
     if (metrics.efficiencyGain < thresholds.minEfficiencyGain) {
-      console.warn(`Efficiency gain is ${(metrics.efficiencyGain * 100).toFixed(1)}% (target: ${(thresholds.minEfficiencyGain * 100)}%)`);
+      console.warn(
+        `Efficiency gain is ${(metrics.efficiencyGain * 100).toFixed(1)}% (target: ${thresholds.minEfficiencyGain * 100}%)`
+      );
     }
   }
 
@@ -173,50 +183,50 @@ class PerformanceMonitor {
 export function validateRouteOptimization(
   routes: any[],
   originalJobs: any[],
-  technicians: any[]
+  _technicians: any[]
 ): RouteValidationResult {
   const issues: string[] = [];
   const recommendations: string[] = [];
 
   // Check if all jobs are assigned
-  const assignedJobIds = new Set(routes.flatMap(route => route.points.map((p: any) => p.id)));
+  const assignedJobIds = new Set(routes.flatMap((route) => route.points.map((p: any) => p.id)));
   const totalJobs = originalJobs.length;
   const assignedJobs = assignedJobIds.size;
 
   if (assignedJobs < totalJobs) {
     issues.push(`${totalJobs - assignedJobs} jobs were not assigned to any technician`);
-    recommendations.push('Check technician service areas and availability');
+    recommendations.push("Check technician service areas and availability");
   }
 
   // Check route efficiency
   const avgEfficiency = routes.reduce((sum, route) => sum + route.efficiency, 0) / routes.length;
   if (avgEfficiency < 0.6) {
     issues.push(`Average route efficiency is low: ${(avgEfficiency * 100).toFixed(1)}%`);
-    recommendations.push('Consider adjusting technician service areas or job priorities');
+    recommendations.push("Consider adjusting technician service areas or job priorities");
   }
 
   // Check for unbalanced workload
-  const jobCounts = routes.map(route => route.points.length);
+  const jobCounts = routes.map((route) => route.points.length);
   const maxJobs = Math.max(...jobCounts);
   const minJobs = Math.min(...jobCounts);
-  
+
   if (maxJobs - minJobs > 3) {
     issues.push(`Unbalanced workload: ${maxJobs} vs ${minJobs} jobs per technician`);
-    recommendations.push('Consider redistributing jobs for better balance');
+    recommendations.push("Consider redistributing jobs for better balance");
   }
 
   // Check for urgent jobs scheduled late
   routes.forEach((route, index) => {
-    const urgentJobIndex = route.points.findIndex((p: any) => p.priority === 'urgent');
+    const urgentJobIndex = route.points.findIndex((p: any) => p.priority === "urgent");
     if (urgentJobIndex > 2) {
       issues.push(`Urgent job scheduled as #${urgentJobIndex + 1} for technician ${index + 1}`);
-      recommendations.push('Prioritize urgent jobs earlier in routes');
+      recommendations.push("Prioritize urgent jobs earlier in routes");
     }
   });
 
   // Calculate accuracy score
   let accuracy = 1.0;
-  accuracy -= (issues.length * 0.1); // Reduce by 10% per issue
+  accuracy -= issues.length * 0.1; // Reduce by 10% per issue
   accuracy = Math.max(0, Math.min(1, accuracy));
 
   return {
@@ -233,18 +243,19 @@ export function validateRouteOptimization(
 export function optimizeMapRendering(): {
   enableClustering: boolean;
   maxMarkersBeforeClustering: number;
-  tileLoadingStrategy: 'eager' | 'lazy';
+  tileLoadingStrategy: "eager" | "lazy";
   markerIconCaching: boolean;
 } {
   // Detect device capabilities
   const isLowEndDevice = navigator.hardwareConcurrency <= 2;
-  const isSlowConnection = (navigator as any).connection?.effectiveType === 'slow-2g' || 
-                          (navigator as any).connection?.effectiveType === '2g';
+  const isSlowConnection =
+    (navigator as any).connection?.effectiveType === "slow-2g" ||
+    (navigator as any).connection?.effectiveType === "2g";
 
   return {
     enableClustering: isLowEndDevice,
     maxMarkersBeforeClustering: isLowEndDevice ? 50 : 200,
-    tileLoadingStrategy: isSlowConnection ? 'lazy' : 'eager',
+    tileLoadingStrategy: isSlowConnection ? "lazy" : "eager",
     markerIconCaching: true,
   };
 }
@@ -257,24 +268,24 @@ export function monitorWebVitals(): void {
   new PerformanceObserver((entryList) => {
     const entries = entryList.getEntries();
     const lastEntry = entries[entries.length - 1];
-    console.log('LCP:', lastEntry.startTime);
-    
+    console.log("LCP:", lastEntry.startTime);
+
     if (lastEntry.startTime > 2500) {
-      console.warn('LCP is above 2.5s threshold');
+      console.warn("LCP is above 2.5s threshold");
     }
-  }).observe({ entryTypes: ['largest-contentful-paint'] });
+  }).observe({ entryTypes: ["largest-contentful-paint"] });
 
   // First Input Delay (FID)
   new PerformanceObserver((entryList) => {
     const entries = entryList.getEntries();
     entries.forEach((entry: any) => {
-      console.log('FID:', entry.processingStart - entry.startTime);
-      
+      console.log("FID:", entry.processingStart - entry.startTime);
+
       if (entry.processingStart - entry.startTime > 100) {
-        console.warn('FID is above 100ms threshold');
+        console.warn("FID is above 100ms threshold");
       }
     });
-  }).observe({ entryTypes: ['first-input'] });
+  }).observe({ entryTypes: ["first-input"] });
 
   // Cumulative Layout Shift (CLS)
   let clsValue = 0;
@@ -285,11 +296,11 @@ export function monitorWebVitals(): void {
         clsValue += entry.value;
       }
     });
-    
+
     if (clsValue > 0.1) {
-      console.warn('CLS is above 0.1 threshold:', clsValue);
+      console.warn("CLS is above 0.1 threshold:", clsValue);
     }
-  }).observe({ entryTypes: ['layout-shift'] });
+  }).observe({ entryTypes: ["layout-shift"] });
 }
 
 /**
@@ -299,26 +310,26 @@ export function monitorMemoryUsage(): {
   usedJSHeapSize: number;
   totalJSHeapSize: number;
   jsHeapSizeLimit: number;
-  memoryPressure: 'low' | 'medium' | 'high';
+  memoryPressure: "low" | "medium" | "high";
 } {
   const memory = (performance as any).memory;
-  
+
   if (!memory) {
     return {
       usedJSHeapSize: 0,
       totalJSHeapSize: 0,
       jsHeapSizeLimit: 0,
-      memoryPressure: 'low',
+      memoryPressure: "low",
     };
   }
 
   const usageRatio = memory.usedJSHeapSize / memory.jsHeapSizeLimit;
-  let memoryPressure: 'low' | 'medium' | 'high' = 'low';
-  
+  let memoryPressure: "low" | "medium" | "high" = "low";
+
   if (usageRatio > 0.8) {
-    memoryPressure = 'high';
+    memoryPressure = "high";
   } else if (usageRatio > 0.6) {
-    memoryPressure = 'medium';
+    memoryPressure = "medium";
   }
 
   return {
@@ -335,12 +346,12 @@ export const performanceMonitor = new PerformanceMonitor();
 // Auto-start monitoring in development
 if (import.meta.env.DEV) {
   monitorWebVitals();
-  
+
   // Log memory usage every 30 seconds
   setInterval(() => {
     const memoryInfo = monitorMemoryUsage();
-    if (memoryInfo.memoryPressure !== 'low') {
-      console.warn('Memory pressure detected:', memoryInfo);
+    if (memoryInfo.memoryPressure !== "low") {
+      console.warn("Memory pressure detected:", memoryInfo);
     }
   }, 30000);
 }

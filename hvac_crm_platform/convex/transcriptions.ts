@@ -1,7 +1,7 @@
-import { query, mutation, action } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
 import { api } from "./_generated/api";
+import { action, mutation, query } from "./_generated/server";
 
 export const list = query({
   args: {
@@ -78,14 +78,14 @@ export const processWithAI = action({
   },
   handler: async (ctx, args): Promise<any> => {
     const transcription: any = await ctx.runQuery(api.transcriptions.get, {
-      id: args.transcriptionId
+      id: args.transcriptionId,
     });
 
     if (!transcription) throw new Error("Transcription not found");
 
     // Simulate AI processing (in real app, use OpenAI or local LLM)
     const text: string = transcription.originalText.toLowerCase();
-    
+
     const extractedData: any = {
       customerName: extractCustomerName(text),
       phone: extractPhone(text),
@@ -100,7 +100,9 @@ export const processWithAI = action({
     };
 
     // Calculate confidence based on how much data was extracted
-    const fieldsExtracted = Object.values(extractedData).filter(v => v !== null && v !== undefined).length;
+    const fieldsExtracted = Object.values(extractedData).filter(
+      (v) => v !== null && v !== undefined
+    ).length;
     const confidence = Math.min(fieldsExtracted / 6, 1); // Max confidence when 6+ fields extracted
 
     await ctx.runMutation(api.transcriptions.update, {
@@ -142,18 +144,20 @@ export const processWithAI = action({
 export const update = mutation({
   args: {
     id: v.id("transcriptions"),
-    extractedData: v.optional(v.object({
-      customerName: v.optional(v.string()),
-      phone: v.optional(v.string()),
-      address: v.optional(v.string()),
-      deviceType: v.optional(v.string()),
-      deviceCount: v.optional(v.number()),
-      roomCount: v.optional(v.number()),
-      budget: v.optional(v.number()),
-      urgency: v.optional(v.string()),
-      preferredDate: v.optional(v.string()),
-      additionalNotes: v.optional(v.string())
-    })),
+    extractedData: v.optional(
+      v.object({
+        customerName: v.optional(v.string()),
+        phone: v.optional(v.string()),
+        address: v.optional(v.string()),
+        deviceType: v.optional(v.string()),
+        deviceCount: v.optional(v.number()),
+        roomCount: v.optional(v.number()),
+        budget: v.optional(v.number()),
+        urgency: v.optional(v.string()),
+        preferredDate: v.optional(v.string()),
+        additionalNotes: v.optional(v.string()),
+      })
+    ),
     confidence: v.optional(v.number()),
     processed: v.optional(v.boolean()),
     contactId: v.optional(v.id("contacts")),
@@ -193,17 +197,14 @@ function extractCustomerName(text: string): string | undefined {
 }
 
 function extractPhone(text: string): string | undefined {
-  const phonePattern = /(\+48\s?)?(\d{3}[\s-]?\d{3}[\s-]?\d{3}|\d{2}[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2})/;
+  const phonePattern =
+    /(\+48\s?)?(\d{3}[\s-]?\d{3}[\s-]?\d{3}|\d{2}[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2})/;
   const match = text.match(phonePattern);
-  return match ? match[0].replace(/\s/g, '') : undefined;
+  return match ? match[0].replace(/\s/g, "") : undefined;
 }
 
 function extractAddress(text: string): string | undefined {
-  const addressPatterns = [
-    /mieszkam na ([^,.]+)/i,
-    /adres to ([^,.]+)/i,
-    /ulica ([^,.]+)/i,
-  ];
+  const addressPatterns = [/mieszkam na ([^,.]+)/i, /adres to ([^,.]+)/i, /ulica ([^,.]+)/i];
 
   for (const pattern of addressPatterns) {
     const match = text.match(pattern);
@@ -213,10 +214,10 @@ function extractAddress(text: string): string | undefined {
 }
 
 function extractDeviceType(text: string): string | undefined {
-  if (text.includes('klimatyzacja') || text.includes('klimatyzator')) return 'split_ac';
-  if (text.includes('multi split')) return 'multi_split';
-  if (text.includes('pompa ciepła')) return 'heat_pump';
-  return 'split_ac'; // default
+  if (text.includes("klimatyzacja") || text.includes("klimatyzator")) return "split_ac";
+  if (text.includes("multi split")) return "multi_split";
+  if (text.includes("pompa ciepła")) return "heat_pump";
+  return "split_ac"; // default
 }
 
 function extractDeviceCount(text: string): number | undefined {
@@ -226,14 +227,20 @@ function extractDeviceCount(text: string): number | undefined {
   ];
 
   const numberMap: { [key: string]: number } = {
-    'jeden': 1, 'jedna': 1, 'dwa': 2, 'trzy': 3, 'cztery': 4, 'pięć': 5, 'sześć': 6
+    jeden: 1,
+    jedna: 1,
+    dwa: 2,
+    trzy: 3,
+    cztery: 4,
+    pięć: 5,
+    sześć: 6,
   };
 
   for (const pattern of countPatterns) {
     const match = text.match(pattern);
     if (match) {
       const value = match[1];
-      return numberMap[value] || parseInt(value) || undefined;
+      return numberMap[value] || Number.parseInt(value) || undefined;
     }
   }
   return undefined;
@@ -242,7 +249,7 @@ function extractDeviceCount(text: string): number | undefined {
 function extractRoomCount(text: string): number | undefined {
   const roomPattern = /(\d+)\s*(pokój|pokoje|pomieszczen)/i;
   const match = text.match(roomPattern);
-  return match ? parseInt(match[1]) : undefined;
+  return match ? Number.parseInt(match[1]) : undefined;
 }
 
 function extractBudget(text: string): number | undefined {
@@ -255,18 +262,19 @@ function extractBudget(text: string): number | undefined {
   for (const pattern of budgetPatterns) {
     const match = text.match(pattern);
     if (match) {
-      const amount = parseInt(match[1]);
-      return match[2].includes('tys') ? amount * 1000 : amount;
+      const amount = Number.parseInt(match[1]);
+      return match[2].includes("tys") ? amount * 1000 : amount;
     }
   }
   return undefined;
 }
 
 function extractUrgency(text: string): string | undefined {
-  if (text.includes('pilne') || text.includes('szybko') || text.includes('natychmiast')) return 'urgent';
-  if (text.includes('w tym tygodniu')) return 'high';
-  if (text.includes('w przyszłym miesiącu')) return 'low';
-  return 'medium';
+  if (text.includes("pilne") || text.includes("szybko") || text.includes("natychmiast"))
+    return "urgent";
+  if (text.includes("w tym tygodniu")) return "high";
+  if (text.includes("w przyszłym miesiącu")) return "low";
+  return "medium";
 }
 
 function extractPreferredDate(text: string): string | undefined {
@@ -284,11 +292,7 @@ function extractPreferredDate(text: string): string | undefined {
 
 function extractAdditionalNotes(text: string): string | undefined {
   // Extract any additional context or special requirements
-  const notePatterns = [
-    /dodatkowo ([^.]+)/i,
-    /ważne że ([^.]+)/i,
-    /proszę pamiętać ([^.]+)/i,
-  ];
+  const notePatterns = [/dodatkowo ([^.]+)/i, /ważne że ([^.]+)/i, /proszę pamiętać ([^.]+)/i];
 
   for (const pattern of notePatterns) {
     const match = text.match(pattern);

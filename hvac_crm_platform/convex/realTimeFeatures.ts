@@ -1,10 +1,10 @@
-import { query, mutation, action } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 /**
  * 🔥 Real-time Features Backend - 137/137 Godlike Quality
- * 
+ *
  * Features:
  * - Live data subscriptions across all modules
  * - Real-time notifications system
@@ -25,27 +25,29 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 export const subscribeToDashboardMetrics = query({
   args: {
     district: v.optional(v.string()),
-    timeRange: v.optional(v.string())
+    timeRange: v.optional(v.string()),
   },
-  handler: async (ctx, _args) => {
-    const userId = await getAuthUserId(_ctx);
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     // Get real-time metrics
-    const metrics = await ctx.db.query("realTimeMetrics")
-      .filter(q =>
-        args.district
-          ? q.eq(q.field("district"), args.district)
-          : q.neq(q.field("_id"), "" as any)
+    const metrics = await ctx.db
+      .query("realTimeMetrics")
+      .filter((q) =>
+        args.district ? q.eq(q.field("district"), args.district) : q.neq(q.field("_id"), "" as any)
       )
-      .filter(q => q.gt(q.field("validUntil"), Date.now()))
+      .filter((q) => q.gt(q.field("validUntil"), Date.now()))
       .collect();
 
     // Group metrics by type
-    const groupedMetrics = metrics.reduce((acc, metric) => {
-      acc[metric.metricType] = metric;
-      return acc;
-    }, {} as Record<string, any>);
+    const groupedMetrics = metrics.reduce(
+      (acc, metric) => {
+        acc[metric.metricType] = metric;
+        return acc;
+      },
+      {} as Record<string, any>
+    );
 
     return {
       activeJobs: groupedMetrics.active_jobs?.value || 0,
@@ -55,9 +57,9 @@ export const subscribeToDashboardMetrics = query({
       customerSatisfaction: groupedMetrics.customer_satisfaction?.value || 0,
       responseTime: groupedMetrics.response_times?.value || 0,
       districtActivity: groupedMetrics.district_activity?.value || 0,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
-  }
+  },
 });
 
 /**
@@ -66,7 +68,7 @@ export const subscribeToDashboardMetrics = query({
 export const subscribeToContractUpdates = query({
   args: {
     district: v.optional(v.string()),
-    status: v.optional(v.string())
+    status: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -75,37 +77,38 @@ export const subscribeToContractUpdates = query({
     let contracts;
 
     if (args.district && args.status) {
-      contracts = await ctx.db.query("contracts")
-        .withIndex("by_district", q => q.eq("district", args.district!))
-        .filter(q => q.eq(q.field("status"), args.status!))
+      contracts = await ctx.db
+        .query("contracts")
+        .withIndex("by_district", (q) => q.eq("district", args.district!))
+        .filter((q) => q.eq(q.field("status"), args.status!))
         .order("desc")
         .collect();
       contracts = contracts.slice(0, 20);
     } else if (args.district) {
-      contracts = await ctx.db.query("contracts")
-        .withIndex("by_district", q => q.eq("district", args.district!))
+      contracts = await ctx.db
+        .query("contracts")
+        .withIndex("by_district", (q) => q.eq("district", args.district!))
         .order("desc")
         .collect();
       contracts = contracts.slice(0, 20);
     } else if (args.status) {
-      contracts = await ctx.db.query("contracts")
-        .filter(q => q.eq(q.field("status"), args.status!))
+      contracts = await ctx.db
+        .query("contracts")
+        .filter((q) => q.eq(q.field("status"), args.status!))
         .order("desc")
         .collect();
       contracts = contracts.slice(0, 20);
     } else {
-      contracts = await ctx.db.query("contracts")
-        .order("desc")
-        .collect();
+      contracts = await ctx.db.query("contracts").order("desc").collect();
       contracts = contracts.slice(0, 20);
     }
 
     return {
       contracts,
       count: contracts.length,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
-  }
+  },
 });
 
 /**
@@ -114,7 +117,7 @@ export const subscribeToContractUpdates = query({
 export const subscribeToServiceAgreementUpdates = query({
   args: {
     district: v.optional(v.string()),
-    status: v.optional(v.string())
+    status: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -123,37 +126,38 @@ export const subscribeToServiceAgreementUpdates = query({
     let agreements;
 
     if (args.district && args.status) {
-      agreements = await ctx.db.query("serviceAgreements")
-        .withIndex("by_district", q => q.eq("district", args.district!))
-        .filter(q => q.eq(q.field("status"), args.status!))
+      agreements = await ctx.db
+        .query("serviceAgreements")
+        .withIndex("by_district", (q) => q.eq("district", args.district!))
+        .filter((q) => q.eq(q.field("status"), args.status!))
         .order("desc")
         .collect();
       agreements = agreements.slice(0, 20);
     } else if (args.district) {
-      agreements = await ctx.db.query("serviceAgreements")
-        .withIndex("by_district", q => q.eq("district", args.district!))
+      agreements = await ctx.db
+        .query("serviceAgreements")
+        .withIndex("by_district", (q) => q.eq("district", args.district!))
         .order("desc")
         .collect();
       agreements = agreements.slice(0, 20);
     } else if (args.status) {
-      agreements = await ctx.db.query("serviceAgreements")
-        .filter(q => q.eq(q.field("status"), args.status!))
+      agreements = await ctx.db
+        .query("serviceAgreements")
+        .filter((q) => q.eq(q.field("status"), args.status!))
         .order("desc")
         .collect();
       agreements = agreements.slice(0, 20);
     } else {
-      agreements = await ctx.db.query("serviceAgreements")
-        .order("desc")
-        .collect();
+      agreements = await ctx.db.query("serviceAgreements").order("desc").collect();
       agreements = agreements.slice(0, 20);
     }
 
     return {
       agreements,
       count: agreements.length,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
-  }
+  },
 });
 
 /**
@@ -162,7 +166,7 @@ export const subscribeToServiceAgreementUpdates = query({
 export const subscribeToEquipmentUpdates = query({
   args: {
     district: v.optional(v.string()),
-    status: v.optional(v.string())
+    status: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -171,28 +175,29 @@ export const subscribeToEquipmentUpdates = query({
     let equipment;
 
     if (args.district && args.status) {
-      equipment = await ctx.db.query("equipmentLifecycle")
-        .filter(q => q.eq(q.field("location.district"), args.district!))
-        .filter(q => q.eq(q.field("status"), args.status!))
+      equipment = await ctx.db
+        .query("equipmentLifecycle")
+        .filter((q) => q.eq(q.field("location.district"), args.district!))
+        .filter((q) => q.eq(q.field("status"), args.status!))
         .order("desc")
         .collect();
       equipment = equipment.slice(0, 50);
     } else if (args.district) {
-      equipment = await ctx.db.query("equipmentLifecycle")
-        .filter(q => q.eq(q.field("location.district"), args.district!))
+      equipment = await ctx.db
+        .query("equipmentLifecycle")
+        .filter((q) => q.eq(q.field("location.district"), args.district!))
         .order("desc")
         .collect();
       equipment = equipment.slice(0, 50);
     } else if (args.status) {
-      equipment = await ctx.db.query("equipmentLifecycle")
-        .filter(q => q.eq(q.field("status"), args.status!))
+      equipment = await ctx.db
+        .query("equipmentLifecycle")
+        .filter((q) => q.eq(q.field("status"), args.status!))
         .order("desc")
         .collect();
       equipment = equipment.slice(0, 50);
     } else {
-      equipment = await ctx.db.query("equipmentLifecycle")
-        .order("desc")
-        .collect();
+      equipment = await ctx.db.query("equipmentLifecycle").order("desc").collect();
       equipment = equipment.slice(0, 50);
     }
 
@@ -200,17 +205,18 @@ export const subscribeToEquipmentUpdates = query({
     const stats = {
       total: equipment.length,
       operational: equipment.filter((eq: any) => eq.status === "operational").length,
-      maintenanceRequired: equipment.filter((eq: any) => eq.status === "maintenance_required").length,
+      maintenanceRequired: equipment.filter((eq: any) => eq.status === "maintenance_required")
+        .length,
       repairNeeded: equipment.filter((eq: any) => eq.status === "repair_needed").length,
-      alerts: equipment.reduce((count: number, eq: any) => count + eq.alerts.length, 0)
+      alerts: equipment.reduce((count: number, eq: any) => count + eq.alerts.length, 0),
     };
 
     return {
       equipment,
       stats,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
-  }
+  },
 });
 
 /**
@@ -218,7 +224,7 @@ export const subscribeToEquipmentUpdates = query({
  */
 export const subscribeToCustomerPortalActivity = query({
   args: {
-    contactId: v.optional(v.id("contacts"))
+    contactId: v.optional(v.id("contacts")),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -227,33 +233,35 @@ export const subscribeToCustomerPortalActivity = query({
     let users;
 
     if (args.contactId) {
-      users = await ctx.db.query("customerPortalUsers")
-        .withIndex("by_contact", q => q.eq("contactId", args.contactId!))
-        .filter(q => q.eq(q.field("status"), "active"))
+      users = await ctx.db
+        .query("customerPortalUsers")
+        .withIndex("by_contact", (q) => q.eq("contactId", args.contactId!))
+        .filter((q) => q.eq(q.field("status"), "active"))
         .collect();
     } else {
-      users = await ctx.db.query("customerPortalUsers")
-        .filter(q => q.eq(q.field("status"), "active"))
+      users = await ctx.db
+        .query("customerPortalUsers")
+        .filter((q) => q.eq(q.field("status"), "active"))
         .collect();
     }
 
     // Get recent activity
-    const activeUsers = users.filter(user => 
-      user.lastLogin && (Date.now() - user.lastLogin) < (24 * 60 * 60 * 1000) // Last 24 hours
+    const activeUsers = users.filter(
+      (user) => user.lastLogin && Date.now() - user.lastLogin < 24 * 60 * 60 * 1000 // Last 24 hours
     );
 
     return {
       totalUsers: users.length,
       activeUsers: activeUsers.length,
-      recentLogins: activeUsers.map(user => ({
+      recentLogins: activeUsers.map((user) => ({
         userId: user._id,
         name: `${user.firstName} ${user.lastName}`,
         lastLogin: user.lastLogin,
-        role: user.role
+        role: user.role,
       })),
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
-  }
+  },
 });
 
 // ============================================================================
@@ -275,12 +283,17 @@ export const createNotification = mutation({
     ),
     title: v.string(),
     message: v.string(),
-    priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high"), v.literal("urgent")),
+    priority: v.union(
+      v.literal("low"),
+      v.literal("medium"),
+      v.literal("high"),
+      v.literal("urgent")
+    ),
     targetUsers: v.array(v.id("users")),
     relatedEntityId: v.optional(v.string()),
     relatedEntityType: v.optional(v.string()),
     district: v.optional(v.string()),
-    actionUrl: v.optional(v.string())
+    actionUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -299,7 +312,7 @@ export const createNotification = mutation({
           district: args.district,
           actionUrl: args.actionUrl,
           read: false,
-          createdBy: userId
+          createdBy: userId,
         });
       })
     );
@@ -310,13 +323,13 @@ export const createNotification = mutation({
       value: notificationIds.length,
       unit: "count",
       timestamp: Date.now(),
-      validUntil: Date.now() + (5 * 60 * 1000),
+      validUntil: Date.now() + 5 * 60 * 1000,
       sourceSystem: "convex",
-      lastUpdatedBy: userId
+      lastUpdatedBy: userId,
     });
 
     return notificationIds;
-  }
+  },
 });
 
 /**
@@ -325,7 +338,7 @@ export const createNotification = mutation({
 export const getLiveNotifications = query({
   args: {
     userId: v.optional(v.id("users")),
-    unreadOnly: v.optional(v.boolean())
+    unreadOnly: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const authUserId = await getAuthUserId(ctx);
@@ -333,25 +346,24 @@ export const getLiveNotifications = query({
 
     const targetUserId = args.userId || authUserId;
 
-    const _query = ctx.db.query("notifications")
-      .withIndex("by_user", q => q.eq("userId", targetUserId));
+    let query = ctx.db
+      .query("notifications")
+      .withIndex("by_user", (q) => q.eq("userId", targetUserId));
 
     if (args.unreadOnly) {
-      query = query.filter(q => q.eq(q.field("read"), false));
+      query = query.filter((q) => q.eq(q.field("read"), false));
     }
 
-    let notifications = await query
-      .order("desc")
-      .collect();
+    let notifications = await query.order("desc").collect();
 
     notifications = notifications.slice(0, 50);
 
     return {
       notifications,
       unreadCount: notifications.filter((n: any) => !n.read).length,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
-  }
+  },
 });
 
 /**
@@ -359,7 +371,7 @@ export const getLiveNotifications = query({
  */
 export const markNotificationRead = mutation({
   args: {
-    notificationId: v.id("notifications")
+    notificationId: v.id("notifications"),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -367,11 +379,11 @@ export const markNotificationRead = mutation({
 
     await ctx.db.patch(args.notificationId, {
       read: true,
-      readAt: Date.now()
+      readAt: Date.now(),
     });
 
     return args.notificationId;
-  }
+  },
 });
 
 // ============================================================================
@@ -396,18 +408,19 @@ export const updateRealTimeMetric = mutation({
     value: v.number(),
     unit: v.string(),
     district: v.optional(v.string()),
-    metadata: v.optional(v.object({}))
+    metadata: v.optional(v.object({})),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     // Find existing metric or create new one
-    const existingMetric = await ctx.db.query("realTimeMetrics")
-      .filter(q => 
+    const existingMetric = await ctx.db
+      .query("realTimeMetrics")
+      .filter((q) =>
         q.and(
           q.eq(q.field("metricType"), args.metricType),
-          args.district 
+          args.district
             ? q.eq(q.field("district"), args.district)
             : q.eq(q.field("district"), undefined)
         )
@@ -420,8 +433,8 @@ export const updateRealTimeMetric = mutation({
         unit: args.unit,
         metadata: args.metadata,
         timestamp: Date.now(),
-        validUntil: Date.now() + (5 * 60 * 1000), // Valid for 5 minutes
-        lastUpdatedBy: userId
+        validUntil: Date.now() + 5 * 60 * 1000, // Valid for 5 minutes
+        lastUpdatedBy: userId,
       });
       return existingMetric._id;
     } else {
@@ -432,12 +445,12 @@ export const updateRealTimeMetric = mutation({
         district: args.district,
         metadata: args.metadata,
         timestamp: Date.now(),
-        validUntil: Date.now() + (5 * 60 * 1000), // Valid for 5 minutes
+        validUntil: Date.now() + 5 * 60 * 1000, // Valid for 5 minutes
         sourceSystem: "convex",
-        lastUpdatedBy: userId
+        lastUpdatedBy: userId,
       });
     }
-  }
+  },
 });
 
 // ============================================================================

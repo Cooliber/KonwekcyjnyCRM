@@ -1,12 +1,26 @@
-import { query, mutation, action, internalAction, internalMutation, internalQuery } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { Id } from "./_generated/dataModel";
+import type { Id } from "./_generated/dataModel";
+import {
+  internalAction,
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "./_generated/server";
 
 // Type definitions for workflow actions
 interface WorkflowAction {
-  type: "SEND_NOTIFICATION" | "UPDATE_RECORD" | "CREATE_TASK" | "ASSIGN_TECHNICIAN" | "UPDATE_STATUS" | "TRIGGER_ROUTE_OPTIMIZATION" | "TRIGGER_WEBHOOK" | "GENERATE_INVOICE";
+  type:
+    | "SEND_NOTIFICATION"
+    | "UPDATE_RECORD"
+    | "CREATE_TASK"
+    | "ASSIGN_TECHNICIAN"
+    | "UPDATE_STATUS"
+    | "TRIGGER_ROUTE_OPTIMIZATION"
+    | "TRIGGER_WEBHOOK"
+    | "GENERATE_INVOICE";
   config: {
     target: string;
     template?: string;
@@ -64,25 +78,23 @@ export const list = query({
   args: {
     status: v.optional(v.union(v.literal("active"), v.literal("disabled"))),
     triggerEvent: v.optional(v.string()),
-    limit: v.optional(v.number())
+    limit: v.optional(v.number()),
   },
-  handler: async (ctx, _args) => {
-    const userId = await getAuthUserId(_ctx);
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const _query = ctx.db.query("workflows");
-    
+    let query = ctx.db.query("workflows");
+
     if (args.status) {
-      query = query.filter(q => q.eq(q.field("status"), args.status));
-    }
-    
-    if (args.triggerEvent) {
-      query = query.filter(q => q.eq(q.field("triggerEvent"), args.triggerEvent));
+      query = query.filter((q) => q.eq(q.field("status"), args.status));
     }
 
-    const workflows = await query
-      .order("desc")
-      .take(args.limit || 50);
+    if (args.triggerEvent) {
+      query = query.filter((q) => q.eq(q.field("triggerEvent"), args.triggerEvent));
+    }
+
+    const workflows = await query.order("desc").take(args.limit || 50);
 
     return workflows;
   },
@@ -102,39 +114,45 @@ export const create = mutation({
     ),
     triggerCondition: v.object({
       entityType: v.union(v.literal("job"), v.literal("contact"), v.literal("invoice")),
-      conditions: v.array(v.object({
-        field: v.string(),
-        operator: v.union(
-          v.literal("eq"), v.literal("neq"),
-          v.literal("gt"), v.literal("lt"),
-          v.literal("contains")
-        ),
-        value: v.any()
-      }))
-    }),
-    actions: v.array(v.object({
-      type: v.union(
-        v.literal("SEND_NOTIFICATION"),
-        v.literal("UPDATE_RECORD"),
-        v.literal("CREATE_TASK"),
-        v.literal("ASSIGN_TECHNICIAN"),
-        v.literal("UPDATE_STATUS"),
-        v.literal("TRIGGER_ROUTE_OPTIMIZATION"),
-        v.literal("TRIGGER_WEBHOOK"),
-        v.literal("GENERATE_INVOICE")
+      conditions: v.array(
+        v.object({
+          field: v.string(),
+          operator: v.union(
+            v.literal("eq"),
+            v.literal("neq"),
+            v.literal("gt"),
+            v.literal("lt"),
+            v.literal("contains")
+          ),
+          value: v.any(),
+        })
       ),
-      config: v.object({
-        target: v.string(),
-        template: v.optional(v.string()),
-        channel: v.union(
-          v.literal("email"),
-          v.literal("sms"),
-          v.literal("push"),
-          v.literal("telegram")
+    }),
+    actions: v.array(
+      v.object({
+        type: v.union(
+          v.literal("SEND_NOTIFICATION"),
+          v.literal("UPDATE_RECORD"),
+          v.literal("CREATE_TASK"),
+          v.literal("ASSIGN_TECHNICIAN"),
+          v.literal("UPDATE_STATUS"),
+          v.literal("TRIGGER_ROUTE_OPTIMIZATION"),
+          v.literal("TRIGGER_WEBHOOK"),
+          v.literal("GENERATE_INVOICE")
         ),
-        timeout: v.optional(v.number())
+        config: v.object({
+          target: v.string(),
+          template: v.optional(v.string()),
+          channel: v.union(
+            v.literal("email"),
+            v.literal("sms"),
+            v.literal("push"),
+            v.literal("telegram")
+          ),
+          timeout: v.optional(v.number()),
+        }),
       })
-    }))
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -150,9 +168,9 @@ export const create = mutation({
       metrics: {
         executions: 0,
         successes: 0,
-        failures: 0
+        failures: 0,
       },
-      createdBy: userId
+      createdBy: userId,
     });
 
     return workflowId;
@@ -165,42 +183,52 @@ export const update = mutation({
     id: v.id("workflows"),
     name: v.optional(v.string()),
     description: v.optional(v.string()),
-    triggerCondition: v.optional(v.object({
-      entityType: v.union(v.literal("job"), v.literal("contact"), v.literal("invoice")),
-      conditions: v.array(v.object({
-        field: v.string(),
-        operator: v.union(
-          v.literal("eq"), v.literal("neq"),
-          v.literal("gt"), v.literal("lt"),
-          v.literal("contains")
+    triggerCondition: v.optional(
+      v.object({
+        entityType: v.union(v.literal("job"), v.literal("contact"), v.literal("invoice")),
+        conditions: v.array(
+          v.object({
+            field: v.string(),
+            operator: v.union(
+              v.literal("eq"),
+              v.literal("neq"),
+              v.literal("gt"),
+              v.literal("lt"),
+              v.literal("contains")
+            ),
+            value: v.any(),
+          })
         ),
-        value: v.any()
-      }))
-    })),
-    actions: v.optional(v.array(v.object({
-      type: v.union(
-        v.literal("SEND_NOTIFICATION"),
-        v.literal("UPDATE_RECORD"),
-        v.literal("CREATE_TASK"),
-        v.literal("ASSIGN_TECHNICIAN"),
-        v.literal("UPDATE_STATUS"),
-        v.literal("TRIGGER_ROUTE_OPTIMIZATION"),
-        v.literal("TRIGGER_WEBHOOK"),
-        v.literal("GENERATE_INVOICE")
-      ),
-      config: v.object({
-        target: v.string(),
-        template: v.optional(v.string()),
-        channel: v.union(
-          v.literal("email"),
-          v.literal("sms"),
-          v.literal("push"),
-          v.literal("telegram")
-        ),
-        timeout: v.optional(v.number())
       })
-    }))),
-    status: v.optional(v.union(v.literal("active"), v.literal("disabled")))
+    ),
+    actions: v.optional(
+      v.array(
+        v.object({
+          type: v.union(
+            v.literal("SEND_NOTIFICATION"),
+            v.literal("UPDATE_RECORD"),
+            v.literal("CREATE_TASK"),
+            v.literal("ASSIGN_TECHNICIAN"),
+            v.literal("UPDATE_STATUS"),
+            v.literal("TRIGGER_ROUTE_OPTIMIZATION"),
+            v.literal("TRIGGER_WEBHOOK"),
+            v.literal("GENERATE_INVOICE")
+          ),
+          config: v.object({
+            target: v.string(),
+            template: v.optional(v.string()),
+            channel: v.union(
+              v.literal("email"),
+              v.literal("sms"),
+              v.literal("push"),
+              v.literal("telegram")
+            ),
+            timeout: v.optional(v.number()),
+          }),
+        })
+      )
+    ),
+    status: v.optional(v.union(v.literal("active"), v.literal("disabled"))),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -208,7 +236,7 @@ export const update = mutation({
 
     const { id, ...updates } = args;
     await ctx.db.patch(id, updates);
-    
+
     return id;
   },
 });
@@ -219,7 +247,7 @@ export const executeWorkflows = internalAction({
     triggerEvent: v.string(),
     entityId: v.string(),
     entityType: v.union(v.literal("job"), v.literal("contact"), v.literal("invoice")),
-    entityData: v.any()
+    entityData: v.any(),
   },
   handler: async (ctx, args): Promise<WorkflowExecutionResult> => {
     const startTime = Date.now();
@@ -227,7 +255,7 @@ export const executeWorkflows = internalAction({
     // Get all active workflows for this trigger event
     const workflows: Workflow[] = await ctx.runQuery(internal.workflows.getActiveWorkflows, {
       triggerEvent: args.triggerEvent,
-      entityType: args.entityType
+      entityType: args.entityType,
     });
 
     const results: Array<{
@@ -237,25 +265,25 @@ export const executeWorkflows = internalAction({
       result?: any;
       error?: string;
     }> = [];
-    
+
     for (const workflow of workflows) {
       try {
         const shouldExecute = await evaluateConditions(workflow.triggerCondition, args.entityData);
-        
+
         if (shouldExecute) {
           const result: any = await ctx.runMutation(internal.workflows.executeWorkflowActions, {
             workflowId: workflow._id,
             entityId: args.entityId,
             entityType: args.entityType,
             entityData: args.entityData,
-            actions: workflow.actions
+            actions: workflow.actions,
           });
-          
+
           results.push({
             workflowId: workflow._id,
             workflowName: workflow.name,
             success: true,
-            result
+            result,
           });
         }
       } catch (error) {
@@ -264,34 +292,34 @@ export const executeWorkflows = internalAction({
           workflowId: workflow._id,
           workflowName: workflow.name,
           success: false,
-          error: errorMessage
+          error: errorMessage,
         });
 
         // Update workflow metrics
         await ctx.runMutation(internal.workflows.updateWorkflowMetrics, {
           workflowId: workflow._id,
           success: false,
-          error: errorMessage
+          error: errorMessage,
         });
       }
     }
 
     const executionTime = Date.now() - startTime;
-    
+
     // Log performance metrics
     await ctx.runMutation(internal.workflows.logPerformanceMetrics, {
       triggerEvent: args.triggerEvent,
       workflowsProcessed: workflows.length,
       executionTime,
-      results
+      results,
     });
 
     return {
       executionTime,
       workflowsProcessed: workflows.length,
-      successfulExecutions: results.filter(r => r.success).length,
-      failedExecutions: results.filter(r => !r.success).length,
-      results
+      successfulExecutions: results.filter((r) => r.success).length,
+      failedExecutions: results.filter((r) => !r.success).length,
+      results,
     };
   },
 });
@@ -300,16 +328,18 @@ export const executeWorkflows = internalAction({
 export const getActiveWorkflows = internalQuery({
   args: {
     triggerEvent: v.string(),
-    entityType: v.string()
+    entityType: v.string(),
   },
   handler: async (ctx, args): Promise<Workflow[]> => {
     return await ctx.db
       .query("workflows")
-      .filter(q => q.and(
-        q.eq(q.field("status"), "active"),
-        q.eq(q.field("triggerEvent"), args.triggerEvent),
-        q.eq(q.field("triggerCondition.entityType"), args.entityType)
-      ))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("status"), "active"),
+          q.eq(q.field("triggerEvent"), args.triggerEvent),
+          q.eq(q.field("triggerCondition.entityType"), args.entityType)
+        )
+      )
       .collect();
   },
 });
@@ -321,18 +351,20 @@ export const executeWorkflowActions = internalMutation({
     entityId: v.string(),
     entityType: v.string(),
     entityData: v.any(),
-    actions: v.array(v.object({
-      type: v.string(),
-      config: v.any()
-    }))
+    actions: v.array(
+      v.object({
+        type: v.string(),
+        config: v.any(),
+      })
+    ),
   },
   handler: async (ctx, args) => {
     const actionResults = [];
-    
+
     for (const action of args.actions) {
       try {
         let result;
-        
+
         switch (action.type) {
           case "ASSIGN_TECHNICIAN":
             result = await assignTechnician(ctx, args.entityId, action.config);
@@ -353,39 +385,40 @@ export const executeWorkflowActions = internalMutation({
           case "TRIGGER_ROUTE_OPTIMIZATION":
             result = await triggerRouteOptimization(ctx, args.entityData, action.config);
             break;
-            
+
           default:
             throw new Error(`Unknown action type: ${action.type}`);
         }
-        
+
         actionResults.push({
           actionType: action.type,
           success: true,
-          result
+          result,
         });
-        
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         actionResults.push({
           actionType: action.type,
           success: false,
-          error: errorMessage
+          error: errorMessage,
         });
       }
     }
-    
+
     // Update workflow metrics
     await ctx.db.patch(args.workflowId, {
       lastTriggered: Date.now(),
       metrics: {
-        executions: (await ctx.db.get(args.workflowId))!.metrics.executions + 1,
-        successes: (await ctx.db.get(args.workflowId))!.metrics.successes + 
-                  (actionResults.every(r => r.success) ? 1 : 0),
-        failures: (await ctx.db.get(args.workflowId))!.metrics.failures + 
-                 (actionResults.some(r => !r.success) ? 1 : 0)
-      }
+        executions: (await ctx.db.get(args.workflowId))?.metrics.executions + 1,
+        successes:
+          (await ctx.db.get(args.workflowId))?.metrics.successes +
+          (actionResults.every((r) => r.success) ? 1 : 0),
+        failures:
+          (await ctx.db.get(args.workflowId))?.metrics.failures +
+          (actionResults.some((r) => !r.success) ? 1 : 0),
+      },
     });
-    
+
     return actionResults;
   },
 });
@@ -394,7 +427,7 @@ export const executeWorkflowActions = internalMutation({
 function evaluateConditions(triggerCondition: any, entityData: any): boolean {
   for (const condition of triggerCondition.conditions) {
     const fieldValue = getNestedValue(entityData, condition.field);
-    
+
     switch (condition.operator) {
       case "eq":
         if (fieldValue !== condition.value) return false;
@@ -409,58 +442,57 @@ function evaluateConditions(triggerCondition: any, entityData: any): boolean {
         if (fieldValue >= condition.value) return false;
         break;
       case "contains":
-        if (!String(fieldValue).toLowerCase().includes(String(condition.value).toLowerCase())) return false;
+        if (!String(fieldValue).toLowerCase().includes(String(condition.value).toLowerCase()))
+          return false;
         break;
       default:
         return false;
     }
   }
-  
+
   return true;
 }
 
 // Helper function to get nested object values
 function getNestedValue(obj: any, path: string): any {
-  return path.split('.').reduce((current, key) => current?.[key], obj);
+  return path.split(".").reduce((current, key) => current?.[key], obj);
 }
 
 // Action implementations
 async function assignTechnician(ctx: any, entityId: string, parameters: any) {
   const { district, priority, specialtyRequired } = parameters;
-  
+
   // Find available technicians in the district
   const technicians = await ctx.db
     .query("userProfiles")
-    .filter((q: any) => q.and(
-      q.eq(q.field("role"), "technician"),
-      q.eq(q.field("isActive"), true)
-    ))
+    .filter((q: any) => q.and(q.eq(q.field("role"), "technician"), q.eq(q.field("isActive"), true)))
     .collect();
-  
+
   // Filter by district and specialty
-  const availableTechnicians = technicians.filter((tech: any) =>
-    tech.serviceAreas?.includes(district) &&
-    (!specialtyRequired || tech.specialties?.includes(specialtyRequired))
+  const availableTechnicians = technicians.filter(
+    (tech: any) =>
+      tech.serviceAreas?.includes(district) &&
+      (!specialtyRequired || tech.specialties?.includes(specialtyRequired))
   );
-  
+
   if (availableTechnicians.length === 0) {
     throw new Error("No available technicians found");
   }
-  
+
   // Simple assignment logic - can be enhanced with load balancing
   const assignedTechnician = availableTechnicians[0];
-  
+
   // Update job with assigned technician
   await ctx.db.patch(entityId as any, {
-    assignedTechnicians: [assignedTechnician.userId]
+    assignedTechnicians: [assignedTechnician.userId],
   });
-  
+
   return { assignedTechnicianId: assignedTechnician.userId };
 }
 
 async function sendNotification(ctx: any, entityData: any, parameters: any) {
   const { userId, title, message, type, priority } = parameters;
-  
+
   const notificationId = await ctx.db.insert("notifications", {
     userId: userId || entityData.assignedTo || entityData.createdBy,
     title: title || "Workflow Notification",
@@ -468,23 +500,28 @@ async function sendNotification(ctx: any, entityData: any, parameters: any) {
     type: type || "system",
     priority: priority || "medium",
     read: false,
-    aiGenerated: true
+    aiGenerated: true,
   });
-  
+
   return { notificationId };
 }
 
-async function updateEntityStatus(ctx: any, entityId: string, entityType: string, parameters: any) {
+async function updateEntityStatus(
+  ctx: any,
+  entityId: string,
+  _entityType: string,
+  parameters: any
+) {
   const { status } = parameters;
-  
+
   await ctx.db.patch(entityId as any, { status });
-  
+
   return { updatedStatus: status };
 }
 
 async function createTask(ctx: any, entityData: any, parameters: any) {
   const { title, description, assignedTo, priority } = parameters;
-  
+
   const taskId = await ctx.db.insert("jobs", {
     title: title || "Automated Task",
     description: description || "Task created by workflow automation",
@@ -493,21 +530,21 @@ async function createTask(ctx: any, entityData: any, parameters: any) {
     priority: priority || "medium",
     status: "lead",
     assignedTechnicians: assignedTo ? [assignedTo] : [],
-    createdBy: entityData.createdBy
+    createdBy: entityData.createdBy,
   });
-  
+
   return { taskId };
 }
 
-async function triggerRouteOptimization(ctx: any, entityData: any, parameters: any) {
+async function triggerRouteOptimization(_ctx: any, entityData: any, parameters: any) {
   const { district, date } = parameters;
-  
+
   // This would trigger the route optimization system
   // For now, we'll just log the trigger
-  return { 
-    routeOptimizationTriggered: true, 
+  return {
+    routeOptimizationTriggered: true,
     district: district || entityData.district,
-    date: date || new Date().toISOString().split('T')[0]
+    date: date || new Date().toISOString().split("T")[0],
   };
 }
 
@@ -516,19 +553,19 @@ export const updateWorkflowMetrics = internalMutation({
   args: {
     workflowId: v.id("workflows"),
     success: v.boolean(),
-    error: v.optional(v.string())
+    error: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const workflow = await ctx.db.get(args.workflowId);
     if (!workflow) return;
-    
+
     await ctx.db.patch(args.workflowId, {
       metrics: {
         executions: workflow.metrics.executions + 1,
         successes: workflow.metrics.successes + (args.success ? 1 : 0),
         failures: workflow.metrics.failures + (args.success ? 0 : 1),
-        lastError: args.error
-      }
+        lastError: args.error,
+      },
     });
   },
 });
@@ -539,7 +576,7 @@ export const logPerformanceMetrics = internalMutation({
     triggerEvent: v.string(),
     workflowsProcessed: v.number(),
     executionTime: v.number(),
-    results: v.array(v.any())
+    results: v.array(v.any()),
   },
   handler: async (ctx, args) => {
     // Log to integration logs for monitoring
@@ -550,10 +587,10 @@ export const logPerformanceMetrics = internalMutation({
       data: JSON.stringify({
         workflowsProcessed: args.workflowsProcessed,
         executionTime: args.executionTime,
-        successRate: args.results.filter(r => r.success).length / args.results.length,
-        performanceTarget: args.executionTime < 1000 ? "met" : "exceeded"
+        successRate: args.results.filter((r) => r.success).length / args.results.length,
+        performanceTarget: args.executionTime < 1000 ? "met" : "exceeded",
       }),
-      relatedId: args.triggerEvent
+      relatedId: args.triggerEvent,
     });
   },
 });

@@ -8,35 +8,35 @@
 export const CACHE_CONFIG = {
   // District-based cache priorities (lower = higher priority = shorter TTL)
   DISTRICT_PRIORITIES: {
-    'Śródmieście': 1,      // Highest priority - business district
-    'Wilanów': 2,          // High affluence area
-    'Mokotów': 3,          // High affluence area
-    'Żoliborz': 4,         // Medium affluence
-    'Ursynów': 5,          // Medium affluence
-    'Wola': 6,             // Medium priority
-    'Praga-Południe': 7,   // Lower priority
-    'Targówek': 8,         // Lowest priority
+    Śródmieście: 1, // Highest priority - business district
+    Wilanów: 2, // High affluence area
+    Mokotów: 3, // High affluence area
+    Żoliborz: 4, // Medium affluence
+    Ursynów: 5, // Medium affluence
+    Wola: 6, // Medium priority
+    "Praga-Południe": 7, // Lower priority
+    Targówek: 8, // Lowest priority
   },
 
   // Base TTL values in milliseconds
   BASE_TTL: {
-    CRITICAL: 30 * 1000,      // 30 seconds for critical data
-    HIGH: 2 * 60 * 1000,      // 2 minutes for high priority
-    MEDIUM: 5 * 60 * 1000,    // 5 minutes for medium priority
-    LOW: 15 * 60 * 1000,      // 15 minutes for low priority
-    STATIC: 60 * 60 * 1000,   // 1 hour for static data
+    CRITICAL: 30 * 1000, // 30 seconds for critical data
+    HIGH: 2 * 60 * 1000, // 2 minutes for high priority
+    MEDIUM: 5 * 60 * 1000, // 5 minutes for medium priority
+    LOW: 15 * 60 * 1000, // 15 minutes for low priority
+    STATIC: 60 * 60 * 1000, // 1 hour for static data
   },
 
   // Data type classifications
   DATA_TYPES: {
-    EMERGENCY: 'CRITICAL',
-    NOTIFICATIONS: 'HIGH',
-    MESSAGES: 'MEDIUM',
-    CONTACTS: 'MEDIUM',
-    JOBS: 'MEDIUM',
-    QUOTES: 'LOW',
-    REPORTS: 'LOW',
-    SETTINGS: 'STATIC',
+    EMERGENCY: "CRITICAL",
+    NOTIFICATIONS: "HIGH",
+    MESSAGES: "MEDIUM",
+    CONTACTS: "MEDIUM",
+    JOBS: "MEDIUM",
+    QUOTES: "LOW",
+    REPORTS: "LOW",
+    SETTINGS: "STATIC",
   },
 
   // Cache size limits
@@ -44,7 +44,7 @@ export const CACHE_CONFIG = {
     MAX_ENTRIES: 1000,
     CLEANUP_THRESHOLD: 800,
     MAX_MEMORY_MB: 50,
-  }
+  },
 };
 
 // Multi-layer cache implementation
@@ -92,7 +92,7 @@ class MultiLayerCache {
       lastAccessed: Date.now(),
       accessCount: 1,
       size: this.estimateSize(data),
-      metadata
+      metadata,
     };
 
     // Determine cache layer based on data characteristics
@@ -143,7 +143,7 @@ class MultiLayerCache {
       totalHits: this.totalHits,
       totalMisses: this.totalMisses,
       memoryUsage: this.calculateMemoryUsage(),
-      topKeys: this.getTopAccessedKeys()
+      topKeys: this.getTopAccessedKeys(),
     };
   }
 
@@ -154,10 +154,10 @@ class MultiLayerCache {
   private shouldUseL1(entry: CacheEntry): boolean {
     // Use L1 for critical data, small size, or high access frequency
     return (
-      entry.metadata.priority === 'CRITICAL' ||
+      entry.metadata.priority === "CRITICAL" ||
       entry.size < 1024 || // Less than 1KB
-      entry.metadata.district === 'Śródmieście' ||
-      entry.metadata.dataType === 'EMERGENCY'
+      entry.metadata.district === "Śródmieście" ||
+      entry.metadata.dataType === "EMERGENCY"
     );
   }
 
@@ -171,7 +171,7 @@ class MultiLayerCache {
     this.hitStats.set(key, (this.hitStats.get(key) || 0) + 1);
   }
 
-  private recordMiss(key: string): void {
+  private recordMiss(_key: string): void {
     this.totalMisses++;
   }
 
@@ -187,7 +187,7 @@ class MultiLayerCache {
     for (const entry of this.l2Cache.values()) {
       totalSize += entry.size;
     }
-    return Math.round(totalSize / 1024 / 1024 * 100) / 100; // MB
+    return Math.round((totalSize / 1024 / 1024) * 100) / 100; // MB
   }
 
   private getTopAccessedKeys(): string[] {
@@ -199,7 +199,7 @@ class MultiLayerCache {
 
   private cleanup(): void {
     const totalEntries = this.l1Cache.size + this.l2Cache.size;
-    
+
     if (totalEntries > CACHE_CONFIG.LIMITS.CLEANUP_THRESHOLD) {
       this.evictLeastUsed();
     }
@@ -210,8 +210,9 @@ class MultiLayerCache {
 
   private evictLeastUsed(): void {
     // Evict from L2 first (least recently used)
-    const l2Entries = Array.from(this.l2Cache.entries())
-      .sort((a, b) => a[1].lastAccessed - b[1].lastAccessed);
+    const l2Entries = Array.from(this.l2Cache.entries()).sort(
+      (a, b) => a[1].lastAccessed - b[1].lastAccessed
+    );
 
     const toEvict = Math.min(100, l2Entries.length);
     for (let i = 0; i < toEvict; i++) {
@@ -220,8 +221,9 @@ class MultiLayerCache {
 
     // If still too large, evict from L1
     if (this.l1Cache.size + this.l2Cache.size > CACHE_CONFIG.LIMITS.CLEANUP_THRESHOLD) {
-      const l1Entries = Array.from(this.l1Cache.entries())
-        .sort((a, b) => a[1].lastAccessed - b[1].lastAccessed);
+      const l1Entries = Array.from(this.l1Cache.entries()).sort(
+        (a, b) => a[1].lastAccessed - b[1].lastAccessed
+      );
 
       const l1ToEvict = Math.min(50, l1Entries.length);
       for (let i = 0; i < l1ToEvict; i++) {
@@ -232,7 +234,7 @@ class MultiLayerCache {
 
   private removeExpired(): void {
     const now = Date.now();
-    
+
     for (const [key, entry] of this.l1Cache.entries()) {
       if (now > entry.timestamp + entry.ttl) {
         this.l1Cache.delete(key);
@@ -253,8 +255,8 @@ export class CacheManager {
 
   // Calculate optimal TTL based on district and data type
   calculateTTL(dataType: string, district?: string, priority?: string): number {
-    let baseTTL = CACHE_CONFIG.BASE_TTL[CACHE_CONFIG.DATA_TYPES[dataType] || 'MEDIUM'];
-    
+    let baseTTL = CACHE_CONFIG.BASE_TTL[CACHE_CONFIG.DATA_TYPES[dataType] || "MEDIUM"];
+
     // Adjust for district priority
     if (district && CACHE_CONFIG.DISTRICT_PRIORITIES[district]) {
       const districtMultiplier = CACHE_CONFIG.DISTRICT_PRIORITIES[district] * 0.2 + 0.8;
@@ -262,9 +264,9 @@ export class CacheManager {
     }
 
     // Adjust for explicit priority
-    if (priority === 'urgent') {
+    if (priority === "urgent") {
       baseTTL *= 0.5; // Shorter TTL for urgent data
-    } else if (priority === 'low') {
+    } else if (priority === "low") {
       baseTTL *= 2; // Longer TTL for low priority data
     }
 
@@ -275,9 +277,9 @@ export class CacheManager {
   generateKey(type: string, params: Record<string, any>): string {
     const sortedParams = Object.keys(params)
       .sort()
-      .map(key => `${key}:${params[key]}`)
-      .join('|');
-    
+      .map((key) => `${key}:${params[key]}`)
+      .join("|");
+
     return `${type}:${sortedParams}`;
   }
 
@@ -288,17 +290,15 @@ export class CacheManager {
 
   // Set cached data with metadata
   set(key: string, data: any, options: CacheOptions = {}): void {
-    const ttl = options.ttl || this.calculateTTL(
-      options.dataType || 'MEDIUM',
-      options.district,
-      options.priority
-    );
+    const ttl =
+      options.ttl ||
+      this.calculateTTL(options.dataType || "MEDIUM", options.district, options.priority);
 
     const metadata: CacheMetadata = {
       dataType: options.dataType,
       district: options.district,
       priority: options.priority,
-      tags: options.tags || []
+      tags: options.tags || [],
     };
 
     this.cache.set(key, data, ttl, metadata);
@@ -309,11 +309,11 @@ export class CacheManager {
     if (pattern) {
       this.cache.clear(pattern);
     }
-    
+
     if (tags && tags.length > 0) {
       // Implementation for tag-based invalidation would go here
       // For now, we'll use pattern matching
-      const tagPattern = tags.join('|');
+      const tagPattern = tags.join("|");
       this.cache.clear(tagPattern);
     }
   }
@@ -325,19 +325,15 @@ export class CacheManager {
 
   // Preload critical data
   async preloadCriticalData(dataLoader: (key: string) => Promise<any>): Promise<void> {
-    const criticalKeys = [
-      'emergency_contacts',
-      'district_technicians',
-      'active_emergencies'
-    ];
+    const criticalKeys = ["emergency_contacts", "district_technicians", "active_emergencies"];
 
     const preloadPromises = criticalKeys.map(async (key) => {
       try {
         const data = await dataLoader(key);
-        this.set(key, data, { 
-          dataType: 'EMERGENCY', 
-          priority: 'urgent',
-          ttl: CACHE_CONFIG.BASE_TTL.CRITICAL 
+        this.set(key, data, {
+          dataType: "EMERGENCY",
+          priority: "urgent",
+          ttl: CACHE_CONFIG.BASE_TTL.CRITICAL,
         });
       } catch (error) {
         console.error(`Failed to preload ${key}:`, error);

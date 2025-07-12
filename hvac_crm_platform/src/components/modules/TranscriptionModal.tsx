@@ -1,8 +1,8 @@
+import { useAction, useMutation } from "convex/react";
+import { Brain, DollarSign, FileText, MapPin, Mic, Phone, User, Wrench, X } from "lucide-react";
 import { useState } from "react";
-import { useMutation, useAction } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { X, Mic, FileText, User, Phone, MapPin, Wrench, Brain, DollarSign } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
 
 interface TranscriptionModalProps {
   isOpen: boolean;
@@ -18,7 +18,7 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
   const [aiQuote, setAiQuote] = useState<any>(null);
 
   const createTranscription = useMutation(api.transcriptions.create);
-  const processTranscription = useMutation(api.transcriptions.processWithAI);
+  const _processTranscription = useMutation(api.transcriptions.processWithAI);
   const updateFromTranscription = useMutation(api.contacts.updateFromTranscription);
   const analyzeAffluence = useAction(api.ai.analyzeAffluence);
   const generateQuote = useAction(api.ai.generateQuote);
@@ -32,7 +32,7 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
     setIsProcessing(true);
     try {
       // Create transcription record
-      const transcriptionId = await createTranscription({
+      const _transcriptionId = await createTranscription({
         originalText: transcriptionText,
         extractedData: {}, // Will be filled by AI processing
         confidence: 0.8, // Default confidence
@@ -50,7 +50,9 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
           address: mockExtractedData.address,
           district: extractDistrict(mockExtractedData.address),
           transcriptionText: transcriptionText,
-          equipmentRequested: mockExtractedData.deviceCount ? `${mockExtractedData.deviceCount} units` : undefined,
+          equipmentRequested: mockExtractedData.deviceCount
+            ? `${mockExtractedData.deviceCount} units`
+            : undefined,
         };
 
         const affluenceResult = await analyzeAffluence({ customerData });
@@ -65,7 +67,7 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
           };
           const quoteResult = await generateQuote({
             customerData: quoteData,
-            affluenceAnalysis: affluenceResult
+            affluenceAnalysis: affluenceResult,
           });
           setAiQuote(quoteResult);
         }
@@ -75,7 +77,7 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
       }
 
       toast.success("Transcription processed with AI insights");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to process transcription");
     } finally {
       setIsProcessing(false);
@@ -96,7 +98,7 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
 
       toast.success("Contact created from transcription");
       onClose();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to create contact");
     }
   };
@@ -104,7 +106,7 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
   // Simple text extraction logic (in real implementation, this would be AI-powered)
   const extractDataFromText = (text: string) => {
     const lowerText = text.toLowerCase();
-    
+
     // Extract name (look for "my name is" or "I'm" patterns)
     const nameMatch = text.match(/(?:my name is|i'm|i am)\s+([a-zA-Z\s]+)/i);
     const customerName = nameMatch ? nameMatch[1].trim() : "";
@@ -119,19 +121,23 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
 
     // Extract device information
     const deviceMatch = text.match(/(\d+)\s*(?:units?|devices?|air\s*condition)/i);
-    const deviceCount = deviceMatch ? parseInt(deviceMatch[1]) : undefined;
+    const deviceCount = deviceMatch ? Number.parseInt(deviceMatch[1]) : undefined;
 
     // Extract room count
     const roomMatch = text.match(/(\d+)\s*rooms?/i);
-    const roomCount = roomMatch ? parseInt(roomMatch[1]) : undefined;
+    const roomCount = roomMatch ? Number.parseInt(roomMatch[1]) : undefined;
 
     // Extract budget
     const budgetMatch = text.match(/(\d+(?:,\d{3})*)\s*(?:pln|zloty|złoty)/i);
-    const budget = budgetMatch ? parseInt(budgetMatch[1].replace(/,/g, '')) : undefined;
+    const budget = budgetMatch ? Number.parseInt(budgetMatch[1].replace(/,/g, "")) : undefined;
 
     // Extract urgency
-    const urgency = lowerText.includes('urgent') || lowerText.includes('emergency') ? 'urgent' :
-                   lowerText.includes('soon') || lowerText.includes('quickly') ? 'high' : 'normal';
+    const urgency =
+      lowerText.includes("urgent") || lowerText.includes("emergency")
+        ? "urgent"
+        : lowerText.includes("soon") || lowerText.includes("quickly")
+          ? "high"
+          : "normal";
 
     return {
       customerName,
@@ -149,9 +155,23 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
   const extractDistrict = (address: string) => {
     if (!address) return undefined;
     const districts = [
-      "Śródmieście", "Wilanów", "Mokotów", "Żoliborz", "Ursynów", "Wola",
-      "Bemowo", "Bielany", "Ochota", "Praga-Południe", "Praga-Północ",
-      "Targówek", "Białołęka", "Rembertów", "Wawer", "Wesoła", "Włochy"
+      "Śródmieście",
+      "Wilanów",
+      "Mokotów",
+      "Żoliborz",
+      "Ursynów",
+      "Wola",
+      "Bemowo",
+      "Bielany",
+      "Ochota",
+      "Praga-Południe",
+      "Praga-Północ",
+      "Targówek",
+      "Białołęka",
+      "Rembertów",
+      "Wawer",
+      "Wesoła",
+      "Włochy",
     ];
 
     for (const district of districts) {
@@ -172,10 +192,7 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
             <Mic className="w-5 h-5 mr-2" />
             AI Transcription Processing
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -210,14 +227,16 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
           {extractedData && (
             <div className="border-t pt-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Extracted Information</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
                     <User className="w-5 h-5 text-gray-400" />
                     <div>
                       <p className="text-sm font-medium text-gray-700">Customer Name</p>
-                      <p className="text-gray-900">{extractedData.customerName || "Not detected"}</p>
+                      <p className="text-gray-900">
+                        {extractedData.customerName || "Not detected"}
+                      </p>
                     </div>
                   </div>
 
@@ -244,35 +263,39 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
                     <div>
                       <p className="text-sm font-medium text-gray-700">Equipment Details</p>
                       <p className="text-gray-900">
-                        {extractedData.deviceCount ? `${extractedData.deviceCount} units` : "Not specified"}
+                        {extractedData.deviceCount
+                          ? `${extractedData.deviceCount} units`
+                          : "Not specified"}
                         {extractedData.roomCount && ` • ${extractedData.roomCount} rooms`}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-3">
-                    <div className="w-5 h-5 text-gray-400 flex items-center justify-center">
-                      💰
-                    </div>
+                    <div className="w-5 h-5 text-gray-400 flex items-center justify-center">💰</div>
                     <div>
                       <p className="text-sm font-medium text-gray-700">Budget</p>
                       <p className="text-gray-900">
-                        {extractedData.budget ? `${extractedData.budget.toLocaleString()} PLN` : "Not specified"}
+                        {extractedData.budget
+                          ? `${extractedData.budget.toLocaleString()} PLN`
+                          : "Not specified"}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-3">
-                    <div className="w-5 h-5 text-gray-400 flex items-center justify-center">
-                      ⚡
-                    </div>
+                    <div className="w-5 h-5 text-gray-400 flex items-center justify-center">⚡</div>
                     <div>
                       <p className="text-sm font-medium text-gray-700">Urgency</p>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        extractedData.urgency === 'urgent' ? 'bg-red-100 text-red-800' :
-                        extractedData.urgency === 'high' ? 'bg-orange-100 text-orange-800' :
-                        'bg-green-100 text-green-800'
-                      }`}>
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          extractedData.urgency === "urgent"
+                            ? "bg-red-100 text-red-800"
+                            : extractedData.urgency === "high"
+                              ? "bg-orange-100 text-orange-800"
+                              : "bg-green-100 text-green-800"
+                        }`}
+                      >
                         {extractedData.urgency}
                       </span>
                     </div>
@@ -300,7 +323,7 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
                         <div
                           className="bg-purple-600 h-2 rounded-full"
                           style={{ width: `${affluenceAnalysis.score * 100}%` }}
-                        ></div>
+                        />
                       </div>
                     </div>
 
@@ -312,7 +335,9 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
                         </span>
                       </div>
                       <div className="text-xs text-gray-600">
-                        {affluenceAnalysis.priceMultiplier > 1 ? "Premium pricing recommended" : "Standard pricing"}
+                        {affluenceAnalysis.priceMultiplier > 1
+                          ? "Premium pricing recommended"
+                          : "Standard pricing"}
                       </div>
                     </div>
                   </div>
@@ -321,7 +346,10 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
                     <span className="text-sm font-medium text-gray-700">Analysis Factors:</span>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {affluenceAnalysis.factors.map((factor: string, index: number) => (
-                        <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                        >
                           {factor}
                         </span>
                       ))}
@@ -345,7 +373,9 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
                     </div>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm text-gray-600">AI Adjusted Price:</span>
-                      <span className="text-lg font-bold text-green-600">{aiQuote.adjustedPrice.toLocaleString()} PLN</span>
+                      <span className="text-lg font-bold text-green-600">
+                        {aiQuote.adjustedPrice.toLocaleString()} PLN
+                      </span>
                     </div>
                     <div className="text-xs text-gray-500 mt-2">{aiQuote.reasoning}</div>
                   </div>
@@ -353,7 +383,10 @@ export function TranscriptionModal({ isOpen, onClose, onContactCreated }: Transc
                   <div className="space-y-2">
                     <span className="text-sm font-medium text-gray-700">Quote Breakdown:</span>
                     {aiQuote.lineItems.map((item: any, index: number) => (
-                      <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
+                      <div
+                        key={index}
+                        className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0"
+                      >
                         <div>
                           <span className="text-sm text-gray-900">{item.description}</span>
                           <span className="text-xs text-gray-500 ml-2">({item.type})</span>

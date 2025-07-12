@@ -1,11 +1,17 @@
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 // Warsaw districts for inventory tracking
 const _WARSAW_DISTRICTS = [
-  'Śródmieście', 'Mokotów', 'Wilanów', 'Żoliborz',
-  'Ursynów', 'Wola', 'Praga-Południe', 'Targówek'
+  "Śródmieście",
+  "Mokotów",
+  "Wilanów",
+  "Żoliborz",
+  "Ursynów",
+  "Wola",
+  "Praga-Południe",
+  "Targówek",
 ];
 
 // Stock thresholds by equipment category
@@ -19,7 +25,7 @@ const STOCK_THRESHOLDS = {
   filter: { min: 50, optimal: 100, max: 200 },
   parts: { min: 25, optimal: 75, max: 150 },
   tools: { min: 5, optimal: 10, max: 20 },
-  refrigerant: { min: 10, optimal: 30, max: 60 }
+  refrigerant: { min: 10, optimal: 30, max: 60 },
 };
 
 // List inventory with advanced filtering
@@ -35,15 +41,13 @@ export const list = query({
     const userId = await getAuthUserId(_ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    let inventory;
+    let inventory: any;
 
     // Search functionality
     if (args.search) {
       inventory = await ctx.db
         .query("inventory")
-        .withSearchIndex("search_inventory", (q) =>
-          q.search("equipmentId", args.search!)
-        )
+        .withSearchIndex("search_inventory", (q) => q.search("equipmentId", args.search))
         .collect();
     } else {
       inventory = await ctx.db.query("inventory").order("desc").collect();
@@ -53,21 +57,15 @@ export const list = query({
     let filteredInventory = inventory;
 
     if (args.district) {
-      filteredInventory = filteredInventory.filter(item =>
-        item.district === args.district
-      );
+      filteredInventory = filteredInventory.filter((item) => item.district === args.district);
     }
 
     if (args.warehouseId) {
-      filteredInventory = filteredInventory.filter(item =>
-        item.warehouseId === args.warehouseId
-      );
+      filteredInventory = filteredInventory.filter((item) => item.warehouseId === args.warehouseId);
     }
 
     if (args.lowStock) {
-      filteredInventory = filteredInventory.filter(item =>
-        item.quantity <= item.minStockLevel
-      );
+      filteredInventory = filteredInventory.filter((item) => item.quantity <= item.minStockLevel);
     }
 
     // Enrich with equipment details
@@ -83,16 +81,14 @@ export const list = query({
           warehouse,
           supplier,
           isLowStock: item.quantity <= item.minStockLevel,
-          stockStatus: getStockStatus(item.quantity, item.minStockLevel, equipment?.category)
+          stockStatus: getStockStatus(item.quantity, item.minStockLevel, equipment?.category),
         };
       })
     );
 
     // Filter by category if specified
     if (args.category) {
-      return enrichedInventory.filter(item =>
-        item.equipment?.category === args.category
-      );
+      return enrichedInventory.filter((item) => item.equipment?.category === args.category);
     }
 
     return enrichedInventory;
@@ -113,13 +109,13 @@ export const getInventoryAnalytics = query({
 
     let filteredInventory = inventory;
     if (args.district) {
-      filteredInventory = inventory.filter(item => item.district === args.district);
+      filteredInventory = inventory.filter((item) => item.district === args.district);
     }
 
     // Calculate analytics
     const totalItems = filteredInventory.length;
-    const lowStockItems = filteredInventory.filter(item =>
-      item.quantity <= item.minStockLevel
+    const lowStockItems = filteredInventory.filter(
+      (item) => item.quantity <= item.minStockLevel
     ).length;
 
     const totalQuantity = filteredInventory.reduce((sum, item) => sum + item.quantity, 0);
@@ -131,7 +127,7 @@ export const getInventoryAnalytics = query({
         return {
           ...item,
           equipment,
-          value: equipment?.purchasePrice ? equipment.purchasePrice * item.quantity : 0
+          value: equipment?.purchasePrice ? equipment.purchasePrice * item.quantity : 0,
         };
       })
     );
@@ -139,26 +135,32 @@ export const getInventoryAnalytics = query({
     const totalValue = enrichedItems.reduce((sum, item) => sum + item.value, 0);
 
     // Category breakdown
-    const categoryBreakdown = enrichedItems.reduce((acc, item) => {
-      const category = item.equipment?.category || 'unknown';
-      if (!acc[category]) {
-        acc[category] = { quantity: 0, value: 0, items: 0 };
-      }
-      acc[category].quantity += item.quantity;
-      acc[category].value += item.value;
-      acc[category].items += 1;
-      return acc;
-    }, {} as Record<string, { quantity: number; value: number; items: number }>);
+    const categoryBreakdown = enrichedItems.reduce(
+      (acc, item) => {
+        const category = item.equipment?.category || "unknown";
+        if (!acc[category]) {
+          acc[category] = { quantity: 0, value: 0, items: 0 };
+        }
+        acc[category].quantity += item.quantity;
+        acc[category].value += item.value;
+        acc[category].items += 1;
+        return acc;
+      },
+      {} as Record<string, { quantity: number; value: number; items: number }>
+    );
 
     // District breakdown
-    const districtBreakdown = filteredInventory.reduce((acc, item) => {
-      if (!acc[item.district]) {
-        acc[item.district] = { quantity: 0, items: 0 };
-      }
-      acc[item.district].quantity += item.quantity;
-      acc[item.district].items += 1;
-      return acc;
-    }, {} as Record<string, { quantity: number; items: number }>);
+    const districtBreakdown = filteredInventory.reduce(
+      (acc, item) => {
+        if (!acc[item.district]) {
+          acc[item.district] = { quantity: 0, items: 0 };
+        }
+        acc[item.district].quantity += item.quantity;
+        acc[item.district].items += 1;
+        return acc;
+      },
+      {} as Record<string, { quantity: number; items: number }>
+    );
 
     return {
       summary: {
@@ -166,26 +168,26 @@ export const getInventoryAnalytics = query({
         lowStockItems,
         totalQuantity,
         totalValue,
-        lowStockPercentage: totalItems > 0 ? (lowStockItems / totalItems) * 100 : 0
+        lowStockPercentage: totalItems > 0 ? (lowStockItems / totalItems) * 100 : 0,
       },
       categoryBreakdown: Object.entries(categoryBreakdown).map(([category, data]) => ({
         category,
-        ...data
+        ...data,
       })),
       districtBreakdown: Object.entries(districtBreakdown).map(([district, data]) => ({
         district,
-        ...data
+        ...data,
       })),
       reorderAlerts: enrichedItems
-        .filter(item => item.quantity <= item.minStockLevel && item.autoReorder)
-        .map(item => ({
+        .filter((item) => item.quantity <= item.minStockLevel && item.autoReorder)
+        .map((item) => ({
           equipmentId: item.equipmentId,
-          equipmentName: item.equipment?.name || 'Unknown',
+          equipmentName: item.equipment?.name || "Unknown",
           currentQuantity: item.quantity,
           minStockLevel: item.minStockLevel,
           district: item.district,
-          warehouse: item.warehouseId
-        }))
+          warehouse: item.warehouseId,
+        })),
     };
   },
 });
@@ -217,7 +219,7 @@ export const updateQuantity = mutation({
     await ctx.db.patch(args.id, {
       quantity: newQuantity,
       lastUpdatedBy: userId,
-      lastUpdatedVia: "web"
+      lastUpdatedVia: "web",
     });
 
     // Create inventory transaction log
@@ -229,7 +231,7 @@ export const updateQuantity = mutation({
       newQuantity,
       performedBy: userId,
       notes: args.notes || "",
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // Check for low stock and create notification
@@ -238,7 +240,7 @@ export const updateQuantity = mutation({
       await ctx.db.insert("notifications", {
         userId,
         title: "Low Stock Alert",
-        message: `${equipment?.name || 'Equipment'} in ${inventory.district} is running low (${newQuantity} remaining)`,
+        message: `${equipment?.name || "Equipment"} in ${inventory.district} is running low (${newQuantity} remaining)`,
         type: "inventory_alert",
         priority: "medium",
         read: false,
@@ -260,7 +262,7 @@ export const updateQuantity = mutation({
             priority: "normal",
             deliveryLocation: inventory.warehouseId,
             notes: `Auto-reorder triggered for low stock in ${inventory.district}`,
-            createdAt: Date.now()
+            createdAt: Date.now(),
           });
 
           await ctx.db.insert("notifications", {
@@ -306,7 +308,7 @@ export const transferStock = mutation({
     await ctx.db.patch(args.fromInventoryId, {
       quantity: fromInventory.quantity - args.quantity,
       lastUpdatedBy: userId,
-      lastUpdatedVia: "web"
+      lastUpdatedVia: "web",
     });
 
     // Find or create target inventory
@@ -321,7 +323,7 @@ export const transferStock = mutation({
       await ctx.db.patch(existingTargetInventory._id, {
         quantity: existingTargetInventory.quantity + args.quantity,
         lastUpdatedBy: userId,
-        lastUpdatedVia: "web"
+        lastUpdatedVia: "web",
       });
     } else {
       // Create new inventory record
@@ -335,7 +337,7 @@ export const transferStock = mutation({
         autoReorder: fromInventory.autoReorder,
         district: toWarehouse.district,
         lastUpdatedBy: userId,
-        lastUpdatedVia: "web"
+        lastUpdatedVia: "web",
       });
     }
 
@@ -348,14 +350,14 @@ export const transferStock = mutation({
       newQuantity: fromInventory.quantity - args.quantity,
       performedBy: userId,
       notes: `Transfer to ${toWarehouse.name}: ${args.reason}`,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     const equipment = await ctx.db.get(fromInventory.equipmentId);
     await ctx.db.insert("notifications", {
       userId,
       title: "Stock Transfer Completed",
-      message: `${args.quantity} units of ${equipment?.name || 'equipment'} transferred to ${toWarehouse.name}`,
+      message: `${args.quantity} units of ${equipment?.name || "equipment"} transferred to ${toWarehouse.name}`,
       type: "system",
       priority: "low",
       read: false,

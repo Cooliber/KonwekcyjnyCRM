@@ -1,9 +1,7 @@
-import { action, query } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-
-import { ConvexError } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { api } from "./_generated/api";
+import { action, query } from "./_generated/server";
 
 // AI Service Configuration
 interface AiConfig {
@@ -22,7 +20,11 @@ const AI_CONFIG: AiConfig = {
 const MOCK_RESPONSES = {
   affluenceAnalysis: {
     score: 0.75,
-    factors: ["Premium district (Śródmieście)", "High-end equipment request", "Professional language"],
+    factors: [
+      "Premium district (Śródmieście)",
+      "High-end equipment request",
+      "Professional language",
+    ],
     priceMultiplier: 1.2,
     confidence: 0.8,
   },
@@ -30,13 +32,24 @@ const MOCK_RESPONSES = {
     basePrice: 8500,
     adjustedPrice: 10200,
     lineItems: [
-      { description: "Mitsubishi Electric MSZ-LN35VG Split AC Unit", quantity: 1, unitPrice: 4500, type: "equipment" },
+      {
+        description: "Mitsubishi Electric MSZ-LN35VG Split AC Unit",
+        quantity: 1,
+        unitPrice: 4500,
+        type: "equipment",
+      },
       { description: "Professional Installation", quantity: 1, unitPrice: 2000, type: "labor" },
       { description: "Copper Piping & Insulation", quantity: 1, unitPrice: 800, type: "material" },
       { description: "Electrical Connection", quantity: 1, unitPrice: 600, type: "labor" },
-      { description: "Premium District Surcharge", quantity: 1, unitPrice: 1300, type: "adjustment" },
+      {
+        description: "Premium District Surcharge",
+        quantity: 1,
+        unitPrice: 1300,
+        type: "adjustment",
+      },
     ],
-    reasoning: "Customer in premium Śródmieście district with high-end equipment request. Applied 20% premium pricing based on affluence analysis.",
+    reasoning:
+      "Customer in premium Śródmieście district with high-end equipment request. Applied 20% premium pricing based on affluence analysis.",
   },
 };
 
@@ -73,12 +86,12 @@ async function callOllama(prompt: string, systemPrompt?: string): Promise<string
       throw new Error(`Ollama API error: ${response.statusText}`);
     }
 
-    const result = await response.json() as OllamaResponse;
+    const result = (await response.json()) as OllamaResponse;
     if (result.error) {
       throw new Error(`Ollama API error: ${result.error}`);
     }
     if (!result.response) {
-      throw new Error('Invalid response format from Ollama API');
+      throw new Error("Invalid response format from Ollama API");
     }
     return result.response;
   } catch (_error) {
@@ -120,15 +133,15 @@ function generateRuleBasedAffluence(customerData: CustomerData): AffluenceAnalys
 
   // District analysis
   const district = customerData.district?.toLowerCase() || "";
-  if (["śródmieście", "wilanów", "mokotów"].some(d => district.includes(d))) {
+  if (["śródmieście", "wilanów", "mokotów"].some((d) => district.includes(d))) {
     score += 0.3;
     priceMultiplier += 0.2;
     factors.push("Premium district location");
-  } else if (["żoliborz", "ursynów", "wola"].some(d => district.includes(d))) {
+  } else if (["żoliborz", "ursynów", "wola"].some((d) => district.includes(d))) {
     score += 0.1;
     priceMultiplier += 0.1;
     factors.push("High-end district");
-  } else if (["praga", "targówek"].some(d => district.includes(d))) {
+  } else if (["praga", "targówek"].some((d) => district.includes(d))) {
     score -= 0.2;
     priceMultiplier -= 0.1;
     factors.push("Budget-conscious area");
@@ -136,11 +149,11 @@ function generateRuleBasedAffluence(customerData: CustomerData): AffluenceAnalys
 
   // Equipment analysis
   const equipment = customerData.equipmentRequested?.toLowerCase() || "";
-  if (["mitsubishi", "daikin", "fujitsu"].some(brand => equipment.includes(brand))) {
+  if (["mitsubishi", "daikin", "fujitsu"].some((brand) => equipment.includes(brand))) {
     score += 0.2;
     priceMultiplier += 0.15;
     factors.push("Premium equipment brand preference");
-  } else if (["lg", "samsung"].some(brand => equipment.includes(brand))) {
+  } else if (["lg", "samsung"].some((brand) => equipment.includes(brand))) {
     score += 0.1;
     factors.push("Mid-range equipment preference");
   }
@@ -225,23 +238,23 @@ Equipment Requested: ${args.customerData.equipmentRequested || "Not provided"}`;
 
     try {
       const aiResponse = await callOllama(prompt, systemPrompt);
-      
+
       if (AI_CONFIG.fallbackToMock) {
         return MOCK_RESPONSES.affluenceAnalysis;
       }
 
       // Parse AI response
       const analysis = JSON.parse(aiResponse);
-      
+
       // Validate response structure
-      if (!analysis.score || !analysis.priceMultiplier) {
+      if (!(analysis.score && analysis.priceMultiplier)) {
         throw new Error("Invalid AI response structure");
       }
 
       return analysis;
     } catch (error) {
       console.error("Affluence analysis failed:", error);
-      
+
       // Fallback to rule-based analysis
       return generateRuleBasedAffluence(args.customerData);
     }
@@ -252,7 +265,7 @@ interface QuoteLineItem {
   description: string;
   quantity: number;
   unitPrice: number;
-  type: 'equipment' | 'labor' | 'material' | 'adjustment';
+  type: "equipment" | "labor" | "material" | "adjustment";
   notes?: string;
 }
 
@@ -320,70 +333,75 @@ Base pricing guidelines (PLN):
 
 Consider these factors:
 - Room count: ${args.customerData.roomCount || 1}
-- District: ${args.customerData.district || 'Not specified'}
+- District: ${args.customerData.district || "Not specified"}
 - Job type: ${args.customerData.jobType}
-- Affluence score: ${args.affluenceAnalysis?.score || 'N/A'}
+- Affluence score: ${args.affluenceAnalysis?.score || "N/A"}
 - Price multiplier: ${args.affluenceAnalysis?.priceMultiplier || 1.0}
 
 Return only valid JSON, no additional text.`;
 
-    const prompt = `Generate a detailed quote for ${args.customerData.name} in ${args.customerData.district || 'Warsaw'}.
+    const prompt = `Generate a detailed quote for ${args.customerData.name} in ${args.customerData.district || "Warsaw"}.
 
 Customer details:
-- Address: ${args.customerData.address || 'Not specified'}
+- Address: ${args.customerData.address || "Not specified"}
 - Job type: ${args.customerData.jobType}
-- Property size: ${args.customerData.propertySize || 'Not specified'} m²
-- Room count: ${args.customerData.roomCount || 'Not specified'}
-- Budget: ${args.customerData.budget ? `${args.customerData.budget} PLN` : 'Not specified'}
-- Special requirements: ${args.customerData.requirements || 'None'}
+- Property size: ${args.customerData.propertySize || "Not specified"} m²
+- Room count: ${args.customerData.roomCount || "Not specified"}
+- Budget: ${args.customerData.budget ? `${args.customerData.budget} PLN` : "Not specified"}
+- Special requirements: ${args.customerData.requirements || "None"}
 
 Affluence analysis:
-- Score: ${args.affluenceAnalysis?.score || 'N/A'}
+- Score: ${args.affluenceAnalysis?.score || "N/A"}
 - Multiplier: ${args.affluenceAnalysis?.priceMultiplier || 1.0}
-- Factors: ${args.affluenceAnalysis?.factors?.join(', ') || 'None'}`;
+- Factors: ${args.affluenceAnalysis?.factors?.join(", ") || "None"}`;
 
     try {
       const aiResponse = await callOllama(prompt, systemPrompt);
-      
+
       if (AI_CONFIG.fallbackToMock) {
         return MOCK_RESPONSES.quoteGeneration;
       }
-      
+
       // Parse the JSON response
       let quoteData: GeneratedQuote;
       try {
         const parsed = JSON.parse(aiResponse);
-        
+
         // Validate response structure
-        if (typeof parsed.basePrice !== 'number' || 
-            typeof parsed.adjustedPrice !== 'number' || 
-            !Array.isArray(parsed.lineItems) ||
-            typeof parsed.reasoning !== 'string' ||
-            typeof parsed.confidence !== 'number') {
-          throw new Error('Invalid response structure from AI');
+        if (
+          typeof parsed.basePrice !== "number" ||
+          typeof parsed.adjustedPrice !== "number" ||
+          !Array.isArray(parsed.lineItems) ||
+          typeof parsed.reasoning !== "string" ||
+          typeof parsed.confidence !== "number"
+        ) {
+          throw new Error("Invalid response structure from AI");
         }
-        
+
         // Validate line items
-        if (!parsed.lineItems.every((item: any) => 
-          typeof item.description === 'string' &&
-          typeof item.quantity === 'number' &&
-          typeof item.unitPrice === 'number' &&
-          ['equipment', 'labor', 'material', 'adjustment'].includes(item.type)
-        )) {
-          throw new Error('Invalid line items in AI response');
+        if (
+          !parsed.lineItems.every(
+            (item: any) =>
+              typeof item.description === "string" &&
+              typeof item.quantity === "number" &&
+              typeof item.unitPrice === "number" &&
+              ["equipment", "labor", "material", "adjustment"].includes(item.type)
+          )
+        ) {
+          throw new Error("Invalid line items in AI response");
         }
-        
+
         quoteData = parsed as GeneratedQuote;
       } catch (error) {
         console.error("Failed to parse AI response:", error);
         throw new ConvexError({
           statusCode: 500,
-          code: 'AI_RESPONSE_ERROR',
-          message: 'Failed to process AI response',
-          details: error instanceof Error ? error.message : 'Unknown error'
+          code: "AI_RESPONSE_ERROR",
+          message: "Failed to process AI response",
+          details: error instanceof Error ? error.message : "Unknown error",
         });
       }
-      
+
       return quoteData;
     } catch (error) {
       console.error("Quote generation failed:", error);
@@ -419,7 +437,7 @@ interface SearchResponse {
 export const getCompletedJobsForSearch = query({
   args: {
     district: v.optional(v.string()),
-    serviceType: v.optional(v.string())
+    serviceType: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -434,12 +452,10 @@ export const getCompletedJobsForSearch = query({
     // Filter by district if specified
     let filteredJobs = jobs;
     if (args.district) {
-      const contacts = await Promise.all(
-        jobs.map((job: any) => ctx.db.get(job.contactId))
-      );
+      const contacts = await Promise.all(jobs.map((job: any) => ctx.db.get(job.contactId)));
       filteredJobs = jobs.filter((_job: any, index: number) => {
         const contact = contacts[index];
-        return contact && 'district' in contact && contact.district === args.district;
+        return contact && "district" in contact && contact.district === args.district;
       });
     }
 
@@ -458,7 +474,7 @@ export const searchSimilarServices = action({
     query: v.string(),
     district: v.optional(v.string()),
     serviceType: v.optional(v.string()),
-    limit: v.optional(v.number())
+    limit: v.optional(v.number()),
   },
   handler: async (ctx, args): Promise<SearchResponse> => {
     const userId = await getAuthUserId(ctx);
@@ -468,15 +484,11 @@ export const searchSimilarServices = action({
       // Get historical jobs for semantic search using query
       const filteredJobs = await ctx.runQuery(api.ai.getCompletedJobsForSearch, {
         district: args.district,
-        serviceType: args.serviceType
+        serviceType: args.serviceType,
       });
 
       // Perform semantic similarity analysis
-      const results = await performSemanticSearch(
-        args.query,
-        filteredJobs,
-        args.limit || 10
-      );
+      const results = await performSemanticSearch(args.query, filteredJobs, args.limit || 10);
 
       return {
         results,
@@ -485,8 +497,8 @@ export const searchSimilarServices = action({
         searchMetadata: {
           district: args.district,
           serviceType: args.serviceType,
-          searchedAt: Date.now()
-        }
+          searchedAt: Date.now(),
+        },
       };
     } catch (error) {
       console.error("Semantic search failed:", error);
@@ -497,9 +509,9 @@ export const searchSimilarServices = action({
         searchMetadata: {
           district: args.district,
           serviceType: args.serviceType,
-          searchedAt: Date.now()
+          searchedAt: Date.now(),
         },
-        error: "Search temporarily unavailable"
+        error: "Search temporarily unavailable",
       };
     }
   },
@@ -516,25 +528,27 @@ async function performSemanticSearch(
     district?: string;
     type?: string;
   }>,
-  limit: number = 10
+  limit = 10
 ): Promise<SearchResult[]> {
   try {
     // Simple text-based search implementation
     // In production, this would use a proper semantic search service
-    const searchTerms = query.toLowerCase().split(' ');
+    const searchTerms = query.toLowerCase().split(" ");
 
     const results = jobs
-      .map(job => {
+      .map((job) => {
         let score = 0;
         const searchableText = [
-          job.title || '',
-          job.description || '',
-          job.status || '',
-          job.district || ''
-        ].join(' ').toLowerCase();
+          job.title || "",
+          job.description || "",
+          job.status || "",
+          job.district || "",
+        ]
+          .join(" ")
+          .toLowerCase();
 
         // Calculate relevance score
-        searchTerms.forEach(term => {
+        searchTerms.forEach((term) => {
           if (searchableText.includes(term)) {
             score += 1;
           }
@@ -542,25 +556,25 @@ async function performSemanticSearch(
 
         return { ...job, score };
       })
-      .filter(job => job.score > 0)
+      .filter((job) => job.score > 0)
       .sort((a, b) => b.score - a.score)
       .slice(0, limit)
-      .map(job => ({
+      .map((job) => ({
         id: job._id,
         score: job.score,
-        title: job.title || 'Untitled Job',
-        description: job.description || 'No description available',
+        title: job.title || "Untitled Job",
+        description: job.description || "No description available",
         district: job.district,
-        serviceType: job.type
+        serviceType: job.type,
       }));
 
     return results;
   } catch (error) {
-    console.error('Error in performSemanticSearch:', error);
+    console.error("Error in performSemanticSearch:", error);
     throw new ConvexError({
       statusCode: 500,
-      code: 'SEARCH_ERROR',
-      message: 'Failed to perform semantic search',
+      code: "SEARCH_ERROR",
+      message: "Failed to perform semantic search",
     });
   }
 }
@@ -600,51 +614,70 @@ function getCurrentSeason(): "spring" | "summer" | "autumn" | "winter" {
   return "winter";
 }
 
-async function generateHotspotPredictions(
+async function _generateHotspotPredictions(
   serviceData: ServiceData[],
   _timeframe: string,
   season: string,
   district?: string
 ): Promise<HotspotPrediction[]> {
-  const districts = district ? [district] : [
-    "Śródmieście", "Wilanów", "Mokotów", "Żoliborz", "Ursynów", "Wola", "Praga-Południe", "Targówek"
-  ];
+  const districts = district
+    ? [district]
+    : [
+        "Śródmieście",
+        "Wilanów",
+        "Mokotów",
+        "Żoliborz",
+        "Ursynów",
+        "Wola",
+        "Praga-Południe",
+        "Targówek",
+      ];
 
   const predictions: HotspotPrediction[] = [];
 
   for (const dist of districts) {
-    const districtData = serviceData.filter(item => item.district === dist);
+    const districtData = serviceData.filter((item) => item.district === dist);
 
     if (districtData.length === 0) continue;
 
     // Calculate seasonal demand patterns
-    const seasonalData = districtData.filter(item => item.seasonality === season);
+    const seasonalData = districtData.filter((item) => item.seasonality === season);
     const seasonalFactor = seasonalData.length / Math.max(districtData.length, 1);
 
     // Calculate affluence factor
-    const avgAffluence = districtData.reduce((sum, item) => sum + (item.customerAffluence || 0), 0) / districtData.length;
+    const avgAffluence =
+      districtData.reduce((sum, item) => sum + (item.customerAffluence || 0), 0) /
+      districtData.length;
 
     // Predict demand based on historical patterns
-    const urgentServices = districtData.filter(item =>
-      item.urgency === "urgent" || item.urgency === "high"
+    const urgentServices = districtData.filter(
+      (item) => item.urgency === "urgent" || item.urgency === "high"
     ).length;
-    const demandScore = Math.min(1, (urgentServices / Math.max(districtData.length, 1)) + seasonalFactor * 0.5);
+    const demandScore = Math.min(
+      1,
+      urgentServices / Math.max(districtData.length, 1) + seasonalFactor * 0.5
+    );
 
     // Get most common service types
-    const serviceTypeCounts = districtData.reduce((acc, item) => {
-      const serviceType = item.serviceType || 'unknown';
-      acc[serviceType] = (acc[serviceType] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const serviceTypeCounts = districtData.reduce(
+      (acc, item) => {
+        const serviceType = item.serviceType || "unknown";
+        acc[serviceType] = (acc[serviceType] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     const topServiceTypes = Object.entries(serviceTypeCounts)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 3)
       .map(([type]) => type);
 
     // Calculate center coordinates for district
-    const avgLat = districtData.reduce((sum, item) => sum + item.coordinates.lat, 0) / districtData.length;
-    const avgLng = districtData.reduce((sum, item) => sum + item.coordinates.lng, 0) / districtData.length;
+    const avgLat =
+      districtData.reduce((sum, item) => sum + item.coordinates.lat, 0) / districtData.length;
+    const avgLng =
+      districtData.reduce((sum, item) => sum + item.coordinates.lng, 0) / districtData.length;
 
     predictions.push({
       district: dist,
@@ -658,7 +691,7 @@ async function generateHotspotPredictions(
       seasonalFactor,
       affluenceFactor: avgAffluence,
       coordinates: { lat: avgLat, lng: avgLng },
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     });
   }
 
@@ -710,7 +743,7 @@ function generateFallbackHotspots(district?: string): HotspotResponse {
       seasonalFactor: 0.7,
       affluenceFactor: 0.9,
       confidence: 0.6,
-      reasoning: ["Fallback prediction based on district affluence"]
+      reasoning: ["Fallback prediction based on district affluence"],
     },
     {
       district: "Mokotów",
@@ -720,12 +753,12 @@ function generateFallbackHotspots(district?: string): HotspotResponse {
       seasonalFactor: 0.6,
       affluenceFactor: 0.8,
       confidence: 0.7,
-      reasoning: ["Fallback prediction based on district data"]
-    }
+      reasoning: ["Fallback prediction based on district data"],
+    },
   ];
 
-  const filteredHotspots = district 
-    ? fallbackHotspots.filter(h => h.district === district)
+  const filteredHotspots = district
+    ? fallbackHotspots.filter((h) => h.district === district)
     : fallbackHotspots;
 
   return {
@@ -736,7 +769,7 @@ function generateFallbackHotspots(district?: string): HotspotResponse {
       season: getCurrentSeason(),
       confidence: calculateOverallConfidence(filteredHotspots),
       generatedAt: Date.now(),
-      fallback: true
-    }
+      fallback: true,
+    },
   };
 }

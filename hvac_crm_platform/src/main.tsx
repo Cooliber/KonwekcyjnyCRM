@@ -1,6 +1,6 @@
-import { createRoot } from "react-dom/client";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
+import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App";
@@ -12,5 +12,5 @@ createRoot(document.getElementById("root")!).render(
     <ConvexAuthProvider client={convex}>
       <App />
     </ConvexAuthProvider>
-  </BrowserRouter>,
+  </BrowserRouter>
 );

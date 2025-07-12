@@ -3,36 +3,36 @@
  * Optimized for Warsaw-based HVAC CRM platform with real-time capabilities
  */
 
-import { Id } from "../../convex/_generated/dataModel";
+import type { Id } from "../../convex/_generated/dataModel";
 
 // Warsaw district types
 export type WarsawDistrict =
-  | 'Śródmieście'
-  | 'Wilanów'
-  | 'Mokotów'
-  | 'Żoliborz'
-  | 'Ursynów'
-  | 'Wola'
-  | 'Praga-Południe'
-  | 'Targówek'
-  | 'Ochota'
-  | 'Praga-Północ'
-  | 'Bemowo'
-  | 'Bielany'
-  | 'Białołęka'
-  | 'Rembertów'
-  | 'Wesoła'
-  | 'Włochy'
-  | 'Ursus';
+  | "Śródmieście"
+  | "Wilanów"
+  | "Mokotów"
+  | "Żoliborz"
+  | "Ursynów"
+  | "Wola"
+  | "Praga-Południe"
+  | "Targówek"
+  | "Ochota"
+  | "Praga-Północ"
+  | "Bemowo"
+  | "Bielany"
+  | "Białołęka"
+  | "Rembertów"
+  | "Wesoła"
+  | "Włochy"
+  | "Ursus";
 
 // HVAC equipment status types
-export type HVACStatus = 'optimal' | 'warning' | 'critical' | 'offline' | 'maintenance';
+export type HVACStatus = "optimal" | "warning" | "critical" | "offline" | "maintenance";
 
 // Job priority types
-export type JobPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type JobPriority = "low" | "medium" | "high" | "urgent";
 
 // Job types for HVAC services
-export type JobType = 'installation' | 'repair' | 'maintenance' | 'inspection' | 'emergency';
+export type JobType = "installation" | "repair" | "maintenance" | "inspection" | "emergency";
 
 // Real-time HVAC metrics interface
 export interface HVACMetrics {
@@ -116,8 +116,8 @@ export interface RealTimeSubscriptionData {
   }>;
   alerts: Array<{
     id: string;
-    type: 'maintenance' | 'emergency' | 'efficiency' | 'cost';
-    severity: 'low' | 'medium' | 'high' | 'critical';
+    type: "maintenance" | "emergency" | "efficiency" | "cost";
+    severity: "low" | "medium" | "high" | "critical";
     message: string;
     district: WarsawDistrict;
     timestamp: Date;
@@ -128,8 +128,8 @@ export interface RealTimeSubscriptionData {
 export interface DashboardWidget {
   id: string;
   title: string;
-  type: 'metric' | 'chart' | 'map' | 'table' | 'alert';
-  size: 'small' | 'medium' | 'large' | 'full';
+  type: "metric" | "chart" | "map" | "table" | "alert";
+  size: "small" | "medium" | "large" | "full";
   position: {
     x: number;
     y: number;
@@ -170,12 +170,12 @@ export interface PerformanceTargets {
 export interface HVACPrediction {
   equipmentId: string;
   district: WarsawDistrict;
-  predictionType: 'maintenance' | 'failure' | 'efficiency' | 'cost';
+  predictionType: "maintenance" | "failure" | "efficiency" | "cost";
   confidence: number; // 0-100 percentage
   predictedDate: Date;
   estimatedCost: number; // PLN
   recommendedAction: string;
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  riskLevel: "low" | "medium" | "high" | "critical";
 }
 
 // Error handling for real-time components
@@ -184,14 +184,14 @@ export interface HVACError {
   message: string;
   timestamp: Date;
   component: string;
-  severity: 'info' | 'warning' | 'error' | 'critical';
+  severity: "info" | "warning" | "error" | "critical";
   recoverable: boolean;
 }
 
 // Export utility type for component props
 export type HVACDashboardProps = {
   district?: WarsawDistrict;
-  timeRange?: '1h' | '24h' | '7d' | '30d' | '90d' | '1y';
+  timeRange?: "1h" | "24h" | "7d" | "30d" | "90d" | "1y";
   refreshInterval?: number;
   showPredictions?: boolean;
   enableRealTime?: boolean;

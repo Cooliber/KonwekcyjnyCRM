@@ -1,21 +1,19 @@
-import { Authenticated, Unauthenticated, useQuery } from "convex/react";
-import { Routes, Route, useLocation } from "react-router-dom";
-import { api } from "../convex/_generated/api";
-import { SignInForm } from "./SignInForm";
-import { SignOutButton } from "./SignOutButton";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { useState } from "react";
+import { Route, Routes, useLocation } from "react-router-dom";
 import { Toaster } from "sonner";
 import { Dashboard } from "./components/Dashboard";
-import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
+import { Sidebar } from "./components/Sidebar";
 import MobilePage from "./pages/MobilePage";
-import { useState } from "react";
+import { SignInForm } from "./SignInForm";
 
 export default function App() {
   const [activeModule, setActiveModule] = useState("dashboard");
   const location = useLocation();
 
   // Check if we're on mobile route
-  const isMobileRoute = location.pathname === '/mobile';
+  const isMobileRoute = location.pathname === "/mobile";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -25,17 +23,20 @@ export default function App() {
           <Route path="/mobile" element={<MobilePage />} />
 
           {/* Desktop Routes */}
-          <Route path="/*" element={
-            <div className="flex h-screen">
-              <Sidebar activeModule={activeModule} onModuleChange={setActiveModule} />
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <Header />
-                <main className="flex-1 overflow-auto p-6">
-                  <Dashboard activeModule={activeModule} />
-                </main>
+          <Route
+            path="/*"
+            element={
+              <div className="flex h-screen">
+                <Sidebar activeModule={activeModule} onModuleChange={setActiveModule} />
+                <div className="flex-1 flex flex-col overflow-hidden">
+                  <Header />
+                  <main className="flex-1 overflow-auto p-6">
+                    <Dashboard activeModule={activeModule} />
+                  </main>
+                </div>
               </div>
-            </div>
-          } />
+            }
+          />
         </Routes>
       </Authenticated>
 

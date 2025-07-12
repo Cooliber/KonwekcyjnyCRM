@@ -1,48 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { 
-  Users, 
-  Plus, 
-  Search, 
-  Calendar, 
-  Clock, 
-  MessageSquare,
-  FileText,
-  Star,
-  DollarSign,
-  MapPin,
-  Building,
-  Phone,
-  Mail,
-  Settings,
-  Bell,
-  Eye,
-  Edit,
-  Send,
-  Download,
-  CheckCircle,
-  AlertTriangle,
-  XCircle,
-  Wrench,
+import { useMutation, useQuery } from "convex/react";
+import {
   Activity,
-  Shield,
-  Globe,
-  Smartphone,
-  Monitor,
-  RefreshCw
-} from 'lucide-react';
-import { toast } from 'sonner';
-import type { WarsawDistrict } from '../../types/hvac';
-import { Id } from '../../../convex/_generated/dataModel';
+  Building,
+  Calendar,
+  Clock,
+  DollarSign,
+  Edit,
+  Eye,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+  Plus,
+  RefreshCw,
+  Search,
+  Send,
+  Settings,
+  Star,
+  Users,
+  Wrench,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Input } from "../ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 interface CustomerPortalUser {
   _id: Id<"customerPortalUsers">;
@@ -51,9 +38,22 @@ interface CustomerPortalUser {
   firstName: string;
   lastName: string;
   phone?: string;
-  role: 'primary_contact' | 'facility_manager' | 'technician_contact' | 'billing_contact' | 'viewer';
-  permissions: Array<'view_equipment' | 'view_service_history' | 'book_services' | 'view_invoices' | 'download_documents' | 'manage_users' | 'view_analytics'>;
-  status: 'active' | 'pending_verification' | 'suspended' | 'deactivated';
+  role:
+    | "primary_contact"
+    | "facility_manager"
+    | "technician_contact"
+    | "billing_contact"
+    | "viewer";
+  permissions: Array<
+    | "view_equipment"
+    | "view_service_history"
+    | "book_services"
+    | "view_invoices"
+    | "download_documents"
+    | "manage_users"
+    | "view_analytics"
+  >;
+  status: "active" | "pending_verification" | "suspended" | "deactivated";
   emailVerified: boolean;
   lastLogin?: number;
   loginCount: number;
@@ -87,9 +87,9 @@ interface ServiceRequest {
   userId: string;
   title: string;
   description: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  category: 'maintenance' | 'repair' | 'installation' | 'consultation' | 'emergency';
-  status: 'submitted' | 'acknowledged' | 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  priority: "low" | "medium" | "high" | "urgent";
+  category: "maintenance" | "repair" | "installation" | "consultation" | "emergency";
+  status: "submitted" | "acknowledged" | "scheduled" | "in_progress" | "completed" | "cancelled";
   preferredDate: string;
   preferredTime: string;
   contactPerson: string;
@@ -132,79 +132,82 @@ interface PortalAnalytics {
 }
 
 export function CustomerPortalModule() {
-  const [activeTab, setActiveTab] = useState('users');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [selectedUser, setSelectedUser] = useState<CustomerPortalUser | null>(null);
-  const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
-  const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("users");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [_selectedUser, setSelectedUser] = useState<CustomerPortalUser | null>(null);
+  const [_isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
+  const [_isRequestDialogOpen, _setIsRequestDialogOpen] = useState(false);
 
   // Real Convex queries
-  const portalUsers = useQuery(api.customerPortal.getCustomerPortalUsers, {
-    status: statusFilter !== 'all' ? statusFilter as any : undefined,
-    role: roleFilter !== 'all' ? roleFilter as any : undefined,
-    limit: 50
-  }) || [];
+  const portalUsers =
+    useQuery(api.customerPortal.getCustomerPortalUsers, {
+      status: statusFilter !== "all" ? (statusFilter as any) : undefined,
+      role: roleFilter !== "all" ? (roleFilter as any) : undefined,
+      limit: 50,
+    }) || [];
 
-  const createCustomerPortalUser = useMutation(api.customerPortal.createCustomerPortalUser);
-  const updateCustomerPortalUser = useMutation(api.customerPortal.updateCustomerPortalUser);
-  const bookServiceAppointment = useMutation(api.customerPortal.bookServiceAppointment);
+  const _createCustomerPortalUser = useMutation(api.customerPortal.createCustomerPortalUser);
+  const _updateCustomerPortalUser = useMutation(api.customerPortal.updateCustomerPortalUser);
+  const _bookServiceAppointment = useMutation(api.customerPortal.bookServiceAppointment);
 
   // Mock service requests and analytics - these could also be moved to Convex
   const serviceRequests: ServiceRequest[] = [
     {
-      _id: 'req1',
-      clientId: 'client1',
-      userId: '1',
-      title: 'Przegląd klimatyzacji - sala konferencyjna',
-      description: 'Proszę o przegląd systemu klimatyzacji w sali konferencyjnej A. Zauważalne wahania temperatury.',
-      priority: 'medium',
-      category: 'maintenance',
-      status: 'scheduled',
-      preferredDate: '2024-03-20',
-      preferredTime: '10:00',
-      contactPerson: 'Anna Kowalska',
-      contactPhone: '+48 123 456 789',
+      _id: "req1",
+      clientId: "client1",
+      userId: "1",
+      title: "Przegląd klimatyzacji - sala konferencyjna",
+      description:
+        "Proszę o przegląd systemu klimatyzacji w sali konferencyjnej A. Zauważalne wahania temperatury.",
+      priority: "medium",
+      category: "maintenance",
+      status: "scheduled",
+      preferredDate: "2024-03-20",
+      preferredTime: "10:00",
+      contactPerson: "Anna Kowalska",
+      contactPhone: "+48 123 456 789",
       location: {
-        building: 'Główny budynek',
-        floor: '3',
-        room: 'Sala konferencyjna A',
-        notes: 'Dostęp przez recepcję'
+        building: "Główny budynek",
+        floor: "3",
+        room: "Sala konferencyjna A",
+        notes: "Dostęp przez recepcję",
       },
-      attachments: ['photo1.jpg'],
+      attachments: ["photo1.jpg"],
       estimatedCost: 350,
-      scheduledDate: '2024-03-20T10:00:00Z',
-      assignedTechnician: 'Jan Kowalski',
-      createdAt: '2024-03-15T09:00:00Z',
-      updatedAt: '2024-03-15T14:30:00Z'
+      scheduledDate: "2024-03-20T10:00:00Z",
+      assignedTechnician: "Jan Kowalski",
+      createdAt: "2024-03-15T09:00:00Z",
+      updatedAt: "2024-03-15T14:30:00Z",
     },
     {
-      _id: 'req2',
-      clientId: 'client2',
-      userId: '2',
-      title: 'Naprawa pompy ciepła',
-      description: 'Pompa ciepła na 5. piętrze nie działa prawidłowo. Brak ogrzewania w open space.',
-      priority: 'high',
-      category: 'repair',
-      status: 'in_progress',
-      preferredDate: '2024-03-16',
-      preferredTime: '08:00',
-      contactPerson: 'Piotr Nowak',
-      contactPhone: '+48 987 654 321',
+      _id: "req2",
+      clientId: "client2",
+      userId: "2",
+      title: "Naprawa pompy ciepła",
+      description:
+        "Pompa ciepła na 5. piętrze nie działa prawidłowo. Brak ogrzewania w open space.",
+      priority: "high",
+      category: "repair",
+      status: "in_progress",
+      preferredDate: "2024-03-16",
+      preferredTime: "08:00",
+      contactPerson: "Piotr Nowak",
+      contactPhone: "+48 987 654 321",
       location: {
-        building: 'Tower A',
-        floor: '5',
-        room: 'Open space',
-        notes: 'Pompa na dachu'
+        building: "Tower A",
+        floor: "5",
+        room: "Open space",
+        notes: "Pompa na dachu",
       },
       attachments: [],
       estimatedCost: 1200,
-      scheduledDate: '2024-03-16T08:00:00Z',
-      assignedTechnician: 'Marek Wiśniewski',
-      createdAt: '2024-03-15T07:30:00Z',
-      updatedAt: '2024-03-16T09:15:00Z'
-    }
+      scheduledDate: "2024-03-16T08:00:00Z",
+      assignedTechnician: "Marek Wiśniewski",
+      createdAt: "2024-03-15T07:30:00Z",
+      updatedAt: "2024-03-16T09:15:00Z",
+    },
   ];
 
   const analytics: PortalAnalytics = {
@@ -216,118 +219,103 @@ export function CustomerPortalModule() {
     loginActivity: {
       daily: 12,
       weekly: 18,
-      monthly: 22
+      monthly: 22,
     },
     requestsByCategory: {
       maintenance: 45,
       repair: 28,
       installation: 12,
       consultation: 8,
-      emergency: 6
-    }
+      emergency: 6,
+    },
   };
 
-  const filteredUsers = portalUsers.filter(user => {
-    const matchesSearch = user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.clientName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-    
+  const filteredUsers = portalUsers.filter((user) => {
+    const matchesSearch =
+      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.clientName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || user.status === statusFilter;
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+
     return matchesSearch && matchesStatus && matchesRole;
   });
 
-  const getStatusBadge = (status: CustomerPortalUser['status']) => {
+  const getStatusBadge = (status: CustomerPortalUser["status"]) => {
     const variants = {
-      active: 'success',
-      inactive: 'secondary',
-      pending: 'warning',
-      suspended: 'destructive'
+      active: "success",
+      inactive: "secondary",
+      pending: "warning",
+      suspended: "destructive",
     } as const;
 
     const labels = {
-      active: 'Aktywny',
-      inactive: 'Nieaktywny',
-      pending: 'Oczekujący',
-      suspended: 'Zawieszony'
+      active: "Aktywny",
+      inactive: "Nieaktywny",
+      pending: "Oczekujący",
+      suspended: "Zawieszony",
     };
 
-    return (
-      <Badge variant={variants[status]}>
-        {labels[status]}
-      </Badge>
-    );
+    return <Badge variant={variants[status]}>{labels[status]}</Badge>;
   };
 
-  const getRoleBadge = (role: CustomerPortalUser['role']) => {
+  const getRoleBadge = (role: CustomerPortalUser["role"]) => {
     const variants = {
-      admin: 'default',
-      manager: 'secondary',
-      user: 'outline',
-      viewer: 'outline'
+      admin: "default",
+      manager: "secondary",
+      user: "outline",
+      viewer: "outline",
     } as const;
 
     const labels = {
-      admin: 'Administrator',
-      manager: 'Menedżer',
-      user: 'Użytkownik',
-      viewer: 'Przeglądający'
+      admin: "Administrator",
+      manager: "Menedżer",
+      user: "Użytkownik",
+      viewer: "Przeglądający",
     };
 
-    return (
-      <Badge variant={variants[role]}>
-        {labels[role]}
-      </Badge>
-    );
+    return <Badge variant={variants[role]}>{labels[role]}</Badge>;
   };
 
-  const getRequestStatusBadge = (status: ServiceRequest['status']) => {
+  const getRequestStatusBadge = (status: ServiceRequest["status"]) => {
     const variants = {
-      submitted: 'secondary',
-      acknowledged: 'warning',
-      scheduled: 'default',
-      in_progress: 'warning',
-      completed: 'success',
-      cancelled: 'destructive'
+      submitted: "secondary",
+      acknowledged: "warning",
+      scheduled: "default",
+      in_progress: "warning",
+      completed: "success",
+      cancelled: "destructive",
     } as const;
 
     const labels = {
-      submitted: 'Zgłoszony',
-      acknowledged: 'Potwierdzony',
-      scheduled: 'Zaplanowany',
-      in_progress: 'W trakcie',
-      completed: 'Zakończony',
-      cancelled: 'Anulowany'
+      submitted: "Zgłoszony",
+      acknowledged: "Potwierdzony",
+      scheduled: "Zaplanowany",
+      in_progress: "W trakcie",
+      completed: "Zakończony",
+      cancelled: "Anulowany",
     };
 
-    return (
-      <Badge variant={variants[status]}>
-        {labels[status]}
-      </Badge>
-    );
+    return <Badge variant={variants[status]}>{labels[status]}</Badge>;
   };
 
-  const getPriorityBadge = (priority: ServiceRequest['priority']) => {
+  const getPriorityBadge = (priority: ServiceRequest["priority"]) => {
     const variants = {
-      low: 'secondary',
-      medium: 'default',
-      high: 'warning',
-      urgent: 'destructive'
+      low: "secondary",
+      medium: "default",
+      high: "warning",
+      urgent: "destructive",
     } as const;
 
     const labels = {
-      low: 'Niski',
-      medium: 'Średni',
-      high: 'Wysoki',
-      urgent: 'Pilny'
+      low: "Niski",
+      medium: "Średni",
+      high: "Wysoki",
+      urgent: "Pilny",
     };
 
-    return (
-      <Badge variant={variants[priority]}>
-        {labels[priority]}
-      </Badge>
-    );
+    return <Badge variant={variants[priority]}>{labels[priority]}</Badge>;
   };
 
   const handleCreateUser = () => {
@@ -353,12 +341,12 @@ export function CustomerPortalModule() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pl-PL', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("pl-PL", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -398,7 +386,7 @@ export function CustomerPortalModule() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -410,7 +398,7 @@ export function CustomerPortalModule() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -422,13 +410,15 @@ export function CustomerPortalModule() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Logowania (miesięcznie)</p>
-                <p className="text-2xl font-bold text-gray-900">{analytics.loginActivity.monthly}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {analytics.loginActivity.monthly}
+                </p>
               </div>
               <Activity className="w-8 h-8 text-green-500" />
             </div>
@@ -505,7 +495,7 @@ export function CustomerPortalModule() {
                         {getStatusBadge(user.status)}
                         {getRoleBadge(user.role)}
                       </div>
-                      
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-3">
                         <div className="flex items-center gap-2">
                           <Mail className="w-4 h-4" />
@@ -528,29 +518,27 @@ export function CustomerPortalModule() {
                       <div className="flex items-center gap-4 text-sm text-gray-500">
                         <span>Uprawnienia:</span>
                         {user.permissions.viewInvoices && <Badge variant="outline">Faktury</Badge>}
-                        {user.permissions.requestService && <Badge variant="outline">Zgłoszenia</Badge>}
+                        {user.permissions.requestService && (
+                          <Badge variant="outline">Zgłoszenia</Badge>
+                        )}
                         {user.permissions.viewReports && <Badge variant="outline">Raporty</Badge>}
-                        {user.permissions.manageUsers && <Badge variant="outline">Zarządzanie</Badge>}
-                        {user.permissions.viewEquipment && <Badge variant="outline">Urządzenia</Badge>}
+                        {user.permissions.manageUsers && (
+                          <Badge variant="outline">Zarządzanie</Badge>
+                        )}
+                        {user.permissions.viewEquipment && (
+                          <Badge variant="outline">Urządzenia</Badge>
+                        )}
                       </div>
                     </div>
-                    
+
                     <div className="flex gap-2 ml-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewUser(user)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleViewUser(user)}>
                         <Eye className="w-4 h-4" />
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditUser(user)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
                         <Edit className="w-4 h-4" />
                       </Button>
-                      {user.status === 'pending' && (
+                      {user.status === "pending" && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -560,11 +548,7 @@ export function CustomerPortalModule() {
                           <Send className="w-4 h-4" />
                         </Button>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleResetPassword(user)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleResetPassword(user)}>
                         <RefreshCw className="w-4 h-4" />
                       </Button>
                     </div>
@@ -588,17 +572,21 @@ export function CustomerPortalModule() {
                         {getRequestStatusBadge(request.status)}
                         {getPriorityBadge(request.priority)}
                       </div>
-                      
+
                       <p className="text-gray-600 mb-3">{request.description}</p>
-                      
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-3">
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4" />
-                          <span>{request.preferredDate} {request.preferredTime}</span>
+                          <span>
+                            {request.preferredDate} {request.preferredTime}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <MapPin className="w-4 h-4" />
-                          <span>{request.location.building}, {request.location.room}</span>
+                          <span>
+                            {request.location.building}, {request.location.room}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Phone className="w-4 h-4" />
@@ -619,7 +607,7 @@ export function CustomerPortalModule() {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="flex gap-2 ml-4">
                       <Button variant="outline" size="sm">
                         <Eye className="w-4 h-4" />

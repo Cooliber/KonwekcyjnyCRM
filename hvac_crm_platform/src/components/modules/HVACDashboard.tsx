@@ -4,35 +4,36 @@
  * Features: Real-time metrics, district visualization, energy analytics
  */
 
-import React, { useState, useEffect, memo, useCallback, useMemo, Suspense } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { ErrorBoundary } from '../ui/ErrorBoundary';
 import {
   Activity,
-  Zap,
-  Thermometer,
-  Gauge,
-  MapPin,
-  TrendingUp,
-  TrendingDown,
   AlertTriangle,
   CheckCircle,
-  RefreshCw,
-  Settings,
   Eye,
   EyeOff,
-  Filter,
-  Loader2
-} from 'lucide-react';
-import { useConvexRealTime } from '../../hooks/useConvexRealTime';
-import type { WarsawDistrict, HVACDashboardProps } from '../../types/hvac';
-import { toast } from 'sonner';
+  Gauge,
+  Loader2,
+  RefreshCw,
+  Settings,
+  Zap,
+} from "lucide-react";
+import React, { memo, Suspense, useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { useConvexRealTime } from "../../hooks/useConvexRealTime";
+import type { HVACDashboardProps, WarsawDistrict } from "../../types/hvac";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { ErrorBoundary } from "../ui/ErrorBoundary";
 
 // Lazy load heavy components for better performance
-const RealTimeMetrics = React.lazy(() => import('./RealTimeMetrics').then(module => ({ default: module.RealTimeMetrics })));
-const WarsawHeatmap = React.lazy(() => import('./WarsawHeatmap').then(module => ({ default: module.WarsawHeatmap })));
-const EnergyAnalyticsChart = React.lazy(() => import('./EnergyAnalyticsChart').then(module => ({ default: module.EnergyAnalyticsChart })));
+const RealTimeMetrics = React.lazy(() =>
+  import("./RealTimeMetrics").then((module) => ({ default: module.RealTimeMetrics }))
+);
+const WarsawHeatmap = React.lazy(() =>
+  import("./WarsawHeatmap").then((module) => ({ default: module.WarsawHeatmap }))
+);
+const EnergyAnalyticsChart = React.lazy(() =>
+  import("./EnergyAnalyticsChart").then((module) => ({ default: module.EnergyAnalyticsChart }))
+);
 
 // Loading component for Suspense
 const ComponentLoader = memo(({ name }: { name: string }) => (
@@ -46,8 +47,16 @@ const ComponentLoader = memo(({ name }: { name: string }) => (
 
 // Warsaw districts for filter dropdown
 const WARSAW_DISTRICTS: WarsawDistrict[] = [
-  'Śródmieście', 'Wilanów', 'Mokotów', 'Żoliborz', 'Ursynów', 
-  'Wola', 'Praga-Południe', 'Targówek', 'Ochota', 'Praga-Północ'
+  "Śródmieście",
+  "Wilanów",
+  "Mokotów",
+  "Żoliborz",
+  "Ursynów",
+  "Wola",
+  "Praga-Południe",
+  "Targówek",
+  "Ochota",
+  "Praga-Północ",
 ];
 
 /**
@@ -64,10 +73,10 @@ const WARSAW_DISTRICTS: WarsawDistrict[] = [
  */
 export const HVACDashboard = memo(function HVACDashboard({
   district,
-  timeRange = '24h',
+  timeRange = "24h",
   refreshInterval = 30000,
   showPredictions = true,
-  enableRealTime = true
+  enableRealTime = true,
 }: HVACDashboardProps) {
   // State management with performance considerations
   const [selectedDistrict, setSelectedDistrict] = useState<WarsawDistrict | undefined>(district);
@@ -77,7 +86,7 @@ export const HVACDashboard = memo(function HVACDashboard({
   const [visibleComponents, setVisibleComponents] = useState({
     metrics: true,
     heatmap: true,
-    analytics: true
+    analytics: true,
   });
 
   // Real-time data hook
@@ -91,7 +100,7 @@ export const HVACDashboard = memo(function HVACDashboard({
     refresh,
     clearError,
     isConnected,
-    lastUpdated
+    lastUpdated,
   } = useConvexRealTime({
     district: selectedDistrict,
     refreshInterval,
@@ -102,41 +111,41 @@ export const HVACDashboard = memo(function HVACDashboard({
     onDataUpdate: (data) => {
       // Handle real-time data updates
       if (data.alerts.length > 0) {
-        const criticalAlerts = data.alerts.filter(alert => alert.severity === 'critical');
+        const criticalAlerts = data.alerts.filter((alert) => alert.severity === "critical");
         if (criticalAlerts.length > 0) {
           toast.error(`Critical HVAC Alert: ${criticalAlerts[0].message}`);
         }
       }
-    }
+    },
   });
 
   // Memoized event handlers for performance
   const handleDistrictChange = useCallback((newDistrict: WarsawDistrict | undefined) => {
     setSelectedDistrict(newDistrict);
-    toast.info(newDistrict ? `Switched to ${newDistrict} district` : 'Viewing all districts');
+    toast.info(newDistrict ? `Switched to ${newDistrict} district` : "Viewing all districts");
   }, []);
 
-  const handleTimeRangeChange = useCallback((newTimeRange: string) => {
+  const _handleTimeRangeChange = useCallback((newTimeRange: string) => {
     setSelectedTimeRange(newTimeRange);
   }, []);
 
   const handleRefresh = useCallback(async () => {
     try {
       await refresh();
-      toast.success('Dashboard data refreshed successfully');
-    } catch (error) {
-      toast.error('Failed to refresh dashboard data');
+      toast.success("Dashboard data refreshed successfully");
+    } catch (_error) {
+      toast.error("Failed to refresh dashboard data");
     }
   }, [refresh]);
 
-  const toggleComponent = useCallback((component: keyof typeof visibleComponents) => {
-    setVisibleComponents(prev => ({
+  const _toggleComponent = useCallback((component: keyof typeof visibleComponents) => {
+    setVisibleComponents((prev) => ({
       ...prev,
-      [component]: !prev[component]
+      [component]: !prev[component],
     }));
   }, []);
 
-  const handleErrorRecovery = useCallback(() => {
+  const _handleErrorRecovery = useCallback(() => {
     clearError();
     handleRefresh();
   }, [clearError, handleRefresh]);
@@ -149,26 +158,25 @@ export const HVACDashboard = memo(function HVACDashboard({
         averageEfficiency: 0,
         criticalAlerts: 0,
         energyCost: 0,
-        optimalSystems: 0
+        optimalSystems: 0,
       };
     }
 
     const totalSystems = hvacMetrics.length;
-    const averageEfficiency = hvacMetrics.reduce((sum, metric) => sum + metric.energyEfficiency, 0) / totalSystems;
-    const criticalAlerts = hvacMetrics.filter(metric => metric.status === 'critical').length;
+    const averageEfficiency =
+      hvacMetrics.reduce((sum, metric) => sum + metric.energyEfficiency, 0) / totalSystems;
+    const criticalAlerts = hvacMetrics.filter((metric) => metric.status === "critical").length;
     const energyCost = hvacMetrics.reduce((sum, metric) => sum + metric.energyCost, 0);
-    const optimalSystems = hvacMetrics.filter(metric => metric.status === 'optimal').length;
+    const optimalSystems = hvacMetrics.filter((metric) => metric.status === "optimal").length;
 
     return {
       totalSystems,
       averageEfficiency: Math.round(averageEfficiency),
       criticalAlerts,
       energyCost: Math.round(energyCost * 100) / 100,
-      optimalSystems
+      optimalSystems,
     };
   }, [hvacMetrics]);
-
-
 
   // Error display
   if (error && !isLoading) {
@@ -187,9 +195,7 @@ export const HVACDashboard = memo(function HVACDashboard({
               <Button onClick={clearError} variant="outline">
                 Clear Error
               </Button>
-              <Button onClick={handleRefresh}>
-                Retry
-              </Button>
+              <Button onClick={handleRefresh}>Retry</Button>
             </div>
           </CardContent>
         </Card>
@@ -202,181 +208,186 @@ export const HVACDashboard = memo(function HVACDashboard({
       level="component"
       enableRetry={true}
       onError={(error, errorInfo) => {
-        console.error('HVAC Dashboard Error:', error, errorInfo);
-        toast.error('Dashboard component error - attempting recovery');
+        console.error("HVAC Dashboard Error:", error, errorInfo);
+        toast.error("Dashboard component error - attempting recovery");
       }}
     >
-      <div className={`p-6 space-y-6 ${isFullscreen ? 'fixed inset-0 z-50 bg-white overflow-auto' : ''}`}>
-      {/* Header with controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Real-Time HVAC Dashboard</h1>
-          <p className="text-gray-600 mt-1">
-            Warsaw District Monitoring • {isConnected ? 'Connected' : 'Disconnected'}
-            {lastUpdated && (
-              <span className="ml-2 text-sm">
-                Last updated: {lastUpdated.toLocaleTimeString()}
-              </span>
-            )}
-          </p>
+      <div
+        className={`p-6 space-y-6 ${isFullscreen ? "fixed inset-0 z-50 bg-white overflow-auto" : ""}`}
+      >
+        {/* Header with controls */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Real-Time HVAC Dashboard</h1>
+            <p className="text-gray-600 mt-1">
+              Warsaw District Monitoring • {isConnected ? "Connected" : "Disconnected"}
+              {lastUpdated && (
+                <span className="ml-2 text-sm">
+                  Last updated: {lastUpdated.toLocaleTimeString()}
+                </span>
+              )}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* District Filter */}
+            <select
+              value={selectedDistrict || "all"}
+              onChange={(e) =>
+                handleDistrictChange(
+                  e.target.value === "all" ? undefined : (e.target.value as WarsawDistrict)
+                )
+              }
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+            >
+              <option value="all">All Districts</option>
+              {WARSAW_DISTRICTS.map((district) => (
+                <option key={district} value={district}>
+                  {district}
+                </option>
+              ))}
+            </select>
+
+            {/* Time Range Filter */}
+            <select
+              value={selectedTimeRange}
+              onChange={(e) => setSelectedTimeRange(e.target.value as any)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+            >
+              <option value="1h">Last Hour</option>
+              <option value="24h">Last 24 Hours</option>
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+            </select>
+
+            {/* Advanced Metrics Toggle */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAdvancedMetrics(!showAdvancedMetrics)}
+            >
+              {showAdvancedMetrics ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </Button>
+
+            {/* Refresh Button */}
+            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            </Button>
+
+            {/* Fullscreen Toggle */}
+            <Button variant="outline" size="sm" onClick={() => setIsFullscreen(!isFullscreen)}>
+              <Settings className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
-        
-        <div className="flex items-center gap-2">
-          {/* District Filter */}
-          <select
-            value={selectedDistrict || 'all'}
-            onChange={(e) => handleDistrictChange(e.target.value === 'all' ? undefined : e.target.value as WarsawDistrict)}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-          >
-            <option value="all">All Districts</option>
-            {WARSAW_DISTRICTS.map(district => (
-              <option key={district} value={district}>{district}</option>
-            ))}
-          </select>
 
-          {/* Time Range Filter */}
-          <select
-            value={selectedTimeRange}
-            onChange={(e) => setSelectedTimeRange(e.target.value as any)}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-          >
-            <option value="1h">Last Hour</option>
-            <option value="24h">Last 24 Hours</option>
-            <option value="7d">Last 7 Days</option>
-            <option value="30d">Last 30 Days</option>
-          </select>
+        {/* Summary KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Systems</p>
+                  <p className="text-2xl font-bold text-gray-900">{summaryMetrics.totalSystems}</p>
+                </div>
+                <Activity className="w-8 h-8 text-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Advanced Metrics Toggle */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowAdvancedMetrics(!showAdvancedMetrics)}
-          >
-            {showAdvancedMetrics ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-          </Button>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Avg Efficiency</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {summaryMetrics.averageEfficiency}%
+                  </p>
+                </div>
+                <Zap className="w-8 h-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Refresh Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </Button>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Critical Alerts</p>
+                  <p className="text-2xl font-bold text-red-600">{summaryMetrics.criticalAlerts}</p>
+                </div>
+                <AlertTriangle className="w-8 h-8 text-red-500" />
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Fullscreen Toggle */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsFullscreen(!isFullscreen)}
-          >
-            <Settings className="w-4 h-4" />
-          </Button>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Energy Cost</p>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {summaryMetrics.energyCost} PLN/h
+                  </p>
+                </div>
+                <Gauge className="w-8 h-8 text-orange-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Optimal Systems</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {summaryMetrics.optimalSystems}
+                  </p>
+                </div>
+                <CheckCircle className="w-8 h-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
 
-      {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Systems</p>
-                <p className="text-2xl font-bold text-gray-900">{summaryMetrics.totalSystems}</p>
-              </div>
-              <Activity className="w-8 h-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
+        {/* Main Dashboard Components */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Real-Time Metrics */}
+          {visibleComponents.metrics && (
+            <Suspense fallback={<ComponentLoader name="Real-Time Metrics" />}>
+              <RealTimeMetrics
+                metrics={hvacMetrics}
+                isLoading={isLoading}
+                showAdvanced={showAdvancedMetrics}
+              />
+            </Suspense>
+          )}
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Avg Efficiency</p>
-                <p className="text-2xl font-bold text-green-600">{summaryMetrics.averageEfficiency}%</p>
-              </div>
-              <Zap className="w-8 h-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
+          {/* Warsaw District Heatmap */}
+          {visibleComponents.heatmap && (
+            <Suspense fallback={<ComponentLoader name="Warsaw Heatmap" />}>
+              <WarsawHeatmap
+                districtData={districtData}
+                selectedDistrict={selectedDistrict}
+                onDistrictSelect={handleDistrictChange}
+                isLoading={isLoading}
+              />
+            </Suspense>
+          )}
+        </div>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Critical Alerts</p>
-                <p className="text-2xl font-bold text-red-600">{summaryMetrics.criticalAlerts}</p>
-              </div>
-              <AlertTriangle className="w-8 h-8 text-red-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Energy Cost</p>
-                <p className="text-2xl font-bold text-orange-600">{summaryMetrics.energyCost} PLN/h</p>
-              </div>
-              <Gauge className="w-8 h-8 text-orange-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Optimal Systems</p>
-                <p className="text-2xl font-bold text-green-600">{summaryMetrics.optimalSystems}</p>
-              </div>
-              <CheckCircle className="w-8 h-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Dashboard Components */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Real-Time Metrics */}
-        {visibleComponents.metrics && (
-          <Suspense fallback={<ComponentLoader name="Real-Time Metrics" />}>
-            <RealTimeMetrics
-              metrics={hvacMetrics}
+        {/* Energy Analytics Chart - Full Width */}
+        {visibleComponents.analytics && (
+          <Suspense fallback={<ComponentLoader name="Energy Analytics" />}>
+            <EnergyAnalyticsChart
+              data={energyAnalytics}
+              timeRange={selectedTimeRange}
+              district={selectedDistrict}
               isLoading={isLoading}
-              showAdvanced={showAdvancedMetrics}
+              showVATBreakdown={true}
             />
           </Suspense>
         )}
-
-        {/* Warsaw District Heatmap */}
-        {visibleComponents.heatmap && (
-          <Suspense fallback={<ComponentLoader name="Warsaw Heatmap" />}>
-            <WarsawHeatmap
-              districtData={districtData}
-              selectedDistrict={selectedDistrict}
-              onDistrictSelect={handleDistrictChange}
-              isLoading={isLoading}
-            />
-          </Suspense>
-        )}
-      </div>
-
-      {/* Energy Analytics Chart - Full Width */}
-      {visibleComponents.analytics && (
-        <Suspense fallback={<ComponentLoader name="Energy Analytics" />}>
-          <EnergyAnalyticsChart
-            data={energyAnalytics}
-            timeRange={selectedTimeRange}
-            district={selectedDistrict}
-            isLoading={isLoading}
-            showVATBreakdown={true}
-          />
-        </Suspense>
-      )}
       </div>
     </ErrorBoundary>
   );

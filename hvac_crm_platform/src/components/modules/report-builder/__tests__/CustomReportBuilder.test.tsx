@@ -1,18 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { CustomReportBuilder } from '../CustomReportBuilder';
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { CustomReportBuilder } from "../CustomReportBuilder";
 
 // Mock Convex hooks
-vi.mock('convex/react', () => ({
+vi.mock("convex/react", () => ({
   useQuery: vi.fn(),
   useMutation: vi.fn(),
   useAction: vi.fn(),
 }));
 
 // Mock toast
-vi.mock('sonner', () => ({
+vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
@@ -20,7 +20,7 @@ vi.mock('sonner', () => ({
 }));
 
 // Mock child components
-vi.mock('../report-builder/ReportDesigner', () => ({
+vi.mock("../report-builder/ReportDesigner", () => ({
   ReportDesigner: ({ config, onChange }: any) => (
     <div data-testid="report-designer">
       <input
@@ -32,12 +32,12 @@ vi.mock('../report-builder/ReportDesigner', () => ({
   ),
 }));
 
-vi.mock('../report-builder/DataSourcePanel', () => ({
+vi.mock("../report-builder/DataSourcePanel", () => ({
   DataSourcePanel: ({ dataSources, onChange }: any) => (
     <div data-testid="data-source-panel">
       <button
         data-testid="add-data-source"
-        onClick={() => onChange([...dataSources, { id: 'new-source', type: 'convex' }])}
+        onClick={() => onChange([...dataSources, { id: "new-source", type: "convex" }])}
       >
         Add Data Source
       </button>
@@ -45,7 +45,7 @@ vi.mock('../report-builder/DataSourcePanel', () => ({
   ),
 }));
 
-vi.mock('../report-builder/VisualizationPanel', () => ({
+vi.mock("../report-builder/VisualizationPanel", () => ({
   VisualizationPanel: ({ visualization, onChange }: any) => (
     <div data-testid="visualization-panel">
       <select
@@ -61,12 +61,12 @@ vi.mock('../report-builder/VisualizationPanel', () => ({
   ),
 }));
 
-vi.mock('../report-builder/FilterPanel', () => ({
+vi.mock("../report-builder/FilterPanel", () => ({
   FilterPanel: ({ filters, onChange }: any) => (
     <div data-testid="filter-panel">
       <button
         data-testid="add-filter"
-        onClick={() => onChange([...filters, { field: 'test', operator: 'equals', value: 'test' }])}
+        onClick={() => onChange([...filters, { field: "test", operator: "equals", value: "test" }])}
       >
         Add Filter
       </button>
@@ -74,7 +74,7 @@ vi.mock('../report-builder/FilterPanel', () => ({
   ),
 }));
 
-vi.mock('../report-builder/PreviewPanel', () => ({
+vi.mock("../report-builder/PreviewPanel", () => ({
   PreviewPanel: ({ reportId, config, onExecute }: any) => (
     <div data-testid="preview-panel">
       <button data-testid="execute-report" onClick={onExecute}>
@@ -84,7 +84,7 @@ vi.mock('../report-builder/PreviewPanel', () => ({
   ),
 }));
 
-vi.mock('../report-builder/WarsawSettingsPanel', () => ({
+vi.mock("../report-builder/WarsawSettingsPanel", () => ({
   WarsawSettingsPanel: ({ settings, onChange }: any) => (
     <div data-testid="warsaw-settings-panel">
       <input
@@ -96,7 +96,7 @@ vi.mock('../report-builder/WarsawSettingsPanel', () => ({
   ),
 }));
 
-vi.mock('../report-builder/ReportList', () => ({
+vi.mock("../report-builder/ReportList", () => ({
   ReportList: ({ reports, onEdit, onDelete, onExecute }: any) => (
     <div data-testid="report-list">
       {reports.map((report: any) => (
@@ -111,7 +111,7 @@ vi.mock('../report-builder/ReportList', () => ({
   ),
 }));
 
-vi.mock('../report-builder/ReportTemplates', () => ({
+vi.mock("../report-builder/ReportTemplates", () => ({
   ReportTemplates: ({ templates, onUseTemplate }: any) => (
     <div data-testid="report-templates">
       {templates.map((template: any) => (
@@ -125,37 +125,33 @@ vi.mock('../report-builder/ReportTemplates', () => ({
 }));
 
 const renderWithDnd = (component: React.ReactElement) => {
-  return render(
-    <DndProvider backend={HTML5Backend}>
-      {component}
-    </DndProvider>
-  );
+  return render(<DndProvider backend={HTML5Backend}>{component}</DndProvider>);
 };
 
-describe('CustomReportBuilder', () => {
+describe("CustomReportBuilder", () => {
   const mockReports = [
     {
-      _id: 'report1',
-      name: 'Test Report 1',
-      type: 'table',
-      config: { dataSources: [], visualization: { type: 'table' } },
+      _id: "report1",
+      name: "Test Report 1",
+      type: "table",
+      config: { dataSources: [], visualization: { type: "table" } },
       _creationTime: Date.now(),
     },
     {
-      _id: 'report2',
-      name: 'Test Report 2',
-      type: 'chart',
-      config: { dataSources: [], visualization: { type: 'bar_chart' } },
+      _id: "report2",
+      name: "Test Report 2",
+      type: "chart",
+      config: { dataSources: [], visualization: { type: "bar_chart" } },
       _creationTime: Date.now(),
     },
   ];
 
   const mockTemplates = [
     {
-      _id: 'template1',
-      name: 'HVAC Performance Template',
-      category: 'hvac_performance',
-      type: 'dashboard',
+      _id: "template1",
+      name: "HVAC Performance Template",
+      category: "hvac_performance",
+      type: "dashboard",
     },
   ];
 
@@ -165,13 +161,13 @@ describe('CustomReportBuilder', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Setup default mock returns
     mockUseQuery.mockImplementation((query) => {
-      if (query.toString().includes('list')) {
+      if (query.toString().includes("list")) {
         return mockReports;
       }
-      if (query.toString().includes('getTemplates')) {
+      if (query.toString().includes("getTemplates")) {
         return mockTemplates;
       }
       return null;
@@ -181,83 +177,83 @@ describe('CustomReportBuilder', () => {
     mockUseAction.mockReturnValue(vi.fn());
 
     // Mock the convex hooks
-    const { useQuery, useMutation, useAction } = require('convex/react');
+    const { useQuery, useMutation, useAction } = require("convex/react");
     useQuery.mockImplementation(mockUseQuery);
     useMutation.mockImplementation(mockUseMutation);
     useAction.mockImplementation(mockUseAction);
   });
 
-  describe('Rendering', () => {
-    it('renders the main interface with all tabs', () => {
+  describe("Rendering", () => {
+    it("renders the main interface with all tabs", () => {
       renderWithDnd(<CustomReportBuilder />);
 
-      expect(screen.getByText('Custom Report Builder')).toBeInTheDocument();
-      expect(screen.getByText('List')).toBeInTheDocument();
-      expect(screen.getByText('Builder')).toBeInTheDocument();
-      expect(screen.getByText('Templates')).toBeInTheDocument();
+      expect(screen.getByText("Custom Report Builder")).toBeInTheDocument();
+      expect(screen.getByText("List")).toBeInTheDocument();
+      expect(screen.getByText("Builder")).toBeInTheDocument();
+      expect(screen.getByText("Templates")).toBeInTheDocument();
     });
 
-    it('renders report list by default', () => {
+    it("renders report list by default", () => {
       renderWithDnd(<CustomReportBuilder />);
 
-      expect(screen.getByTestId('report-list')).toBeInTheDocument();
-      expect(screen.getByTestId('report-report1')).toBeInTheDocument();
-      expect(screen.getByTestId('report-report2')).toBeInTheDocument();
+      expect(screen.getByTestId("report-list")).toBeInTheDocument();
+      expect(screen.getByTestId("report-report1")).toBeInTheDocument();
+      expect(screen.getByTestId("report-report2")).toBeInTheDocument();
     });
 
-    it('switches to builder view when Builder tab is clicked', () => {
+    it("switches to builder view when Builder tab is clicked", () => {
       renderWithDnd(<CustomReportBuilder />);
 
-      fireEvent.click(screen.getByText('Builder'));
+      fireEvent.click(screen.getByText("Builder"));
 
-      expect(screen.getByTestId('report-designer')).toBeInTheDocument();
-      expect(screen.getByTestId('data-source-panel')).toBeInTheDocument();
-      expect(screen.getByTestId('visualization-panel')).toBeInTheDocument();
+      expect(screen.getByTestId("report-designer")).toBeInTheDocument();
+      expect(screen.getByTestId("data-source-panel")).toBeInTheDocument();
+      expect(screen.getByTestId("visualization-panel")).toBeInTheDocument();
     });
 
-    it('switches to templates view when Templates tab is clicked', () => {
+    it("switches to templates view when Templates tab is clicked", () => {
       renderWithDnd(<CustomReportBuilder />);
 
-      fireEvent.click(screen.getByText('Templates'));
+      fireEvent.click(screen.getByText("Templates"));
 
-      expect(screen.getByTestId('report-templates')).toBeInTheDocument();
-      expect(screen.getByTestId('template-template1')).toBeInTheDocument();
+      expect(screen.getByTestId("report-templates")).toBeInTheDocument();
+      expect(screen.getByTestId("template-template1")).toBeInTheDocument();
     });
   });
 
-  describe('Report Management', () => {
-    it('creates a new report when New Report button is clicked', () => {
+  describe("Report Management", () => {
+    it("creates a new report when New Report button is clicked", () => {
       renderWithDnd(<CustomReportBuilder />);
 
-      fireEvent.click(screen.getByText('New Report'));
+      fireEvent.click(screen.getByText("New Report"));
 
-      expect(screen.getByTestId('report-designer')).toBeInTheDocument();
-      expect(screen.getByTestId('report-name')).toHaveValue('');
+      expect(screen.getByTestId("report-designer")).toBeInTheDocument();
+      expect(screen.getByTestId("report-name")).toHaveValue("");
     });
 
-    it('allows editing report name in builder mode', () => {
+    it("allows editing report name in builder mode", () => {
       renderWithDnd(<CustomReportBuilder />);
 
-      fireEvent.click(screen.getByText('Builder'));
+      fireEvent.click(screen.getByText("Builder"));
 
-      const nameInput = screen.getByTestId('report-name');
-      fireEvent.change(nameInput, { target: { value: 'My Custom Report' } });
+      const nameInput = screen.getByTestId("report-name");
+      fireEvent.change(nameInput, { target: { value: "My Custom Report" } });
 
-      expect(nameInput).toHaveValue('My Custom Report');
+      expect(nameInput).toHaveValue("My Custom Report");
     });
 
-    it('saves report when Save button is clicked', async () => {
-      const mockCreateReport = vi.fn().mockResolvedValue('new-report-id');
+    it("saves report when Save button is clicked", async () => {
+      const mockCreateReport = vi.fn().mockResolvedValue("new-report-id");
       mockUseMutation.mockReturnValue(mockCreateReport);
 
       renderWithDnd(<CustomReportBuilder />);
 
-      fireEvent.click(screen.getByText('Builder'));
-      
-      const nameInput = screen.getByTestId('report-name');
-      fireEvent.change(nameInput, { target: { value: 'Test Report' } });
+      fireEvent.click(screen.getByText("Builder"));
 
-      fireEvent.click(screen.getByText('Save'));
+      const nameInput = screen.getByTestId("report-name");
+      fireEvent.change(nameInput, { target: { value: "Test Report" } });
+
+      fireEvent.click(screen.getByText("Save"));
 
       await waitFor(() => {
         expect(mockCreateReport).toHaveBeenCalled();
@@ -265,55 +261,55 @@ describe('CustomReportBuilder', () => {
     });
   });
 
-  describe('Data Source Management', () => {
-    it('adds data source when button is clicked', () => {
+  describe("Data Source Management", () => {
+    it("adds data source when button is clicked", () => {
       renderWithDnd(<CustomReportBuilder />);
 
-      fireEvent.click(screen.getByText('Builder'));
-      fireEvent.click(screen.getByTestId('add-data-source'));
+      fireEvent.click(screen.getByText("Builder"));
+      fireEvent.click(screen.getByTestId("add-data-source"));
 
       // This would be tested through the component state changes
-      expect(screen.getByTestId('data-source-panel')).toBeInTheDocument();
+      expect(screen.getByTestId("data-source-panel")).toBeInTheDocument();
     });
   });
 
-  describe('Visualization Configuration', () => {
-    it('changes visualization type', () => {
+  describe("Visualization Configuration", () => {
+    it("changes visualization type", () => {
       renderWithDnd(<CustomReportBuilder />);
 
-      fireEvent.click(screen.getByText('Builder'));
+      fireEvent.click(screen.getByText("Builder"));
 
-      const visualizationSelect = screen.getByTestId('visualization-type');
-      fireEvent.change(visualizationSelect, { target: { value: 'bar_chart' } });
+      const visualizationSelect = screen.getByTestId("visualization-type");
+      fireEvent.change(visualizationSelect, { target: { value: "bar_chart" } });
 
-      expect(visualizationSelect).toHaveValue('bar_chart');
+      expect(visualizationSelect).toHaveValue("bar_chart");
     });
   });
 
-  describe('Warsaw Settings', () => {
-    it('configures Warsaw-specific settings', () => {
+  describe("Warsaw Settings", () => {
+    it("configures Warsaw-specific settings", () => {
       renderWithDnd(<CustomReportBuilder />);
 
-      fireEvent.click(screen.getByText('Builder'));
+      fireEvent.click(screen.getByText("Builder"));
 
-      const districtInput = screen.getByTestId('district-filter');
-      fireEvent.change(districtInput, { target: { value: 'Śródmieście' } });
+      const districtInput = screen.getByTestId("district-filter");
+      fireEvent.change(districtInput, { target: { value: "Śródmieście" } });
 
-      expect(districtInput).toHaveValue('Śródmieście');
+      expect(districtInput).toHaveValue("Śródmieście");
     });
   });
 
-  describe('Report Execution', () => {
-    it('executes report when Execute button is clicked', async () => {
+  describe("Report Execution", () => {
+    it("executes report when Execute button is clicked", async () => {
       const mockExecuteReport = vi.fn().mockResolvedValue({
-        data: [{ test: 'data' }],
-        metadata: { totalRows: 1, executionTime: 100 }
+        data: [{ test: "data" }],
+        metadata: { totalRows: 1, executionTime: 100 },
       });
       mockUseAction.mockReturnValue(mockExecuteReport);
 
       renderWithDnd(<CustomReportBuilder initialView="builder" reportId="test-report" />);
 
-      fireEvent.click(screen.getByTestId('execute-report'));
+      fireEvent.click(screen.getByTestId("execute-report"));
 
       await waitFor(() => {
         expect(mockExecuteReport).toHaveBeenCalled();
@@ -321,69 +317,69 @@ describe('CustomReportBuilder', () => {
     });
   });
 
-  describe('Template Usage', () => {
-    it('uses template when Use Template button is clicked', () => {
+  describe("Template Usage", () => {
+    it("uses template when Use Template button is clicked", () => {
       renderWithDnd(<CustomReportBuilder />);
 
-      fireEvent.click(screen.getByText('Templates'));
-      fireEvent.click(screen.getByText('Use Template'));
+      fireEvent.click(screen.getByText("Templates"));
+      fireEvent.click(screen.getByText("Use Template"));
 
-      expect(screen.getByTestId('report-designer')).toBeInTheDocument();
+      expect(screen.getByTestId("report-designer")).toBeInTheDocument();
     });
   });
 
-  describe('Accessibility', () => {
-    it('has proper ARIA labels and roles', () => {
+  describe("Accessibility", () => {
+    it("has proper ARIA labels and roles", () => {
       renderWithDnd(<CustomReportBuilder />);
 
       // Check for main heading
-      expect(screen.getByRole('heading', { name: /custom report builder/i })).toBeInTheDocument();
-      
+      expect(screen.getByRole("heading", { name: /custom report builder/i })).toBeInTheDocument();
+
       // Check for navigation tabs
-      expect(screen.getByRole('button', { name: /list/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /builder/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /templates/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /list/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /builder/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /templates/i })).toBeInTheDocument();
     });
 
-    it('supports keyboard navigation', () => {
+    it("supports keyboard navigation", () => {
       renderWithDnd(<CustomReportBuilder />);
 
-      const builderTab = screen.getByText('Builder');
+      const builderTab = screen.getByText("Builder");
       builderTab.focus();
-      
+
       expect(document.activeElement).toBe(builderTab);
     });
   });
 
-  describe('Error Handling', () => {
-    it('handles save errors gracefully', async () => {
-      const mockCreateReport = vi.fn().mockRejectedValue(new Error('Save failed'));
+  describe("Error Handling", () => {
+    it("handles save errors gracefully", async () => {
+      const mockCreateReport = vi.fn().mockRejectedValue(new Error("Save failed"));
       mockUseMutation.mockReturnValue(mockCreateReport);
 
-      const { toast } = require('sonner');
+      const { toast } = require("sonner");
 
       renderWithDnd(<CustomReportBuilder />);
 
-      fireEvent.click(screen.getByText('Builder'));
-      fireEvent.click(screen.getByText('Save'));
+      fireEvent.click(screen.getByText("Builder"));
+      fireEvent.click(screen.getByText("Save"));
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('Failed to save report');
+        expect(toast.error).toHaveBeenCalledWith("Failed to save report");
       });
     });
 
-    it('handles execution errors gracefully', async () => {
-      const mockExecuteReport = vi.fn().mockRejectedValue(new Error('Execution failed'));
+    it("handles execution errors gracefully", async () => {
+      const mockExecuteReport = vi.fn().mockRejectedValue(new Error("Execution failed"));
       mockUseAction.mockReturnValue(mockExecuteReport);
 
-      const { toast } = require('sonner');
+      const { toast } = require("sonner");
 
       renderWithDnd(<CustomReportBuilder initialView="builder" reportId="test-report" />);
 
-      fireEvent.click(screen.getByTestId('execute-report'));
+      fireEvent.click(screen.getByTestId("execute-report"));
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('Failed to execute report');
+        expect(toast.error).toHaveBeenCalledWith("Failed to execute report");
       });
     });
   });

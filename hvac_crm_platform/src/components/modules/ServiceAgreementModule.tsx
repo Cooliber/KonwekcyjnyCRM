@@ -1,41 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Input } from '../ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Progress } from '../ui/progress';
-import { 
-  Wrench, 
-  Plus, 
-  Search, 
-  Calendar, 
-  Clock, 
-  CheckCircle, 
-  AlertTriangle,
-  XCircle,
-  TrendingUp,
-  MapPin,
-  Building,
-  User,
-  Phone,
-  Mail,
-  Settings,
+import { useMutation, useQuery } from "convex/react";
+import {
   BarChart3,
-  RefreshCw,
-  Bell,
-  Star,
+  Building,
+  Calendar,
+  CheckCircle,
   DollarSign,
   FileText,
-  Activity
-} from 'lucide-react';
-import { toast } from 'sonner';
-import type { WarsawDistrict } from '../../types/hvac';
-import { Id } from '../../../convex/_generated/dataModel';
+  MapPin,
+  Plus,
+  RefreshCw,
+  Search,
+  Star,
+  TrendingUp,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
+import type { WarsawDistrict } from "../../types/hvac";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Input } from "../ui/input";
+import { Progress } from "../ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 interface ServiceAgreement {
   _id: Id<"serviceAgreements">;
@@ -45,8 +34,8 @@ interface ServiceAgreement {
   clientName: string;
   clientAddress: string;
   district: WarsawDistrict;
-  serviceLevel: 'basic' | 'standard' | 'premium' | 'enterprise';
-  status: 'active' | 'pending' | 'suspended' | 'expired' | 'cancelled' | 'renewal_pending';
+  serviceLevel: "basic" | "standard" | "premium" | "enterprise";
+  status: "active" | "pending" | "suspended" | "expired" | "cancelled" | "renewal_pending";
   startDate: number;
   endDate: number;
   monthlyValue: number;
@@ -55,7 +44,7 @@ interface ServiceAgreement {
   vatRate: number;
   equipmentCount: number;
   equipmentIds: Id<"equipment">[];
-  serviceFrequency: 'monthly' | 'quarterly' | 'biannual' | 'annual';
+  serviceFrequency: "monthly" | "quarterly" | "biannual" | "annual";
   responseTime: number; // hours
   slaLevel: number; // percentage
   emergencySupport: boolean;
@@ -99,15 +88,15 @@ interface ServiceSchedule {
   _id: string;
   agreementId: string;
   scheduledDate: string;
-  serviceType: 'preventive' | 'corrective' | 'emergency' | 'inspection';
-  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled' | 'rescheduled';
+  serviceType: "preventive" | "corrective" | "emergency" | "inspection";
+  status: "scheduled" | "in_progress" | "completed" | "cancelled" | "rescheduled";
   technicianId?: string;
   technicianName?: string;
   estimatedDuration: number; // hours
   actualDuration?: number;
   notes?: string;
   equipmentIds: string[];
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  priority: "low" | "medium" | "high" | "critical";
 }
 
 interface SLAMetrics {
@@ -121,21 +110,22 @@ interface SLAMetrics {
 }
 
 export function ServiceAgreementModule() {
-  const [activeTab, setActiveTab] = useState('agreements');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [serviceLevelFilter, setServiceLevelFilter] = useState<string>('all');
-  const [districtFilter, setDistrictFilter] = useState<string>('all');
-  const [selectedAgreement, setSelectedAgreement] = useState<ServiceAgreement | null>(null);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("agreements");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [serviceLevelFilter, setServiceLevelFilter] = useState<string>("all");
+  const [districtFilter, setDistrictFilter] = useState<string>("all");
+  const [_selectedAgreement, setSelectedAgreement] = useState<ServiceAgreement | null>(null);
+  const [_isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Real Convex queries
-  const agreements = useQuery(api.serviceAgreements.getServiceAgreements, {
-    status: statusFilter !== 'all' ? statusFilter as any : undefined,
-    district: districtFilter !== 'all' ? districtFilter : undefined,
-    serviceLevel: serviceLevelFilter !== 'all' ? serviceLevelFilter as any : undefined,
-    limit: 50
-  }) || [];
+  const agreements =
+    useQuery(api.serviceAgreements.getServiceAgreements, {
+      status: statusFilter !== "all" ? (statusFilter as any) : undefined,
+      district: districtFilter !== "all" ? districtFilter : undefined,
+      serviceLevel: serviceLevelFilter !== "all" ? (serviceLevelFilter as any) : undefined,
+      limit: 50,
+    }) || [];
 
   const createServiceAgreement = useMutation(api.serviceAgreements.createServiceAgreement);
   const updateServiceAgreement = useMutation(api.serviceAgreements.updateServiceAgreement);
@@ -143,59 +133,60 @@ export function ServiceAgreementModule() {
   const renewServiceAgreement = useMutation(api.serviceAgreements.renewServiceAgreement);
 
   // Get agreements due for service
-  const agreementsDueForService = useQuery(api.serviceAgreements.getAgreementsDueForService, {
-    daysAhead: 7
-  }) || [];
+  const _agreementsDueForService =
+    useQuery(api.serviceAgreements.getAgreementsDueForService, {
+      daysAhead: 7,
+    }) || [];
 
   // Get SLA compliance report
-  const slaReport = useQuery(api.serviceAgreements.getSLAComplianceReport, {
-    district: districtFilter !== 'all' ? districtFilter : undefined
+  const _slaReport = useQuery(api.serviceAgreements.getSLAComplianceReport, {
+    district: districtFilter !== "all" ? districtFilter : undefined,
   });
 
   // Mock service schedules - these could also be moved to Convex
-  const serviceSchedules: ServiceSchedule[] = [
+  const _serviceSchedules: ServiceSchedule[] = [
     {
-      _id: 's1',
-      agreementId: '1',
-      scheduledDate: '2024-04-15',
-      serviceType: 'preventive',
-      status: 'scheduled',
-      technicianName: 'Jan Kowalski',
+      _id: "s1",
+      agreementId: "1",
+      scheduledDate: "2024-04-15",
+      serviceType: "preventive",
+      status: "scheduled",
+      technicianName: "Jan Kowalski",
       estimatedDuration: 6,
-      equipmentIds: ['eq1', 'eq2', 'eq3'],
-      priority: 'medium'
+      equipmentIds: ["eq1", "eq2", "eq3"],
+      priority: "medium",
     },
     {
-      _id: 's2',
-      agreementId: '2',
-      scheduledDate: '2024-08-01',
-      serviceType: 'preventive',
-      status: 'scheduled',
+      _id: "s2",
+      agreementId: "2",
+      scheduledDate: "2024-08-01",
+      serviceType: "preventive",
+      status: "scheduled",
       estimatedDuration: 4,
-      equipmentIds: ['eq4', 'eq5'],
-      priority: 'low'
-    }
+      equipmentIds: ["eq4", "eq5"],
+      priority: "low",
+    },
   ];
 
   // No need for additional filtering since we're using Convex queries with filters
   const filteredAgreements = agreements;
 
   // Helper functions
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('pl-PL');
+  const _formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString("pl-PL");
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('pl-PL', {
-      style: 'currency',
-      currency: 'PLN'
+  const _formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("pl-PL", {
+      style: "currency",
+      currency: "PLN",
     }).format(amount);
   };
 
   // Event handlers
-  const handleCreateAgreement = async (agreementData: any) => {
+  const _handleCreateAgreement = async (agreementData: any) => {
     try {
-      const agreementId = await createServiceAgreement({
+      const _agreementId = await createServiceAgreement({
         agreementNumber: agreementData.agreementNumber,
         title: agreementData.title,
         clientId: agreementData.clientId,
@@ -210,10 +201,10 @@ export function ServiceAgreementModule() {
         serviceFrequency: agreementData.serviceFrequency,
         responseTime: agreementData.responseTime,
         slaLevel: agreementData.slaLevel,
-        emergencySupport: agreementData.emergencySupport || false,
-        partsIncluded: agreementData.partsIncluded || false,
-        laborIncluded: agreementData.laborIncluded || false,
-        autoRenewal: agreementData.autoRenewal || false
+        emergencySupport: agreementData.emergencySupport,
+        partsIncluded: agreementData.partsIncluded,
+        laborIncluded: agreementData.laborIncluded,
+        autoRenewal: agreementData.autoRenewal,
       });
 
       toast.success(`Umowa serwisowa ${agreementData.agreementNumber} została utworzona`);
@@ -223,11 +214,11 @@ export function ServiceAgreementModule() {
     }
   };
 
-  const handleUpdateAgreement = async (agreement: ServiceAgreement, updates: any) => {
+  const _handleUpdateAgreement = async (agreement: ServiceAgreement, updates: any) => {
     try {
       await updateServiceAgreement({
         agreementId: agreement._id,
-        updates
+        updates,
       });
 
       toast.success(`Umowa ${agreement.agreementNumber} została zaktualizowana`);
@@ -236,7 +227,7 @@ export function ServiceAgreementModule() {
     }
   };
 
-  const handleRecordService = async (agreement: ServiceAgreement, serviceData: any) => {
+  const _handleRecordService = async (agreement: ServiceAgreement, serviceData: any) => {
     try {
       await recordServiceCompletion({
         agreementId: agreement._id,
@@ -249,8 +240,8 @@ export function ServiceAgreementModule() {
           satisfactionRating: serviceData.satisfactionRating,
           slaCompliant: serviceData.slaCompliant,
           partsUsed: serviceData.partsUsed,
-          cost: serviceData.cost
-        }
+          cost: serviceData.cost,
+        },
       });
 
       toast.success(`Serwis dla umowy ${agreement.agreementNumber} został zarejestrowany`);
@@ -266,7 +257,7 @@ export function ServiceAgreementModule() {
 
       await renewServiceAgreement({
         agreementId: agreement._id,
-        newEndDate: newEndDate.getTime()
+        newEndDate: newEndDate.getTime(),
       });
 
       toast.success(`Umowa ${agreement.agreementNumber} została odnowiona`);
@@ -275,58 +266,50 @@ export function ServiceAgreementModule() {
     }
   };
 
-  const getStatusBadge = (status: ServiceAgreement['status']) => {
+  const getStatusBadge = (status: ServiceAgreement["status"]) => {
     const variants = {
-      active: 'success',
-      pending: 'warning',
-      suspended: 'destructive',
-      expired: 'secondary',
-      cancelled: 'destructive',
-      renewal_pending: 'warning'
+      active: "success",
+      pending: "warning",
+      suspended: "destructive",
+      expired: "secondary",
+      cancelled: "destructive",
+      renewal_pending: "warning",
     } as const;
 
     const labels = {
-      active: 'Aktywny',
-      pending: 'Oczekujący',
-      suspended: 'Zawieszony',
-      expired: 'Wygasły',
-      cancelled: 'Anulowany',
-      renewal_pending: 'Oczekuje odnowienia'
+      active: "Aktywny",
+      pending: "Oczekujący",
+      suspended: "Zawieszony",
+      expired: "Wygasły",
+      cancelled: "Anulowany",
+      renewal_pending: "Oczekuje odnowienia",
     };
 
-    return (
-      <Badge variant={variants[status]}>
-        {labels[status]}
-      </Badge>
-    );
+    return <Badge variant={variants[status]}>{labels[status]}</Badge>;
   };
 
-  const getServiceLevelBadge = (level: ServiceAgreement['serviceLevel']) => {
+  const getServiceLevelBadge = (level: ServiceAgreement["serviceLevel"]) => {
     const variants = {
-      basic: 'secondary',
-      standard: 'default',
-      premium: 'warning',
-      enterprise: 'success'
+      basic: "secondary",
+      standard: "default",
+      premium: "warning",
+      enterprise: "success",
     } as const;
 
     const labels = {
-      basic: 'Podstawowy',
-      standard: 'Standardowy',
-      premium: 'Premium',
-      enterprise: 'Enterprise'
+      basic: "Podstawowy",
+      standard: "Standardowy",
+      premium: "Premium",
+      enterprise: "Enterprise",
     };
 
-    return (
-      <Badge variant={variants[level]}>
-        {labels[level]}
-      </Badge>
-    );
+    return <Badge variant={variants[level]}>{labels[level]}</Badge>;
   };
 
   const getSLAColor = (slaLevel: number) => {
-    if (slaLevel >= 99) return 'text-green-600';
-    if (slaLevel >= 95) return 'text-yellow-600';
-    return 'text-red-600';
+    if (slaLevel >= 99) return "text-green-600";
+    if (slaLevel >= 95) return "text-yellow-600";
+    return "text-red-600";
   };
 
   const getServiceProgress = (completed: number, total: number) => {
@@ -352,9 +335,7 @@ export function ServiceAgreementModule() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Umowy Serwisowe</h1>
-          <p className="text-gray-600 mt-1">
-            Zarządzanie umowami serwisowymi z monitoringiem SLA
-          </p>
+          <p className="text-gray-600 mt-1">Zarządzanie umowami serwisowymi z monitoringiem SLA</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={handleOpenCreateDialog} className="bg-orange-500 hover:bg-orange-600">
@@ -376,14 +357,14 @@ export function ServiceAgreementModule() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Aktywne Umowy</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {agreements.filter(a => a.status === 'active').length}
+                  {agreements.filter((a) => a.status === "active").length}
                 </p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -395,7 +376,7 @@ export function ServiceAgreementModule() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -407,7 +388,7 @@ export function ServiceAgreementModule() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -501,7 +482,7 @@ export function ServiceAgreementModule() {
                         {getStatusBadge(agreement.status)}
                         {getServiceLevelBadge(agreement.serviceLevel)}
                       </div>
-                      
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-4">
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4" />
@@ -517,7 +498,7 @@ export function ServiceAgreementModule() {
                         </div>
                         <div className="flex items-center gap-2">
                           <DollarSign className="w-4 h-4" />
-                          <span>{agreement.monthlyValue.toLocaleString('pl-PL')} PLN/mies.</span>
+                          <span>{agreement.monthlyValue.toLocaleString("pl-PL")} PLN/mies.</span>
                         </div>
                       </div>
 
@@ -547,16 +528,30 @@ export function ServiceAgreementModule() {
 
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                          <span>Postęp serwisów ({agreement.completedServices}/{agreement.totalServices})</span>
-                          <span>{Math.round(getServiceProgress(agreement.completedServices, agreement.totalServices))}%</span>
+                          <span>
+                            Postęp serwisów ({agreement.completedServices}/{agreement.totalServices}
+                            )
+                          </span>
+                          <span>
+                            {Math.round(
+                              getServiceProgress(
+                                agreement.completedServices,
+                                agreement.totalServices
+                              )
+                            )}
+                            %
+                          </span>
                         </div>
-                        <Progress 
-                          value={getServiceProgress(agreement.completedServices, agreement.totalServices)} 
+                        <Progress
+                          value={getServiceProgress(
+                            agreement.completedServices,
+                            agreement.totalServices
+                          )}
                           className="h-2"
                         />
                       </div>
                     </div>
-                    
+
                     <div className="flex flex-col gap-2 ml-4">
                       <Button
                         variant="outline"
@@ -574,7 +569,8 @@ export function ServiceAgreementModule() {
                         <Calendar className="w-4 h-4 mr-2" />
                         Zaplanuj
                       </Button>
-                      {new Date(agreement.renewalDate) <= new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) && (
+                      {new Date(agreement.renewalDate) <=
+                        new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) && (
                         <Button
                           variant="outline"
                           size="sm"

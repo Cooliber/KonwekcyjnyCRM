@@ -1,16 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../../convex/_generated/api';
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  User, 
-  CheckCircle, 
-  AlertTriangle,
-  ArrowLeft,
-  ArrowRight
-} from 'lucide-react';
+import { useMutation, useQuery } from "convex/react";
+import { ArrowLeft, ArrowRight, CheckCircle, Clock } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import { api } from "../../../../convex/_generated/api";
 
 interface ServiceBookingProps {
   contactId: string;
@@ -23,25 +15,27 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   contactId,
   accessToken,
   district,
-  onBookingComplete
+  onBookingComplete,
 }) => {
-  const [selectedService, setSelectedService] = useState<string>('');
+  const [selectedService, setSelectedService] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<any>(null);
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [step, setStep] = useState(1); // 1: Service Type, 2: Date/Time, 3: Details, 4: Confirmation
 
   // Get available slots when service and date are selected
   const availableSlots = useQuery(
     api.clientPortal.getAvailableSlots,
-    selectedService && selectedDate ? {
-      contactId,
-      serviceType: selectedService as any,
-      preferredDate: selectedDate.getTime(),
-      district
-    } : "skip"
+    selectedService && selectedDate
+      ? {
+          contactId,
+          serviceType: selectedService as any,
+          preferredDate: selectedDate.getTime(),
+          district,
+        }
+      : "skip"
   );
 
   // Book appointment mutation
@@ -49,52 +43,52 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
   const serviceTypes = [
     {
-      id: 'maintenance',
-      name: 'Maintenance',
-      description: 'Regular system maintenance and cleaning',
-      duration: '2 hours',
-      icon: '🔧'
+      id: "maintenance",
+      name: "Maintenance",
+      description: "Regular system maintenance and cleaning",
+      duration: "2 hours",
+      icon: "🔧",
     },
     {
-      id: 'repair',
-      name: 'Repair',
-      description: 'Fix issues with your HVAC system',
-      duration: '3 hours',
-      icon: '⚡'
+      id: "repair",
+      name: "Repair",
+      description: "Fix issues with your HVAC system",
+      duration: "3 hours",
+      icon: "⚡",
     },
     {
-      id: 'installation',
-      name: 'Installation',
-      description: 'Install new HVAC equipment',
-      duration: '6 hours',
-      icon: '🏗️'
+      id: "installation",
+      name: "Installation",
+      description: "Install new HVAC equipment",
+      duration: "6 hours",
+      icon: "🏗️",
     },
     {
-      id: 'inspection',
-      name: 'Inspection',
-      description: 'System inspection and diagnostics',
-      duration: '1 hour',
-      icon: '🔍'
-    }
+      id: "inspection",
+      name: "Inspection",
+      description: "System inspection and diagnostics",
+      duration: "1 hour",
+      icon: "🔍",
+    },
   ];
 
   const handleBooking = async () => {
-    if (!selectedSlot || !selectedService || !description.trim()) return;
+    if (!(selectedSlot && selectedService && description.trim())) return;
 
     try {
-      const result = await bookAppointment({
+      const _result = await bookAppointment({
         contactId,
         serviceType: selectedService as any,
         scheduledDate: selectedSlot.datetime,
         description: description.trim(),
         priority,
-        accessToken
+        accessToken,
       });
 
       setStep(4); // Show confirmation
     } catch (error) {
-      console.error('Booking failed:', error);
-      alert('Failed to book appointment. Please try again.');
+      console.error("Booking failed:", error);
+      alert("Failed to book appointment. Please try again.");
     }
   };
 
@@ -102,7 +96,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
+    const _lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
 
@@ -113,11 +107,12 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     for (let i = 0; i < 42; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
-      
+
       const isCurrentMonth = date.getMonth() === month;
       const isPast = date < today;
       const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-      const isSelected = selectedDate && 
+      const isSelected =
+        selectedDate &&
         date.getDate() === selectedDate.getDate() &&
         date.getMonth() === selectedDate.getMonth() &&
         date.getFullYear() === selectedDate.getFullYear();
@@ -128,7 +123,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
         isPast,
         isWeekend,
         isSelected,
-        isAvailable: isCurrentMonth && !isPast && !isWeekend
+        isAvailable: isCurrentMonth && !isPast && !isWeekend,
       });
     }
 
@@ -136,10 +131,10 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   };
 
   const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+    return new Date(timestamp).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
@@ -160,9 +155,10 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   onClick={() => setSelectedService(service.id)}
                   className={`
                     p-6 border-2 rounded-lg text-left transition-all
-                    ${selectedService === service.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                    ${
+                      selectedService === service.id
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-gray-300"
                     }
                   `}
                 >
@@ -203,16 +199,24 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <div className="flex items-center justify-between mb-4">
                 <button
-                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+                  onClick={() =>
+                    setCurrentMonth(
+                      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+                    )
+                  }
                   className="p-2 hover:bg-gray-100 rounded"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
                 <h3 className="text-lg font-semibold">
-                  {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  {currentMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
                 </h3>
                 <button
-                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+                  onClick={() =>
+                    setCurrentMonth(
+                      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
+                    )
+                  }
                   className="p-2 hover:bg-gray-100 rounded"
                 >
                   <ArrowRight className="w-5 h-5" />
@@ -220,7 +224,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
               </div>
 
               <div className="grid grid-cols-7 gap-1 mb-2">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                   <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
                     {day}
                   </div>
@@ -231,14 +235,14 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                 {generateCalendarDays().map((day, index) => (
                   <button
                     key={index}
-                    onClick={() => day.isAvailable ? setSelectedDate(day.date) : null}
+                    onClick={() => (day.isAvailable ? setSelectedDate(day.date) : null)}
                     disabled={!day.isAvailable}
                     className={`
                       p-2 text-sm rounded transition-colors
-                      ${!day.isCurrentMonth ? 'text-gray-300' : ''}
-                      ${day.isPast || day.isWeekend ? 'text-gray-400 cursor-not-allowed' : ''}
-                      ${day.isAvailable ? 'hover:bg-blue-100 cursor-pointer' : ''}
-                      ${day.isSelected ? 'bg-blue-600 text-white' : ''}
+                      ${!day.isCurrentMonth ? "text-gray-300" : ""}
+                      ${day.isPast || day.isWeekend ? "text-gray-400 cursor-not-allowed" : ""}
+                      ${day.isAvailable ? "hover:bg-blue-100 cursor-pointer" : ""}
+                      ${day.isSelected ? "bg-blue-600 text-white" : ""}
                     `}
                   >
                     {day.date.getDate()}
@@ -258,9 +262,10 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                       onClick={() => setSelectedSlot(slot)}
                       className={`
                         p-3 border rounded-lg text-center transition-colors
-                        ${selectedSlot?.datetime === slot.datetime
-                          ? 'border-blue-500 bg-blue-50 text-blue-900'
-                          : 'border-gray-200 hover:border-gray-300'
+                        ${
+                          selectedSlot?.datetime === slot.datetime
+                            ? "border-blue-500 bg-blue-50 text-blue-900"
+                            : "border-gray-200 hover:border-gray-300"
                         }
                       `}
                     >
@@ -297,7 +302,9 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Service Details</h2>
-              <p className="text-gray-600">Provide additional information about your service request</p>
+              <p className="text-gray-600">
+                Provide additional information about your service request
+              </p>
             </div>
 
             <div className="space-y-4">
@@ -317,9 +324,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -354,10 +359,12 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            
+
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Booking Confirmed!</h2>
-              <p className="text-gray-600">Your service appointment has been successfully scheduled</p>
+              <p className="text-gray-600">
+                Your service appointment has been successfully scheduled
+              </p>
             </div>
 
             <div className="bg-gray-50 rounded-lg p-6 text-left max-w-md mx-auto">
@@ -366,14 +373,12 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                 <div className="flex justify-between">
                   <span className="text-gray-600">Service:</span>
                   <span className="font-medium">
-                    {serviceTypes.find(s => s.id === selectedService)?.name}
+                    {serviceTypes.find((s) => s.id === selectedService)?.name}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Date:</span>
-                  <span className="font-medium">
-                    {selectedDate?.toLocaleDateString()}
-                  </span>
+                  <span className="font-medium">{selectedDate?.toLocaleDateString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Time:</span>
@@ -409,20 +414,21 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
         <div className="flex items-center justify-between">
           {[1, 2, 3, 4].map((stepNumber) => (
             <div key={stepNumber} className="flex items-center">
-              <div className={`
+              <div
+                className={`
                 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                ${step >= stepNumber 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-600'
-                }
-              `}>
+                ${step >= stepNumber ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"}
+              `}
+              >
                 {stepNumber}
               </div>
               {stepNumber < 4 && (
-                <div className={`
+                <div
+                  className={`
                   w-16 h-1 mx-2
-                  ${step > stepNumber ? 'bg-blue-600' : 'bg-gray-200'}
-                `} />
+                  ${step > stepNumber ? "bg-blue-600" : "bg-gray-200"}
+                `}
+                />
               )}
             </div>
           ))}

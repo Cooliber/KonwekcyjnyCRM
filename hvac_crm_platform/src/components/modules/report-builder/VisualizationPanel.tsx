@@ -1,18 +1,17 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
-import { 
-  BarChart3, 
-  LineChart, 
-  PieChart, 
-  Table, 
-  Gauge,
-  ScatterChart,
+import {
   Activity,
-  TrendingUp,
+  BarChart3,
+  Gauge,
+  LineChart,
+  Palette,
+  PieChart,
+  ScatterChart,
   Settings,
-  Palette
-} from 'lucide-react';
+  Table,
+  TrendingUp,
+} from "lucide-react";
+import { Button } from "../../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 
 interface VisualizationPanelProps {
   visualization: any;
@@ -21,55 +20,70 @@ interface VisualizationPanelProps {
 
 export function VisualizationPanel({ visualization, onChange }: VisualizationPanelProps) {
   const visualizationTypes = [
-    { type: 'table', icon: Table, label: 'Table', description: 'Tabular data display' },
-    { type: 'bar_chart', icon: BarChart3, label: 'Bar Chart', description: 'Compare categories' },
-    { type: 'line_chart', icon: LineChart, label: 'Line Chart', description: 'Show trends over time' },
-    { type: 'pie_chart', icon: PieChart, label: 'Pie Chart', description: 'Show proportions' },
-    { type: 'area_chart', icon: Activity, label: 'Area Chart', description: 'Filled line chart' },
-    { type: 'scatter_plot', icon: ScatterChart, label: 'Scatter Plot', description: 'Show correlations' },
-    { type: 'gauge', icon: Gauge, label: 'Gauge', description: 'Single value indicator' },
-    { type: 'kpi_card', icon: TrendingUp, label: 'KPI Card', description: 'Key performance indicator' }
+    { type: "table", icon: Table, label: "Table", description: "Tabular data display" },
+    { type: "bar_chart", icon: BarChart3, label: "Bar Chart", description: "Compare categories" },
+    {
+      type: "line_chart",
+      icon: LineChart,
+      label: "Line Chart",
+      description: "Show trends over time",
+    },
+    { type: "pie_chart", icon: PieChart, label: "Pie Chart", description: "Show proportions" },
+    { type: "area_chart", icon: Activity, label: "Area Chart", description: "Filled line chart" },
+    {
+      type: "scatter_plot",
+      icon: ScatterChart,
+      label: "Scatter Plot",
+      description: "Show correlations",
+    },
+    { type: "gauge", icon: Gauge, label: "Gauge", description: "Single value indicator" },
+    {
+      type: "kpi_card",
+      icon: TrendingUp,
+      label: "KPI Card",
+      description: "Key performance indicator",
+    },
   ];
 
   const aggregationTypes = [
-    { value: 'sum', label: 'Sum' },
-    { value: 'avg', label: 'Average' },
-    { value: 'count', label: 'Count' },
-    { value: 'min', label: 'Minimum' },
-    { value: 'max', label: 'Maximum' },
-    { value: 'distinct', label: 'Distinct Count' }
+    { value: "sum", label: "Sum" },
+    { value: "avg", label: "Average" },
+    { value: "count", label: "Count" },
+    { value: "min", label: "Minimum" },
+    { value: "max", label: "Maximum" },
+    { value: "distinct", label: "Distinct Count" },
   ];
 
   const colorPalettes = [
     {
-      name: 'Default',
-      colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+      name: "Default",
+      colors: ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"],
     },
     {
-      name: 'Warsaw Districts',
-      colors: ['#1f2937', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6']
+      name: "Warsaw Districts",
+      colors: ["#1f2937", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"],
     },
     {
-      name: 'HVAC Professional',
-      colors: ['#0ea5e9', '#06b6d4', '#10b981', '#84cc16', '#eab308']
+      name: "HVAC Professional",
+      colors: ["#0ea5e9", "#06b6d4", "#10b981", "#84cc16", "#eab308"],
     },
     {
-      name: 'Seasonal',
-      colors: ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444']
-    }
+      name: "Seasonal",
+      colors: ["#3b82f6", "#06b6d4", "#10b981", "#f59e0b", "#ef4444"],
+    },
   ];
 
   const handleVisualizationChange = (field: string, value: any) => {
     onChange({
       ...visualization,
-      [field]: value
+      [field]: value,
     });
   };
 
   const handleColorPaletteChange = (colors: string[]) => {
     onChange({
       ...visualization,
-      colors
+      colors,
     });
   };
 
@@ -84,18 +98,16 @@ export function VisualizationPanel({ visualization, onChange }: VisualizationPan
       <CardContent className="space-y-4">
         {/* Visualization Type Selection */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
-            Chart Type
-          </label>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Chart Type</label>
           <div className="grid grid-cols-2 gap-2">
             {visualizationTypes.map(({ type, icon: Icon, label, description }) => (
               <button
                 key={type}
-                onClick={() => handleVisualizationChange('type', type)}
+                onClick={() => handleVisualizationChange("type", type)}
                 className={`p-3 rounded-lg border-2 transition-all text-left ${
                   visualization.type === type
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 hover:border-gray-300"
                 }`}
                 title={description}
               >
@@ -107,28 +119,24 @@ export function VisualizationPanel({ visualization, onChange }: VisualizationPan
         </div>
 
         {/* Axis Configuration for Charts */}
-        {['bar_chart', 'line_chart', 'area_chart', 'scatter_plot'].includes(visualization.type) && (
+        {["bar_chart", "line_chart", "area_chart", "scatter_plot"].includes(visualization.type) && (
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                X-Axis Field
-              </label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">X-Axis Field</label>
               <input
                 type="text"
-                value={visualization.xAxis || ''}
-                onChange={(e) => handleVisualizationChange('xAxis', e.target.value)}
+                value={visualization.xAxis || ""}
+                onChange={(e) => handleVisualizationChange("xAxis", e.target.value)}
                 placeholder="e.g., district, date, category"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Y-Axis Field
-              </label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Y-Axis Field</label>
               <input
                 type="text"
-                value={visualization.yAxis || ''}
-                onChange={(e) => handleVisualizationChange('yAxis', e.target.value)}
+                value={visualization.yAxis || ""}
+                onChange={(e) => handleVisualizationChange("yAxis", e.target.value)}
                 placeholder="e.g., revenue, count, hours"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
@@ -137,15 +145,13 @@ export function VisualizationPanel({ visualization, onChange }: VisualizationPan
         )}
 
         {/* Group By Configuration */}
-        {!['gauge', 'kpi_card'].includes(visualization.type) && (
+        {!["gauge", "kpi_card"].includes(visualization.type) && (
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
-              Group By
-            </label>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">Group By</label>
             <input
               type="text"
-              value={visualization.groupBy || ''}
-              onChange={(e) => handleVisualizationChange('groupBy', e.target.value)}
+              value={visualization.groupBy || ""}
+              onChange={(e) => handleVisualizationChange("groupBy", e.target.value)}
               placeholder="e.g., district, type, status"
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
@@ -153,14 +159,12 @@ export function VisualizationPanel({ visualization, onChange }: VisualizationPan
         )}
 
         {/* Aggregation Type */}
-        {!['table'].includes(visualization.type) && (
+        {!["table"].includes(visualization.type) && (
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
-              Aggregation
-            </label>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">Aggregation</label>
             <select
-              value={visualization.aggregation || 'count'}
-              onChange={(e) => handleVisualizationChange('aggregation', e.target.value)}
+              value={visualization.aggregation || "count"}
+              onChange={(e) => handleVisualizationChange("aggregation", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {aggregationTypes.map(({ value, label }) => (
@@ -185,8 +189,8 @@ export function VisualizationPanel({ visualization, onChange }: VisualizationPan
                 onClick={() => handleColorPaletteChange(palette.colors)}
                 className={`w-full p-2 rounded-lg border-2 transition-colors ${
                   JSON.stringify(visualization.colors) === JSON.stringify(palette.colors)
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 hover:border-gray-300"
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -207,40 +211,34 @@ export function VisualizationPanel({ visualization, onChange }: VisualizationPan
         </div>
 
         {/* Custom Settings for specific chart types */}
-        {visualization.type === 'gauge' && (
+        {visualization.type === "gauge" && (
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Value Field
-              </label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Value Field</label>
               <input
                 type="text"
-                value={visualization.valueField || ''}
-                onChange={(e) => handleVisualizationChange('valueField', e.target.value)}
+                value={visualization.valueField || ""}
+                onChange={(e) => handleVisualizationChange("valueField", e.target.value)}
                 placeholder="e.g., completion_rate, efficiency"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Min Value
-                </label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Min Value</label>
                 <input
                   type="number"
                   value={visualization.minValue || 0}
-                  onChange={(e) => handleVisualizationChange('minValue', Number(e.target.value))}
+                  onChange={(e) => handleVisualizationChange("minValue", Number(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Max Value
-                </label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Max Value</label>
                 <input
                   type="number"
                   value={visualization.maxValue || 100}
-                  onChange={(e) => handleVisualizationChange('maxValue', Number(e.target.value))}
+                  onChange={(e) => handleVisualizationChange("maxValue", Number(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -248,39 +246,33 @@ export function VisualizationPanel({ visualization, onChange }: VisualizationPan
           </div>
         )}
 
-        {visualization.type === 'kpi_card' && (
+        {visualization.type === "kpi_card" && (
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                KPI Title
-              </label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">KPI Title</label>
               <input
                 type="text"
-                value={visualization.kpiTitle || ''}
-                onChange={(e) => handleVisualizationChange('kpiTitle', e.target.value)}
+                value={visualization.kpiTitle || ""}
+                onChange={(e) => handleVisualizationChange("kpiTitle", e.target.value)}
                 placeholder="e.g., Total Revenue, Active Jobs"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Value Field
-              </label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Value Field</label>
               <input
                 type="text"
-                value={visualization.valueField || ''}
-                onChange={(e) => handleVisualizationChange('valueField', e.target.value)}
+                value={visualization.valueField || ""}
+                onChange={(e) => handleVisualizationChange("valueField", e.target.value)}
                 placeholder="e.g., totalAmount, count"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Format
-              </label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Format</label>
               <select
-                value={visualization.format || 'number'}
-                onChange={(e) => handleVisualizationChange('format', e.target.value)}
+                value={visualization.format || "number"}
+                onChange={(e) => handleVisualizationChange("format", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="number">Number</option>

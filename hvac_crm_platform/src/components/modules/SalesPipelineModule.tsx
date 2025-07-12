@@ -1,38 +1,28 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Badge } from '../ui/badge';
-import { Progress } from '../ui/progress';
+import { useQuery } from 'convex/react';
 import {
-  DollarSign,
-  TrendingUp,
-  Target,
-  Users,
-  Calendar,
-  Plus,
-  Filter,
-  BarChart3,
-  PieChart,
-  ArrowRight,
-  Star,
-  Clock,
-  CheckCircle,
   AlertTriangle,
-  Brain,
-  MapPin,
-  Zap,
-  TrendingDown,
   Award,
-  Activity,
+  BarChart3,
+  Brain,
+  DollarSign,
   Eye,
-  Settings
+  MapPin,
+  Plus,
+  Star,
+  Target,
+  TrendingUp,
+  Zap
 } from 'lucide-react';
-import { formatCurrency, getStatusColor, formatDate } from '../../lib/utils';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { api } from '../../../convex/_generated/api';
+import { formatCurrency, formatDate, getStatusColor } from '../../lib/utils';
 import type { WarsawDistrict } from '../../types/hvac';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { Progress } from '../ui/progress';
 
 interface Deal {
   _id: string;
@@ -370,7 +360,7 @@ export function SalesPipelineModule() {
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter'>('month');
   const [aiEnabled, setAiEnabled] = useState(true);
   const [warsawOptimization, setWarsawOptimization] = useState(true);
-  const [showAIInsights, setShowAIInsights] = useState(false);
+  const [_showAIInsights, _setShowAIInsights] = useState(false);
 
   // Mock data - replace with actual Convex queries
   const deals = useQuery(api.quotes.list, {}) || [];
@@ -476,10 +466,10 @@ export function SalesPipelineModule() {
     const forecastData = aiEnabled ? {
       nextMonthRevenue: filteredDeals
         .filter(deal => deal.aiInsights && deal.aiInsights.timeToClose <= 30)
-        .reduce((sum, deal) => sum + (deal.value * deal.aiInsights!.closureProbability / 100), 0),
+        .reduce((sum, deal) => sum + (deal.value * deal.aiInsights?.closureProbability / 100), 0),
       quarterRevenue: filteredDeals
         .filter(deal => deal.aiInsights && deal.aiInsights.timeToClose <= 90)
-        .reduce((sum, deal) => sum + (deal.value * deal.aiInsights!.closureProbability / 100), 0),
+        .reduce((sum, deal) => sum + (deal.value * deal.aiInsights?.closureProbability / 100), 0),
       confidenceLevel: avgAIScore > 70 ? 'high' : avgAIScore > 50 ? 'medium' : 'low'
     } : null;
 
@@ -767,7 +757,7 @@ export function SalesPipelineModule() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          toast.info(`Next action: ${deal.aiInsights!.nextBestAction}`);
+                          toast.info(`Next action: ${deal.aiInsights?.nextBestAction}`);
                         }}
                       >
                         <Eye className="w-3 h-3 mr-1" />

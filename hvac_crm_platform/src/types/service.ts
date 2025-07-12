@@ -4,7 +4,7 @@
  * Features: Configurable statuses, automatic actions, priorities, categories
  */
 
-import { Id } from "../../convex/_generated/dataModel";
+import type { Id } from "../../convex/_generated/dataModel";
 
 // Service status configuration (inspired by RRUP)
 export interface ServiceStatus {
@@ -22,8 +22,8 @@ export interface ServiceStatus {
 // Service automatic actions
 export interface ServiceAction {
   id: string;
-  type: 'email' | 'sms' | 'task' | 'notification' | 'webhook';
-  recipient: 'client' | 'technician' | 'manager' | 'team' | 'custom';
+  type: "email" | "sms" | "task" | "notification" | "webhook";
+  recipient: "client" | "technician" | "manager" | "team" | "custom";
   recipientEmail?: string; // For custom recipients
   template: string; // Message template with {{placeholders}}
   delay?: number; // Delay in minutes before executing
@@ -33,31 +33,31 @@ export interface ServiceAction {
 // Conditions for service actions
 export interface ServiceActionCondition {
   field: string;
-  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains';
+  operator: "equals" | "not_equals" | "greater_than" | "less_than" | "contains";
   value: any;
 }
 
 // Service priority levels (RRUP-inspired)
-export type ServicePriority = 'low' | 'normal' | 'high' | 'urgent' | 'emergency';
+export type ServicePriority = "low" | "normal" | "high" | "urgent" | "emergency";
 
 // Service categories (RRUP-inspired)
-export type ServiceCategory = 
-  | 'preventive_maintenance'
-  | 'corrective_maintenance' 
-  | 'emergency_repair'
-  | 'warranty_service'
-  | 'inspection'
-  | 'cleaning'
-  | 'filter_replacement'
-  | 'refrigerant_service'
-  | 'electrical_service'
-  | 'mechanical_service'
-  | 'diagnostic'
-  | 'upgrade'
-  | 'seasonal_service';
+export type ServiceCategory =
+  | "preventive_maintenance"
+  | "corrective_maintenance"
+  | "emergency_repair"
+  | "warranty_service"
+  | "inspection"
+  | "cleaning"
+  | "filter_replacement"
+  | "refrigerant_service"
+  | "electrical_service"
+  | "mechanical_service"
+  | "diagnostic"
+  | "upgrade"
+  | "seasonal_service";
 
 // Service types
-export type ServiceType = 'scheduled' | 'emergency' | 'warranty' | 'contract' | 'one_time';
+export type ServiceType = "scheduled" | "emergency" | "warranty" | "contract" | "one_time";
 
 // Main service interface
 export interface Service {
@@ -66,18 +66,18 @@ export interface Service {
   contactId: Id<"contacts">;
   installationId?: Id<"installations">;
   contractId?: Id<"contracts">;
-  
+
   // Basic information
   title: string;
   description: string;
   category: ServiceCategory;
   type: ServiceType;
   priority: ServicePriority;
-  
+
   // Status management (RRUP-inspired)
   status: string; // References ServiceStatus.id
   statusHistory: ServiceStatusHistoryEntry[];
-  
+
   // Scheduling
   requestedDate?: number;
   scheduledDate?: number;
@@ -85,7 +85,7 @@ export interface Service {
   estimatedDuration: number; // in minutes
   actualStartDate?: number;
   actualEndDate?: number;
-  
+
   // Location and technician
   address: string;
   district: string;
@@ -95,17 +95,17 @@ export interface Service {
   };
   assignedTechnicians: Id<"users">[];
   teamLeader?: Id<"users">;
-  
+
   // Service details
   symptoms: string;
   diagnosis?: string;
   workPerformed?: string;
   partsUsed: ServicePart[];
   materialsUsed: ServiceMaterial[];
-  
+
   // Equipment information
   equipmentDetails: ServiceEquipment[];
-  
+
   // Documentation
   photos: Id<"_storage">[];
   documents: Id<"documents">[];
@@ -113,12 +113,12 @@ export interface Service {
   afterPhotos: Id<"_storage">[];
   notes: string;
   technicianNotes?: string;
-  
+
   // Quality and compliance
   serviceChecklist: ServiceCheckItem[];
   customerSignature?: Id<"_storage">;
   customerFeedback?: CustomerFeedback;
-  
+
   // Financial
   estimatedCost: number;
   actualCost?: number;
@@ -126,13 +126,13 @@ export interface Service {
   laborTotal: number;
   vatAmount: number; // 23% Polish VAT
   totalAmount: number;
-  
+
   // Follow-up
   followUpRequired: boolean;
   followUpDate?: number;
   nextServiceDue?: number;
   warrantyExtended?: boolean;
-  
+
   // Tracking
   createdBy: Id<"users">;
   createdAt: number;
@@ -185,15 +185,15 @@ export interface ServiceEquipment {
   serialNumber?: string;
   installationDate?: number;
   lastServiceDate?: number;
-  warrantyStatus: 'active' | 'expired' | 'extended';
-  condition: 'excellent' | 'good' | 'fair' | 'poor' | 'critical';
+  warrantyStatus: "active" | "expired" | "extended";
+  condition: "excellent" | "good" | "fair" | "poor" | "critical";
 }
 
 // Service checklist items
 export interface ServiceCheckItem {
   id: string;
   description: string;
-  category: 'safety' | 'functionality' | 'performance' | 'compliance' | 'cleaning';
+  category: "safety" | "functionality" | "performance" | "compliance" | "cleaning";
   isRequired: boolean;
   isCompleted: boolean;
   completedBy?: Id<"users">;
@@ -305,7 +305,7 @@ export interface ServiceMetrics {
 export interface ServiceContract {
   id: string;
   contactId: Id<"contacts">;
-  type: 'annual' | 'bi_annual' | 'quarterly' | 'monthly';
+  type: "annual" | "bi_annual" | "quarterly" | "monthly";
   startDate: number;
   endDate: number;
   servicesIncluded: number;
@@ -316,8 +316,20 @@ export interface ServiceContract {
 }
 
 // Export utility types
-export type ServiceFormData = Omit<Service, '_id' | 'createdAt' | 'lastModified' | 'statusHistory'>;
-export type ServiceUpdateData = Partial<Pick<Service, 
-  'title' | 'description' | 'priority' | 'scheduledDate' | 'assignedTechnicians' | 
-  'notes' | 'estimatedCost' | 'actualCost' | 'status' | 'workPerformed' | 'diagnosis'
->>;
+export type ServiceFormData = Omit<Service, "_id" | "createdAt" | "lastModified" | "statusHistory">;
+export type ServiceUpdateData = Partial<
+  Pick<
+    Service,
+    | "title"
+    | "description"
+    | "priority"
+    | "scheduledDate"
+    | "assignedTechnicians"
+    | "notes"
+    | "estimatedCost"
+    | "actualCost"
+    | "status"
+    | "workPerformed"
+    | "diagnosis"
+  >
+>;

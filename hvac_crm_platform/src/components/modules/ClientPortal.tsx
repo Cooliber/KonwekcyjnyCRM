@@ -1,20 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { ClientDashboard } from './client/ClientDashboard';
-import { ServiceBooking } from './client/ServiceBooking';
-import { ServiceHistory } from './client/ServiceHistory';
-import { FeedbackForm } from './client/FeedbackForm';
-import { 
-  Home, 
-  Calendar, 
-  History, 
-  MessageSquare, 
-  Star,
-  Settings,
-  LogOut,
-  Shield
-} from 'lucide-react';
+import { useQuery } from "convex/react";
+import { Calendar, History, Home, LogOut, MessageSquare, Shield, Star } from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { api } from "../../../convex/_generated/api";
+import { ClientDashboard } from "./client/ClientDashboard";
+import { FeedbackForm } from "./client/FeedbackForm";
+import { ServiceBooking } from "./client/ServiceBooking";
+import { ServiceHistory } from "./client/ServiceHistory";
 
 interface ClientPortalProps {
   contactId?: string;
@@ -22,12 +14,8 @@ interface ClientPortalProps {
   onLogout?: () => void;
 }
 
-export const ClientPortal: React.FC<ClientPortalProps> = ({
-  contactId,
-  accessToken,
-  onLogout
-}) => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+export const ClientPortal: React.FC<ClientPortalProps> = ({ contactId, accessToken, onLogout }) => {
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Verify access
@@ -72,11 +60,11 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
   }
 
   // Show loading state
-  if (!isAuthenticated || !dashboardData) {
+  if (!(isAuthenticated && dashboardData)) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading your portal...</p>
         </div>
       </div>
@@ -84,58 +72,58 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
   }
 
   const navigation = [
-    { id: 'dashboard', name: 'Dashboard', icon: Home },
-    { id: 'booking', name: 'Book Service', icon: Calendar },
-    { id: 'history', name: 'Service History', icon: History },
-    { id: 'messages', name: 'Messages', icon: MessageSquare },
-    { id: 'feedback', name: 'Feedback', icon: Star },
+    { id: "dashboard", name: "Dashboard", icon: Home },
+    { id: "booking", name: "Book Service", icon: Calendar },
+    { id: "history", name: "Service History", icon: History },
+    { id: "messages", name: "Messages", icon: MessageSquare },
+    { id: "feedback", name: "Feedback", icon: Star },
   ];
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard':
+      case "dashboard":
         return (
-          <ClientDashboard 
-            data={dashboardData} 
-            onBookService={() => setActiveTab('booking')}
-            onViewHistory={() => setActiveTab('history')}
+          <ClientDashboard
+            data={dashboardData}
+            onBookService={() => setActiveTab("booking")}
+            onViewHistory={() => setActiveTab("history")}
           />
         );
-      case 'booking':
+      case "booking":
         return (
-          <ServiceBooking 
+          <ServiceBooking
             contactId={contactId!}
             accessToken={accessToken}
             district={dashboardData.contact.district}
-            onBookingComplete={() => setActiveTab('dashboard')}
+            onBookingComplete={() => setActiveTab("dashboard")}
           />
         );
-      case 'history':
+      case "history":
         return (
-          <ServiceHistory 
+          <ServiceHistory
             jobs={dashboardData.recentJobs}
             installations={dashboardData.installations}
             quotes={dashboardData.activeQuotes}
           />
         );
-      case 'messages':
+      case "messages":
         return (
           <div className="p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Messages</h2>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-blue-800">
-                Message functionality will be available soon. 
-                For urgent matters, please call us directly.
+                Message functionality will be available soon. For urgent matters, please call us
+                directly.
               </p>
             </div>
           </div>
         );
-      case 'feedback':
+      case "feedback":
         return (
-          <FeedbackForm 
+          <FeedbackForm
             contactId={contactId!}
             accessToken={accessToken}
-            recentJobs={dashboardData.recentJobs.filter(job => job.status === 'completed')}
+            recentJobs={dashboardData.recentJobs.filter((job) => job.status === "completed")}
           />
         );
       default:
@@ -150,18 +138,14 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">
-                HVAC Client Portal
-              </h1>
+              <h1 className="text-xl font-semibold text-gray-900">HVAC Client Portal</h1>
               <span className="ml-4 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
                 {dashboardData.contact.name}
               </span>
             </div>
-            
+
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                {dashboardData.contact.district}
-              </span>
+              <span className="text-sm text-gray-600">{dashboardData.contact.district}</span>
               <button
                 onClick={onLogout}
                 className="flex items-center text-gray-600 hover:text-gray-900"
@@ -187,9 +171,10 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                     onClick={() => setActiveTab(item.id)}
                     className={`
                       w-full flex items-center px-3 py-2 text-left rounded-lg transition-colors
-                      ${activeTab === item.id
-                        ? 'bg-blue-100 text-blue-900 border border-blue-200'
-                        : 'text-gray-700 hover:bg-gray-100'
+                      ${
+                        activeTab === item.id
+                          ? "bg-blue-100 text-blue-900 border border-blue-200"
+                          : "text-gray-700 hover:bg-gray-100"
                       }
                     `}
                   >
@@ -210,7 +195,9 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Active Systems:</span>
-                  <span className="font-medium">{dashboardData.statistics.activeInstallations}</span>
+                  <span className="font-medium">
+                    {dashboardData.statistics.activeInstallations}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total Spent:</span>
@@ -224,14 +211,12 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
             {/* Next Service Due */}
             {dashboardData.nextServiceDue && (
               <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                <h3 className="text-sm font-medium text-orange-900 mb-2">
-                  Service Reminder
-                </h3>
+                <h3 className="text-sm font-medium text-orange-900 mb-2">Service Reminder</h3>
                 <p className="text-sm text-orange-800">
                   Next service due: {new Date(dashboardData.nextServiceDue).toLocaleDateString()}
                 </p>
                 <button
-                  onClick={() => setActiveTab('booking')}
+                  onClick={() => setActiveTab("booking")}
                   className="mt-2 text-sm text-orange-600 hover:text-orange-800 font-medium"
                 >
                   Schedule Now →
@@ -241,9 +226,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
           </nav>
 
           {/* Main Content */}
-          <div className="flex-1 bg-white rounded-lg shadow-sm">
-            {renderContent()}
-          </div>
+          <div className="flex-1 bg-white rounded-lg shadow-sm">{renderContent()}</div>
         </div>
       </div>
 
@@ -251,9 +234,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({
       <footer className="bg-white border-t border-gray-200 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-600">
-              © 2024 HVAC Services. All rights reserved.
-            </p>
+            <p className="text-sm text-gray-600">© 2024 HVAC Services. All rights reserved.</p>
             <div className="flex items-center space-x-4 text-sm text-gray-600">
               <span>Emergency: +48 123 456 789</span>
               <span>•</span>

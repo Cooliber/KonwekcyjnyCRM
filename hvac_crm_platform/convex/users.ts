@@ -1,8 +1,8 @@
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
 import { api } from "./_generated/api";
-import { Id } from "./_generated/dataModel";
+import type { Id } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
 
 // Type definitions for better type safety
 interface TechnicianProfile {
@@ -43,21 +43,19 @@ export const getTechnicians = query({
 
     // Filter by specific IDs if provided
     if (args.ids) {
-      profiles = profiles.filter(profile => 
-        args.ids!.includes(profile.userId)
-      );
+      profiles = profiles.filter((profile) => args.ids?.includes(profile.userId));
     }
 
     // Filter by service areas if provided
     if (args.serviceAreas) {
-      profiles = profiles.filter(profile =>
-        profile.serviceAreas?.some(area => args.serviceAreas!.includes(area))
+      profiles = profiles.filter((profile) =>
+        profile.serviceAreas?.some((area) => args.serviceAreas?.includes(area))
       );
     }
 
     // Filter by active status
     if (args.isActive !== undefined) {
-      profiles = profiles.filter(profile => profile.isActive === args.isActive);
+      profiles = profiles.filter((profile) => profile.isActive === args.isActive);
     }
 
     // Get user details and combine with profiles
@@ -76,8 +74,8 @@ export const getTechnicians = query({
           isActive: profile.isActive,
           workingHours: {
             start: "08:00",
-            end: "17:00"
-          }
+            end: "17:00",
+          },
         };
       })
     );
@@ -101,7 +99,7 @@ export const getCurrentProfile = query({
     const user = await ctx.db.get(userId);
     return {
       ...profile,
-      user: user ? { name: user.name, email: user.email } : null
+      user: user ? { name: user.name, email: user.email } : null,
     };
   },
 });
@@ -110,19 +108,23 @@ export const getCurrentProfile = query({
 export const updateProfile = mutation({
   args: {
     phone: v.optional(v.string()),
-    homeLocation: v.optional(v.object({
-      lat: v.number(),
-      lng: v.number()
-    })),
+    homeLocation: v.optional(
+      v.object({
+        lat: v.number(),
+        lng: v.number(),
+      })
+    ),
     serviceAreas: v.optional(v.array(v.string())),
     skills: v.optional(v.array(v.string())),
     vehicleType: v.optional(v.union(v.literal("van"), v.literal("car"), v.literal("motorcycle"))),
-    notificationPreferences: v.optional(v.object({
-      email: v.boolean(),
-      sms: v.boolean(),
-      push: v.boolean(),
-      telegram: v.boolean()
-    })),
+    notificationPreferences: v.optional(
+      v.object({
+        email: v.boolean(),
+        sms: v.boolean(),
+        push: v.boolean(),
+        telegram: v.boolean(),
+      })
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -152,7 +154,7 @@ export const updateProfile = mutation({
           email: true,
           sms: false,
           push: true,
-          telegram: false
+          telegram: false,
         },
         isActive: true,
       });
@@ -178,8 +180,8 @@ export const getTechnicianStats = query({
     if (!userId) throw new Error("Not authenticated");
 
     // Get completed jobs in last 30 days
-    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-    
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+
     const completedJobs = await ctx.db
       .query("jobs")
       .filter((q) =>
@@ -192,7 +194,7 @@ export const getTechnicianStats = query({
       .collect();
 
     // Get optimized routes for last 7 days
-    const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const recentRoutes = await ctx.db
       .query("optimizedRoutes")
       .withIndex("by_technician", (q) => q.eq("technicianId", args.technicianId))
@@ -201,9 +203,10 @@ export const getTechnicianStats = query({
 
     // Calculate statistics
     const totalJobs = completedJobs.length;
-    const avgEfficiency = recentRoutes.length > 0 
-      ? recentRoutes.reduce((sum, route) => sum + route.efficiency, 0) / recentRoutes.length
-      : 0;
+    const avgEfficiency =
+      recentRoutes.length > 0
+        ? recentRoutes.reduce((sum, route) => sum + route.efficiency, 0) / recentRoutes.length
+        : 0;
     const totalDistance = recentRoutes.reduce((sum, route) => sum + route.totalDistance, 0);
     const totalRevenue = completedJobs.reduce((sum, job) => sum + (job.totalAmount || 0), 0);
 
@@ -213,9 +216,13 @@ export const getTechnicianStats = query({
       totalDistance: Math.round(totalDistance * 100) / 100,
       totalRevenue,
       routesOptimized: recentRoutes.length,
-      avgJobsPerRoute: recentRoutes.length > 0 
-        ? Math.round(recentRoutes.reduce((sum, route) => sum + route.points.length, 0) / recentRoutes.length)
-        : 0
+      avgJobsPerRoute:
+        recentRoutes.length > 0
+          ? Math.round(
+              recentRoutes.reduce((sum, route) => sum + route.points.length, 0) /
+                recentRoutes.length
+            )
+          : 0,
     };
   },
 });
@@ -224,10 +231,12 @@ export const getTechnicianStats = query({
 export const getAvailableTechnicians = query({
   args: {
     date: v.string(), // YYYY-MM-DD
-    timeSlot: v.optional(v.object({
-      start: v.string(), // HH:MM
-      end: v.string()    // HH:MM
-    })),
+    timeSlot: v.optional(
+      v.object({
+        start: v.string(), // HH:MM
+        end: v.string(), // HH:MM
+      })
+    ),
     district: v.optional(v.string()),
     skills: v.optional(v.array(v.string())),
   },
@@ -237,7 +246,7 @@ export const getAvailableTechnicians = query({
 
     // Get all active technicians
     const technicians: TechnicianProfile[] = await ctx.runQuery(api.users.getTechnicians, {
-      isActive: true
+      isActive: true,
     });
 
     // Filter by service area (district)
@@ -251,7 +260,7 @@ export const getAvailableTechnicians = query({
     // Filter by required skills
     if (args.skills && args.skills.length > 0) {
       availableTechnicians = availableTechnicians.filter((tech: TechnicianProfile) =>
-        args.skills!.every(skill => tech.skills.includes(skill))
+        args.skills?.every((skill) => tech.skills.includes(skill))
       );
     }
 
@@ -261,7 +270,7 @@ export const getAvailableTechnicians = query({
     return availableTechnicians.map((tech: any) => ({
       ...tech,
       availability: "available", // This would be calculated based on existing jobs
-      estimatedArrival: "30 min" // This would be calculated based on current location
+      estimatedArrival: "30 min", // This would be calculated based on current location
     }));
   },
 });

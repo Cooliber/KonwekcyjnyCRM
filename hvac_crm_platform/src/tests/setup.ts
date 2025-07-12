@@ -1,6 +1,6 @@
-import { expect, afterEach, vi } from 'vitest';
-import { cleanup } from '@testing-library/react';
-import * as matchers from '@testing-library/jest-dom/matchers';
+import * as matchers from "@testing-library/jest-dom/matchers";
+import { cleanup } from "@testing-library/react";
+import { afterEach, expect, vi } from "vitest";
 
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers);
@@ -11,9 +11,9 @@ afterEach(() => {
 });
 
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -32,18 +32,18 @@ const mockGeolocation = {
   clearWatch: vi.fn(),
 };
 
-Object.defineProperty(global.navigator, 'geolocation', {
+Object.defineProperty(global.navigator, "geolocation", {
   value: mockGeolocation,
 });
 
 // Mock navigator.onLine
-Object.defineProperty(global.navigator, 'onLine', {
+Object.defineProperty(global.navigator, "onLine", {
   writable: true,
   value: true,
 });
 
 // Mock performance.now
-Object.defineProperty(global.performance, 'now', {
+Object.defineProperty(global.performance, "now", {
   value: vi.fn(() => Date.now()),
 });
 
@@ -76,7 +76,7 @@ const localStorageMock = {
   removeItem: vi.fn(),
   clear: vi.fn(),
 };
-Object.defineProperty(window, 'localStorage', {
+Object.defineProperty(window, "localStorage", {
   value: localStorageMock,
 });
 
@@ -87,20 +87,20 @@ const sessionStorageMock = {
   removeItem: vi.fn(),
   clear: vi.fn(),
 };
-Object.defineProperty(window, 'sessionStorage', {
+Object.defineProperty(window, "sessionStorage", {
   value: sessionStorageMock,
 });
 
 // Mock URL.createObjectURL
-Object.defineProperty(URL, 'createObjectURL', {
-  value: vi.fn(() => 'mocked-url'),
+Object.defineProperty(URL, "createObjectURL", {
+  value: vi.fn(() => "mocked-url"),
 });
 
 // Mock fetch
 global.fetch = vi.fn();
 
 // Mock service worker
-Object.defineProperty(navigator, 'serviceWorker', {
+Object.defineProperty(navigator, "serviceWorker", {
   value: {
     register: vi.fn(() => Promise.resolve()),
     ready: Promise.resolve(),
@@ -109,16 +109,16 @@ Object.defineProperty(navigator, 'serviceWorker', {
 });
 
 // Mock notification API
-Object.defineProperty(window, 'Notification', {
+Object.defineProperty(window, "Notification", {
   value: {
-    permission: 'granted',
-    requestPermission: vi.fn(() => Promise.resolve('granted')),
+    permission: "granted",
+    requestPermission: vi.fn(() => Promise.resolve("granted")),
   },
 });
 
 // Mock crypto.randomUUID
-Object.defineProperty(global.crypto, 'randomUUID', {
-  value: vi.fn(() => 'mocked-uuid-1234-5678-9012'),
+Object.defineProperty(global.crypto, "randomUUID", {
+  value: vi.fn(() => "mocked-uuid-1234-5678-9012"),
 });
 
 // Reset all mocks before each test

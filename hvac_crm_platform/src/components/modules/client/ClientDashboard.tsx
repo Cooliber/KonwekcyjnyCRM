@@ -1,26 +1,26 @@
-import React from 'react';
-import { 
-  Calendar, 
-  TrendingUp, 
-  Wrench, 
-  CheckCircle, 
+import { formatDistanceToNow } from "date-fns";
+import {
   AlertTriangle,
+  ArrowRight,
+  Calendar,
+  CheckCircle,
+  Clock,
   DollarSign,
   MapPin,
-  Clock,
+  Shield,
   Star,
-  ArrowRight,
   Thermometer,
-  Shield
-} from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+  TrendingUp,
+  Wrench,
+} from "lucide-react";
+import type React from "react";
 
 // Type definitions for client dashboard data
 interface ServiceHistory {
   id: string;
   date: string;
   type: string;
-  status: 'completed' | 'scheduled' | 'cancelled';
+  status: "completed" | "scheduled" | "cancelled";
   technician: string;
   cost: number;
   rating?: number;
@@ -34,7 +34,7 @@ interface UpcomingService {
   type: string;
   technician: string;
   estimatedDuration: number;
-  status: 'confirmed' | 'pending' | 'rescheduled';
+  status: "confirmed" | "pending" | "rescheduled";
 }
 
 interface ClientDashboardData {
@@ -52,7 +52,7 @@ interface ClientDashboardData {
   };
   preferences: {
     preferredTechnician?: string;
-    communicationMethod: 'email' | 'sms' | 'phone';
+    communicationMethod: "email" | "sms" | "phone";
     serviceReminders: boolean;
   };
 }
@@ -66,23 +66,31 @@ interface ClientDashboardProps {
 export const ClientDashboard: React.FC<ClientDashboardProps> = ({
   data,
   onBookService,
-  onViewHistory
+  onViewHistory,
 }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-green-600 bg-green-100';
-      case 'in_progress': return 'text-blue-600 bg-blue-100';
-      case 'scheduled': return 'text-orange-600 bg-orange-100';
-      case 'cancelled': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case "completed":
+        return "text-green-600 bg-green-100";
+      case "in_progress":
+        return "text-blue-600 bg-blue-100";
+      case "scheduled":
+        return "text-orange-600 bg-orange-100";
+      case "cancelled":
+        return "text-red-600 bg-red-100";
+      default:
+        return "text-gray-600 bg-gray-100";
     }
   };
 
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
-      case 'urgent': return <AlertTriangle className="w-4 h-4 text-red-500" />;
-      case 'high': return <AlertTriangle className="w-4 h-4 text-orange-500" />;
-      default: return <Clock className="w-4 h-4 text-gray-500" />;
+      case "urgent":
+        return <AlertTriangle className="w-4 h-4 text-red-500" />;
+      case "high":
+        return <AlertTriangle className="w-4 h-4 text-orange-500" />;
+      default:
+        return <Clock className="w-4 h-4 text-gray-500" />;
     }
   };
 
@@ -92,9 +100,7 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold mb-2">
-              Welcome back, {data.contact.name}!
-            </h1>
+            <h1 className="text-2xl font-bold mb-2">Welcome back, {data.contact.name}!</h1>
             <p className="text-blue-100 flex items-center">
               <MapPin className="w-4 h-4 mr-1" />
               {data.contact.address} • {data.contact.district}
@@ -177,10 +183,13 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({
               Book Service →
             </button>
           </div>
-          
+
           <div className="space-y-3">
             {data.recommendations.slice(0, 3).map((rec: any, index: number) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div
+                key={index}
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+              >
                 <div className="flex items-center">
                   {getPriorityIcon(rec.priority)}
                   <div className="ml-3">
@@ -210,10 +219,13 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({
               View All <ArrowRight className="w-4 h-4 ml-1" />
             </button>
           </div>
-          
+
           <div className="space-y-3">
             {data.recentJobs.slice(0, 4).map((job: any) => (
-              <div key={job._id} className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+              <div
+                key={job._id}
+                className="flex items-center justify-between p-3 border border-gray-100 rounded-lg"
+              >
                 <div className="flex items-center">
                   <Wrench className="w-4 h-4 text-gray-500 mr-3" />
                   <div>
@@ -224,12 +236,12 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({
                   </div>
                 </div>
                 <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(job.status)}`}>
-                  {job.status.replace('_', ' ')}
+                  {job.status.replace("_", " ")}
                 </span>
               </div>
             ))}
           </div>
-          
+
           {data.recentJobs.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               <Wrench className="w-12 h-12 mx-auto mb-4 text-gray-300" />
@@ -247,48 +259,52 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({
         {/* Active Installations */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Your HVAC Systems</h2>
-          
+
           <div className="space-y-3">
-            {data.installations.filter((inst: any) => inst.status === 'active').map((installation: any) => (
-              <div key={installation._id} className="p-4 border border-gray-100 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-gray-900">System #{installation._id.slice(-6)}</h3>
-                  <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
-                    Active
-                  </span>
+            {data.installations
+              .filter((inst: any) => inst.status === "active")
+              .map((installation: any) => (
+                <div key={installation._id} className="p-4 border border-gray-100 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium text-gray-900">
+                      System #{installation._id.slice(-6)}
+                    </h3>
+                    <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                      Active
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-600">Installed:</p>
+                      <p className="font-medium">
+                        {new Date(installation.installationDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Warranty:</p>
+                      <p className="font-medium">
+                        {installation.warrantyExpiry
+                          ? new Date(installation.warrantyExpiry).toLocaleDateString()
+                          : "N/A"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {installation.nextServiceDue && (
+                    <div className="mt-3 p-2 bg-orange-50 border border-orange-200 rounded">
+                      <p className="text-sm text-orange-800">
+                        <Clock className="w-4 h-4 inline mr-1" />
+                        Next service due:{" "}
+                        {new Date(installation.nextServiceDue).toLocaleDateString()}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-600">Installed:</p>
-                    <p className="font-medium">
-                      {new Date(installation.installationDate).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Warranty:</p>
-                    <p className="font-medium">
-                      {installation.warrantyExpiry 
-                        ? new Date(installation.warrantyExpiry).toLocaleDateString()
-                        : 'N/A'
-                      }
-                    </p>
-                  </div>
-                </div>
-                
-                {installation.nextServiceDue && (
-                  <div className="mt-3 p-2 bg-orange-50 border border-orange-200 rounded">
-                    <p className="text-sm text-orange-800">
-                      <Clock className="w-4 h-4 inline mr-1" />
-                      Next service due: {new Date(installation.nextServiceDue).toLocaleDateString()}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ))}
+              ))}
           </div>
-          
-          {data.installations.filter((inst: any) => inst.status === 'active').length === 0 && (
+
+          {data.installations.filter((inst: any) => inst.status === "active").length === 0 && (
             <div className="text-center py-8 text-gray-500">
               <Shield className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p>No active installations</p>
@@ -301,10 +317,13 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({
       {data.activeQuotes && data.activeQuotes.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Pending Quotes</h2>
-          
+
           <div className="space-y-3">
             {data.activeQuotes.map((quote: any) => (
-              <div key={quote._id} className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div
+                key={quote._id}
+                className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
+              >
                 <div>
                   <h3 className="font-medium text-gray-900">{quote.title}</h3>
                   <p className="text-sm text-gray-600">{quote.description}</p>
@@ -314,9 +333,11 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-lg text-gray-900">
-                    ${quote.proposals[0]?.total.toLocaleString() || 'TBD'}
+                    ${quote.proposals[0]?.total.toLocaleString() || "TBD"}
                   </p>
-                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(quote.status)}`}>
+                  <span
+                    className={`px-2 py-1 text-xs rounded-full ${getStatusColor(quote.status)}`}
+                  >
                     {quote.status}
                   </span>
                 </div>
@@ -329,7 +350,7 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({
       {/* Quick Actions */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
             onClick={onBookService}
@@ -338,7 +359,7 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({
             <Calendar className="w-5 h-5 mr-2" />
             Book Service
           </button>
-          
+
           <button
             onClick={onViewHistory}
             className="flex items-center justify-center p-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
@@ -346,7 +367,7 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({
             <Clock className="w-5 h-5 mr-2" />
             View History
           </button>
-          
+
           <button className="flex items-center justify-center p-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
             <Star className="w-5 h-5 mr-2" />
             Leave Feedback

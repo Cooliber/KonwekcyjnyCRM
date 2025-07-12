@@ -1,8 +1,8 @@
+import { useMutation, useQuery } from "convex/react";
+import { AlertTriangle, Edit, Package, Plus, Search } from "lucide-react";
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { Plus, Search, Package, AlertTriangle, Edit } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
 
 export function EquipmentModule() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,13 +17,23 @@ export function EquipmentModule() {
   });
 
   const createEquipment = useMutation(api.equipment.create);
-  const updateEquipment = useMutation(api.equipment.update);
+  const _updateEquipment = useMutation(api.equipment.update);
 
   const [formData, setFormData] = useState({
     name: "",
     brand: "",
     model: "",
-    category: "split_ac" as "split_ac" | "multi_split" | "vrf_system" | "heat_pump" | "thermostat" | "ductwork" | "filter" | "parts" | "tools" | "refrigerant",
+    category: "split_ac" as
+      | "split_ac"
+      | "multi_split"
+      | "vrf_system"
+      | "heat_pump"
+      | "thermostat"
+      | "ductwork"
+      | "filter"
+      | "parts"
+      | "tools"
+      | "refrigerant",
     serialNumber: "",
     purchasePrice: "",
     sellPrice: "",
@@ -39,10 +49,12 @@ export function EquipmentModule() {
     try {
       await createEquipment({
         ...formData,
-        purchasePrice: formData.purchasePrice ? parseFloat(formData.purchasePrice) : undefined,
-        sellPrice: formData.sellPrice ? parseFloat(formData.sellPrice) : undefined,
-        quantity: parseInt(formData.quantity),
-        minStock: formData.minStock ? parseInt(formData.minStock) : undefined,
+        purchasePrice: formData.purchasePrice
+          ? Number.parseFloat(formData.purchasePrice)
+          : undefined,
+        sellPrice: formData.sellPrice ? Number.parseFloat(formData.sellPrice) : undefined,
+        quantity: Number.parseInt(formData.quantity),
+        minStock: formData.minStock ? Number.parseInt(formData.minStock) : undefined,
       });
       toast.success("Equipment added successfully");
       setShowAddForm(false);
@@ -60,7 +72,7 @@ export function EquipmentModule() {
         location: "",
         description: "",
       });
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to add equipment");
     }
   };
@@ -68,7 +80,7 @@ export function EquipmentModule() {
   const categoryLabels: Record<string, string> = {
     split_ac: "Split AC",
     multi_split: "Multi Split",
-    vrf_system: "VRF System", 
+    vrf_system: "VRF System",
     heat_pump: "Heat Pump",
     thermostat: "Thermostat",
     ductwork: "Ductwork",
@@ -140,13 +152,18 @@ export function EquipmentModule() {
         {equipment && equipment.length > 0 ? (
           equipment.map((item) => {
             const isLowStock = item.minStock && item.quantity <= item.minStock;
-            
+
             return (
-              <div key={item._id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div
+                key={item._id}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+              >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className={`p-2 rounded-lg ${isLowStock ? "bg-red-100" : "bg-blue-100"}`}>
-                      <Package className={`w-5 h-5 ${isLowStock ? "text-red-600" : "text-blue-600"}`} />
+                      <Package
+                        className={`w-5 h-5 ${isLowStock ? "text-red-600" : "text-blue-600"}`}
+                      />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">{item.name}</h3>
@@ -172,7 +189,9 @@ export function EquipmentModule() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Quantity:</span>
-                    <span className={`font-medium ${isLowStock ? "text-red-600" : "text-gray-900"}`}>
+                    <span
+                      className={`font-medium ${isLowStock ? "text-red-600" : "text-gray-900"}`}
+                    >
                       {item.quantity}
                       {item.minStock && ` / ${item.minStock} min`}
                     </span>
@@ -233,9 +252,7 @@ export function EquipmentModule() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Brand *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Brand *</label>
                   <input
                     type="text"
                     required
@@ -245,9 +262,7 @@ export function EquipmentModule() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Model *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Model *</label>
                   <input
                     type="text"
                     required
@@ -257,9 +272,7 @@ export function EquipmentModule() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
@@ -289,9 +302,7 @@ export function EquipmentModule() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Quantity *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
                   <input
                     type="number"
                     required
@@ -340,9 +351,7 @@ export function EquipmentModule() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Supplier
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
                   <input
                     type="text"
                     value={formData.supplier}
@@ -365,9 +374,7 @@ export function EquipmentModule() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}

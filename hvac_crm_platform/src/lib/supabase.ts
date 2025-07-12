@@ -1,17 +1,25 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 // Supabase configuration with fallback for development
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://localhost:54321';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'development-key';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://localhost:54321";
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "development-key";
 
 // Only throw error in production if environment variables are missing
-if (import.meta.env.PROD && (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY)) {
-  throw new Error('Missing Supabase environment variables in production');
+if (
+  import.meta.env.PROD &&
+  !(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY)
+) {
+  throw new Error("Missing Supabase environment variables in production");
 }
 
 // Log warning in development if using fallback values
-if (import.meta.env.DEV && (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY)) {
-  console.warn('⚠️ Using fallback Supabase configuration for development. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.local');
+if (
+  import.meta.env.DEV &&
+  !(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY)
+) {
+  console.warn(
+    "⚠️ Using fallback Supabase configuration for development. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.local"
+  );
 }
 
 // Create Supabase client with enhanced configuration
@@ -20,50 +28,50 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'pkce'
+    flowType: "pkce",
   },
   realtime: {
     params: {
-      eventsPerSecond: 10
-    }
+      eventsPerSecond: 10,
+    },
   },
   global: {
     headers: {
-      'X-Client-Info': 'hvac-crm-platform'
-    }
-  }
+      "X-Client-Info": "hvac-crm-platform",
+    },
+  },
 });
 
 // Storage bucket names
 export const STORAGE_BUCKETS = {
-  EQUIPMENT_PHOTOS: 'equipment-photos',
-  INVOICES: 'invoices',
-  TECHNICAL_DRAWINGS: 'technical-drawings',
-  DOCUMENTS: 'documents',
-  AVATARS: 'avatars'
+  EQUIPMENT_PHOTOS: "equipment-photos",
+  INVOICES: "invoices",
+  TECHNICAL_DRAWINGS: "technical-drawings",
+  DOCUMENTS: "documents",
+  AVATARS: "avatars",
 } as const;
 
 // File upload configuration
 export const FILE_UPLOAD_CONFIG = {
   MAX_FILE_SIZE: 50 * 1024 * 1024, // 50MB
-  ALLOWED_IMAGE_TYPES: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+  ALLOWED_IMAGE_TYPES: ["image/jpeg", "image/png", "image/webp", "image/gif"],
   ALLOWED_DOCUMENT_TYPES: [
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   ],
   COMPRESSION_QUALITY: 0.8,
-  THUMBNAIL_SIZE: 300
+  THUMBNAIL_SIZE: 300,
 } as const;
 
 // Real-time channel configuration
 export const REALTIME_CHANNELS = {
-  EMERGENCY_ALERTS: 'emergency-alerts',
-  TECHNICIAN_PRESENCE: 'technician-presence',
-  JOB_UPDATES: 'job-updates',
-  CHAT_MESSAGES: 'chat-messages'
+  EMERGENCY_ALERTS: "emergency-alerts",
+  TECHNICIAN_PRESENCE: "technician-presence",
+  JOB_UPDATES: "job-updates",
+  CHAT_MESSAGES: "chat-messages",
 } as const;
 
 // Helper function to get file URL
@@ -86,10 +94,12 @@ export interface SupabaseUploadResponse {
 }
 
 export interface SupabaseDeleteResponse {
-  data: {
-    id: string;
-    path: string;
-  }[] | null;
+  data:
+    | {
+        id: string;
+        path: string;
+      }[]
+    | null;
   error: {
     message: string;
     statusCode?: string;
@@ -114,12 +124,10 @@ export const uploadFileWithProgress = async (
   onProgress?: (progress: number) => void
 ): Promise<SupabaseUploadResponse> => {
   return new Promise((resolve) => {
-    const upload = supabase.storage
-      .from(bucket)
-      .upload(path, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
+    const upload = supabase.storage.from(bucket).upload(path, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
 
     // Simulate progress for now (Supabase doesn't provide native progress)
     let progress = 0;
@@ -149,7 +157,7 @@ export const deleteFile = async (bucket: string, path: string): Promise<Supabase
 export const createSignedUrl = async (
   bucket: string,
   path: string,
-  expiresIn: number = 3600
+  expiresIn = 3600
 ): Promise<SupabaseSignedUrlResponse> => {
   return supabase.storage.from(bucket).createSignedUrl(path, expiresIn);
 };
@@ -189,5 +197,5 @@ export interface MaterializedView {
   query: string;
   refresh_interval: string;
   last_refreshed: string;
-  status: 'active' | 'inactive' | 'error';
+  status: "active" | "inactive" | "error";
 }

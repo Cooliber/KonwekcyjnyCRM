@@ -1,10 +1,10 @@
-import { query, mutation, action } from "./_generated/server";
-import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 /**
  * 🔥 Equipment Lifecycle Backend - 137/137 Godlike Quality
- * 
+ *
  * Features:
  * - Complete equipment tracking
  * - Lifecycle calculations
@@ -24,44 +24,48 @@ import { getAuthUserId } from "@convex-dev/auth/server";
  */
 export const getEquipmentLifecycle = query({
   args: {
-    status: v.optional(v.union(
-      v.literal("operational"),
-      v.literal("maintenance_required"),
-      v.literal("repair_needed"),
-      v.literal("end_of_life"),
-      v.literal("decommissioned")
-    )),
+    status: v.optional(
+      v.union(
+        v.literal("operational"),
+        v.literal("maintenance_required"),
+        v.literal("repair_needed"),
+        v.literal("end_of_life"),
+        v.literal("decommissioned")
+      )
+    ),
     district: v.optional(v.string()),
-    type: v.optional(v.union(
-      v.literal("split_ac"),
-      v.literal("multi_split"),
-      v.literal("vrf_system"),
-      v.literal("heat_pump"),
-      v.literal("thermostat"),
-      v.literal("ductwork"),
-      v.literal("ventilation")
-    )),
+    type: v.optional(
+      v.union(
+        v.literal("split_ac"),
+        v.literal("multi_split"),
+        v.literal("vrf_system"),
+        v.literal("heat_pump"),
+        v.literal("thermostat"),
+        v.literal("ductwork"),
+        v.literal("ventilation")
+      )
+    ),
     manufacturer: v.optional(v.string()),
-    limit: v.optional(v.number())
+    limit: v.optional(v.number()),
   },
-  handler: async (ctx, _args) => {
-    const userId = await getAuthUserId(_ctx);
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Unauthorized");
 
-    const _query = ctx.db.query("equipmentLifecycle");
+    let query = ctx.db.query("equipmentLifecycle");
 
     // Apply filters
     if (args.status) {
-      query = query.filter(q => q.eq(q.field("status"), args.status));
+      query = query.filter((q) => q.eq(q.field("status"), args.status));
     }
     if (args.district) {
-      query = query.filter(q => q.eq(q.field("location.district"), args.district));
+      query = query.filter((q) => q.eq(q.field("location.district"), args.district));
     }
     if (args.type) {
-      query = query.filter(q => q.eq(q.field("type"), args.type));
+      query = query.filter((q) => q.eq(q.field("type"), args.type));
     }
     if (args.manufacturer) {
-      query = query.filter(q => q.eq(q.field("manufacturer"), args.manufacturer));
+      query = query.filter((q) => q.eq(q.field("manufacturer"), args.manufacturer));
     }
 
     let equipment = await query.collect();
@@ -72,20 +76,20 @@ export const getEquipmentLifecycle = query({
       equipment.map(async (item: any) => {
         // Get related equipment record for additional details
         const equipmentRecord = await ctx.db.get(item.equipmentId);
-        
+
         // Calculate current metrics
         const currentMetrics = calculateCurrentMetrics(item);
-        
+
         return {
           ...item,
           equipmentRecord,
-          currentMetrics
+          currentMetrics,
         };
       })
     );
 
     return enrichedEquipment;
-  }
+  },
 });
 
 /**
@@ -102,20 +106,21 @@ export const getEquipmentLifecycleById = query({
 
     // Get related equipment record
     const equipmentRecord = await ctx.db.get(equipment.equipmentId);
-    
+
     // Get related jobs/services
-    const relatedJobs = await ctx.db.query("jobs")
-      .filter(q =>
-        q.neq(q.field("equipmentUsed"), undefined)
-      )
+    const relatedJobs = await ctx.db
+      .query("jobs")
+      .filter((q) => q.neq(q.field("equipmentUsed"), undefined))
       .collect()
-      .then(jobs => jobs.filter(job =>
-        job.equipmentUsed?.some(eq => eq.equipmentId === equipment.equipmentId)
-      ));
+      .then((jobs) =>
+        jobs.filter((job) =>
+          job.equipmentUsed?.some((eq) => eq.equipmentId === equipment.equipmentId)
+        )
+      );
 
     // Calculate detailed metrics
     const detailedMetrics = calculateDetailedMetrics(equipment);
-    
+
     // Generate maintenance recommendations
     const recommendations = generateMaintenanceRecommendations(equipment);
 
@@ -124,27 +129,28 @@ export const getEquipmentLifecycleById = query({
       equipmentRecord,
       relatedJobs,
       detailedMetrics,
-      recommendations
+      recommendations,
     };
-  }
+  },
 });
 
 /**
  * Get equipment requiring maintenance
  */
 export const getEquipmentRequiringMaintenance = query({
-  args: { 
-    daysAhead: v.optional(v.number()) // Default 30 days
+  args: {
+    daysAhead: v.optional(v.number()), // Default 30 days
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const daysAhead = args.daysAhead || 30;
-    const futureDate = Date.now() + (daysAhead * 24 * 60 * 60 * 1000);
+    const futureDate = Date.now() + daysAhead * 24 * 60 * 60 * 1000;
 
-    const equipment = await ctx.db.query("equipmentLifecycle")
-      .filter(q => 
+    const equipment = await ctx.db
+      .query("equipmentLifecycle")
+      .filter((q) =>
         q.or(
           q.eq(q.field("status"), "maintenance_required"),
           q.eq(q.field("status"), "repair_needed"),
@@ -157,7 +163,7 @@ export const getEquipmentRequiringMaintenance = query({
       .collect();
 
     return equipment;
-  }
+  },
 });
 
 /**
@@ -166,7 +172,7 @@ export const getEquipmentRequiringMaintenance = query({
 export const getEquipmentPerformanceAnalytics = query({
   args: {
     timeRange: v.union(v.literal("7d"), v.literal("30d"), v.literal("90d"), v.literal("1y")),
-    district: v.optional(v.string())
+    district: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -174,38 +180,49 @@ export const getEquipmentPerformanceAnalytics = query({
 
     let query = ctx.db.query("equipmentLifecycle");
     if (args.district) {
-      query = query.filter(q => q.eq(q.field("location.district"), args.district));
+      query = query.filter((q) => q.eq(q.field("location.district"), args.district));
     }
 
     const equipment = await query.collect();
 
     // Calculate performance metrics
     const totalEquipment = equipment.length;
-    const operationalEquipment = equipment.filter(eq => eq.status === "operational").length;
-    const maintenanceRequired = equipment.filter(eq => eq.status === "maintenance_required").length;
-    const repairNeeded = equipment.filter(eq => eq.status === "repair_needed").length;
+    const operationalEquipment = equipment.filter((eq) => eq.status === "operational").length;
+    const maintenanceRequired = equipment.filter(
+      (eq) => eq.status === "maintenance_required"
+    ).length;
+    const repairNeeded = equipment.filter((eq) => eq.status === "repair_needed").length;
 
     // Calculate average efficiency
-    const avgEfficiency = equipment.length > 0
-      ? equipment.reduce((sum, eq) => sum + (eq.performance?.efficiency || 95), 0) / equipment.length
-      : 95;
+    const avgEfficiency =
+      equipment.length > 0
+        ? equipment.reduce((sum, eq) => sum + (eq.performance?.efficiency || 95), 0) /
+          equipment.length
+        : 95;
 
     // Calculate average age
-    const avgAge = equipment.length > 0
-      ? equipment.reduce((sum, eq) => sum + eq.lifecycle.age, 0) / equipment.length
-      : 0;
+    const avgAge =
+      equipment.length > 0
+        ? equipment.reduce((sum, eq) => sum + eq.lifecycle.age, 0) / equipment.length
+        : 0;
 
     // Group by type
-    const byType = equipment.reduce((acc, eq) => {
-      acc[eq.type] = (acc[eq.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const byType = equipment.reduce(
+      (acc, eq) => {
+        acc[eq.type] = (acc[eq.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     // Group by manufacturer
-    const byManufacturer = equipment.reduce((acc, eq) => {
-      acc[eq.manufacturer] = (acc[eq.manufacturer] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const byManufacturer = equipment.reduce(
+      (acc, eq) => {
+        acc[eq.manufacturer] = (acc[eq.manufacturer] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     return {
       totalEquipment,
@@ -217,9 +234,9 @@ export const getEquipmentPerformanceAnalytics = query({
       uptime: operationalEquipment > 0 ? (operationalEquipment / totalEquipment) * 100 : 0,
       byType,
       byManufacturer,
-      alertCount: maintenanceRequired + repairNeeded
+      alertCount: maintenanceRequired + repairNeeded,
     };
-  }
+  },
 });
 
 // ============================================================================
@@ -251,13 +268,13 @@ export const createEquipmentLifecycle = mutation({
       district: v.string(),
       building: v.optional(v.string()),
       floor: v.optional(v.string()),
-      room: v.optional(v.string())
+      room: v.optional(v.string()),
     }),
     installation: v.object({
       date: v.number(),
       technicianId: v.id("users"),
       warrantyExpiry: v.number(),
-      cost: v.number()
+      cost: v.number(),
     }),
     specifications: v.object({
       capacity: v.number(),
@@ -265,9 +282,9 @@ export const createEquipmentLifecycle = mutation({
       refrigerant: v.string(),
       powerConsumption: v.number(),
       dimensions: v.string(),
-      weight: v.number()
+      weight: v.number(),
     }),
-    expectedLifespan: v.number() // months
+    expectedLifespan: v.number(), // months
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -299,13 +316,13 @@ export const createEquipmentLifecycle = mutation({
         remainingLife,
         depreciation: Math.min(depreciation, 100),
         currentValue: args.installation.cost * (1 - depreciation / 100),
-        replacementCost: args.installation.cost * 1.2 // Estimate 20% increase
+        replacementCost: args.installation.cost * 1.2, // Estimate 20% increase
       },
       performance: {
         efficiency: 100, // Start at 100%
         energyConsumption: args.specifications.powerConsumption,
         operatingHours: 0,
-        faultCount: 0
+        faultCount: 0,
       },
       maintenanceHistory: [],
       alerts: [],
@@ -314,11 +331,11 @@ export const createEquipmentLifecycle = mutation({
       createdBy: userId,
       lastModifiedBy: userId,
       createdAt: Date.now(),
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     });
 
     return equipmentLifecycleId;
-  }
+  },
 });
 
 /**
@@ -328,20 +345,24 @@ export const updateEquipmentLifecycle = mutation({
   args: {
     equipmentLifecycleId: v.id("equipmentLifecycle"),
     updates: v.object({
-      status: v.optional(v.union(
-        v.literal("operational"),
-        v.literal("maintenance_required"),
-        v.literal("repair_needed"),
-        v.literal("end_of_life"),
-        v.literal("decommissioned")
-      )),
-      performance: v.optional(v.object({
-        efficiency: v.optional(v.number()),
-        energyConsumption: v.optional(v.number()),
-        operatingHours: v.optional(v.number()),
-        faultCount: v.optional(v.number())
-      }))
-    })
+      status: v.optional(
+        v.union(
+          v.literal("operational"),
+          v.literal("maintenance_required"),
+          v.literal("repair_needed"),
+          v.literal("end_of_life"),
+          v.literal("decommissioned")
+        )
+      ),
+      performance: v.optional(
+        v.object({
+          efficiency: v.optional(v.number()),
+          energyConsumption: v.optional(v.number()),
+          operatingHours: v.optional(v.number()),
+          faultCount: v.optional(v.number()),
+        })
+      ),
+    }),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -353,17 +374,19 @@ export const updateEquipmentLifecycle = mutation({
     // Update lifecycle calculations if performance changed
     let lifecycleUpdates = {};
     if (args.updates.performance) {
-      const newAge = Math.floor((Date.now() - equipment.installation.date) / (30 * 24 * 60 * 60 * 1000));
+      const newAge = Math.floor(
+        (Date.now() - equipment.installation.date) / (30 * 24 * 60 * 60 * 1000)
+      );
       const newDepreciation = (newAge / equipment.lifecycle.expectedLifespan) * 100;
-      
+
       lifecycleUpdates = {
         lifecycle: {
           ...equipment.lifecycle,
           age: newAge,
           remainingLife: Math.max(0, equipment.lifecycle.expectedLifespan - newAge),
           depreciation: Math.min(newDepreciation, 100),
-          currentValue: equipment.installation.cost * (1 - newDepreciation / 100)
-        }
+          currentValue: equipment.installation.cost * (1 - newDepreciation / 100),
+        },
       };
     }
 
@@ -371,7 +394,7 @@ export const updateEquipmentLifecycle = mutation({
     const updateData: any = {
       ...lifecycleUpdates,
       lastModifiedBy: userId,
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     };
 
     // Add status if provided
@@ -384,17 +407,19 @@ export const updateEquipmentLifecycle = mutation({
       const currentPerformance = equipment.performance;
       updateData.performance = {
         efficiency: args.updates.performance.efficiency ?? currentPerformance.efficiency,
-        energyConsumption: args.updates.performance.energyConsumption ?? currentPerformance.energyConsumption,
-        operatingHours: args.updates.performance.operatingHours ?? currentPerformance.operatingHours,
+        energyConsumption:
+          args.updates.performance.energyConsumption ?? currentPerformance.energyConsumption,
+        operatingHours:
+          args.updates.performance.operatingHours ?? currentPerformance.operatingHours,
         faultCount: args.updates.performance.faultCount ?? currentPerformance.faultCount,
-        lastEfficiencyTest: currentPerformance.lastEfficiencyTest
+        lastEfficiencyTest: currentPerformance.lastEfficiencyTest,
       };
     }
 
     await ctx.db.patch(args.equipmentLifecycleId, updateData);
 
     return args.equipmentLifecycleId;
-  }
+  },
 });
 
 // ============================================================================
@@ -402,61 +427,81 @@ export const updateEquipmentLifecycle = mutation({
 // ============================================================================
 
 function calculateCurrentMetrics(equipment: any) {
-  const currentAge = Math.floor((Date.now() - equipment.installation.date) / (30 * 24 * 60 * 60 * 1000));
+  const currentAge = Math.floor(
+    (Date.now() - equipment.installation.date) / (30 * 24 * 60 * 60 * 1000)
+  );
   const lifePercentage = (currentAge / equipment.lifecycle.expectedLifespan) * 100;
-  
+
   return {
     ageInMonths: currentAge,
     lifePercentage: Math.min(lifePercentage, 100),
     healthScore: Math.max(0, 100 - lifePercentage - (equipment.performance?.faultCount || 0) * 5),
-    nextMaintenanceDue: equipment.installation.date + (12 * 30 * 24 * 60 * 60 * 1000), // Annual maintenance
-    estimatedRemainingValue: equipment.installation.cost * (1 - lifePercentage / 100)
+    nextMaintenanceDue: equipment.installation.date + 12 * 30 * 24 * 60 * 60 * 1000, // Annual maintenance
+    estimatedRemainingValue: equipment.installation.cost * (1 - lifePercentage / 100),
   };
 }
 
 function calculateDetailedMetrics(equipment: any) {
   const currentMetrics = calculateCurrentMetrics(equipment);
-  
+
   return {
     ...currentMetrics,
     maintenanceFrequency: equipment.maintenanceHistory.length,
-    avgMaintenanceCost: equipment.maintenanceHistory.length > 0
-      ? equipment.maintenanceHistory.reduce((sum: number, m: any) => sum + m.cost, 0) / equipment.maintenanceHistory.length
-      : 0,
+    avgMaintenanceCost:
+      equipment.maintenanceHistory.length > 0
+        ? equipment.maintenanceHistory.reduce((sum: number, m: any) => sum + m.cost, 0) /
+          equipment.maintenanceHistory.length
+        : 0,
     reliabilityScore: Math.max(0, 100 - (equipment.performance?.faultCount || 0) * 10),
-    energyEfficiencyTrend: equipment.performance?.efficiency || 95
+    energyEfficiencyTrend: equipment.performance?.efficiency || 95,
   };
 }
 
 function generateMaintenanceRecommendations(equipment: any) {
   const recommendations = [];
-  const currentAge = Math.floor((Date.now() - equipment.installation.date) / (30 * 24 * 60 * 60 * 1000));
-  
+  const currentAge = Math.floor(
+    (Date.now() - equipment.installation.date) / (30 * 24 * 60 * 60 * 1000)
+  );
+
   if (currentAge > 12 && equipment.maintenanceHistory.length === 0) {
     recommendations.push("Zalecany przegląd roczny - brak historii serwisu");
   }
-  
+
   if (equipment.performance?.efficiency < 90) {
     recommendations.push("Sprawdzenie wydajności - efektywność poniżej 90%");
   }
-  
+
   if (equipment.performance?.faultCount > 2) {
     recommendations.push("Diagnostyka szczegółowa - częste awarie");
   }
-  
+
   if (currentAge > equipment.lifecycle.expectedLifespan * 0.8) {
     recommendations.push("Planowanie wymiany - zbliża się koniec żywotności");
   }
-  
+
   return recommendations;
 }
 
 function calculateDistrictPriority(district: string): number {
   const districtPriorities: Record<string, number> = {
-    "Śródmieście": 10, "Mokotów": 9, "Żoliborz": 8, "Ochota": 7, "Wola": 6,
-    "Ursynów": 8, "Wilanów": 10, "Bielany": 6, "Bemowo": 5, "Ursus": 4,
-    "Włochy": 4, "Targówek": 3, "Rembertów": 3, "Wawer": 4, "Wesoła": 5,
-    "Białołęka": 4, "Praga-Północ": 3, "Praga-Południe": 4
+    Śródmieście: 10,
+    Mokotów: 9,
+    Żoliborz: 8,
+    Ochota: 7,
+    Wola: 6,
+    Ursynów: 8,
+    Wilanów: 10,
+    Bielany: 6,
+    Bemowo: 5,
+    Ursus: 4,
+    Włochy: 4,
+    Targówek: 3,
+    Rembertów: 3,
+    Wawer: 4,
+    Wesoła: 5,
+    Białołęka: 4,
+    "Praga-Północ": 3,
+    "Praga-Południe": 4,
   };
   return districtPriorities[district] || 5;
 }

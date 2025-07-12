@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ConvexProvider, ConvexReactClient } from 'convex/react';
-import ChatModule from '../../components/modules/ChatModule';
-import NotificationCenter from '../../components/modules/NotificationCenter';
-import ClientPortal from '../../components/modules/ClientPortal';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { type ConvexProvider, ConvexReactClient } from 'convex/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type ChatModule from '../../components/modules/ChatModule';
+import type ClientPortal from '../../components/modules/ClientPortal';
+import type NotificationCenter from '../../components/modules/NotificationCenter';
 
 // Mock Convex client
 const mockConvexClient = new ConvexReactClient(process.env.VITE_CONVEX_URL || 'https://test.convex.cloud');
@@ -73,7 +73,7 @@ vi.mock('convex/react', async () => {
   const actual = await vi.importActual('convex/react');
   return {
     ...actual,
-    useQuery: vi.fn((api, args) => {
+    useQuery: vi.fn((api, _args) => {
       if (api.toString().includes('conversationChannels.list')) {
         return mockChannels;
       }
@@ -350,7 +350,7 @@ describe('Communications Integration Tests', () => {
     it('should sync message notifications with notification center', async () => {
       // Mock sending a message
       const mockSendMessage = vi.fn().mockResolvedValue('msg123');
-      const mockCreateNotification = vi.fn().mockResolvedValue('notif123');
+      const _mockCreateNotification = vi.fn().mockResolvedValue('notif123');
 
       // Test message creation triggers notification
       const messageData = {

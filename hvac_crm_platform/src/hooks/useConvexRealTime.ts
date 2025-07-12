@@ -3,17 +3,17 @@
  * Optimized for Warsaw-based HVAC CRM platform with proper error handling
  */
 
-import { useQuery, useAction } from 'convex/react';
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { api } from '../../convex/_generated/api';
-import type { 
-  HVACMetrics, 
-  WarsawDistrictData, 
-  EnergyAnalyticsData, 
-  RealTimeSubscriptionData,
+import { useQuery } from "convex/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { api } from "../../convex/_generated/api";
+import type {
+  EnergyAnalyticsData,
   HVACError,
-  WarsawDistrict 
-} from '../types/hvac';
+  HVACMetrics,
+  RealTimeSubscriptionData,
+  WarsawDistrict,
+  WarsawDistrictData,
+} from "../types/hvac";
 
 // Hook configuration interface
 interface UseConvexRealTimeConfig {
@@ -30,18 +30,18 @@ interface UseConvexRealTimeReturn {
   hvacMetrics: HVACMetrics[] | undefined;
   districtData: WarsawDistrictData[] | undefined;
   energyAnalytics: EnergyAnalyticsData[] | undefined;
-  
+
   // Loading states
   isLoading: boolean;
   isRefreshing: boolean;
-  
+
   // Error handling
   error: HVACError | null;
-  
+
   // Control functions
   refresh: () => Promise<void>;
   clearError: () => void;
-  
+
   // Connection status
   isConnected: boolean;
   lastUpdated: Date | null;
@@ -56,7 +56,7 @@ export function useConvexRealTime(config: UseConvexRealTimeConfig = {}): UseConv
     refreshInterval = 30000, // 30 seconds default
     enableAutoRefresh = true,
     onError,
-    onDataUpdate
+    onDataUpdate,
   } = config;
 
   // State management
@@ -64,7 +64,7 @@ export function useConvexRealTime(config: UseConvexRealTimeConfig = {}): UseConv
   const [error, setError] = useState<HVACError | null>(null);
   const [isConnected, setIsConnected] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  
+
   // Refs for cleanup
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const mountedRef = useRef(true);
@@ -72,58 +72,60 @@ export function useConvexRealTime(config: UseConvexRealTimeConfig = {}): UseConv
   // Convex queries with proper error handling
   const jobs = useQuery(api.jobs.list, {});
   const equipment = useQuery(api.equipment.list, {});
-  const analytics = useQuery(api.analytics.getRealtimeMetrics, {
-    district: district || undefined
+  const _analytics = useQuery(api.analytics.getRealtimeMetrics, {
+    district: district || undefined,
   });
 
   // Real-time metrics query
   const hvacMetrics = useQuery(api.analytics.getHVACMetrics, {
     district: district || undefined,
-    limit: 100
+    limit: 100,
   });
 
   // District performance data
   const districtData = useQuery(api.analytics.getDistrictPerformance, {
-    timeRange: '24h'
+    timeRange: "24h",
   });
 
   // Energy analytics data
   const energyAnalytics = useQuery(api.analytics.getEnergyAnalytics, {
     district: district || undefined,
-    timeRange: '24h'
+    timeRange: "24h",
   });
 
   // Loading state calculation
-  const isLoading = hvacMetrics === undefined || 
-                   districtData === undefined || 
-                   energyAnalytics === undefined;
+  const isLoading =
+    hvacMetrics === undefined || districtData === undefined || energyAnalytics === undefined;
 
   // Error handling function
-  const handleError = useCallback((errorMessage: string, component: string) => {
-    const hvacError: HVACError = {
-      code: 'CONVEX_ERROR',
-      message: errorMessage,
-      timestamp: new Date(),
-      component,
-      severity: 'error',
-      recoverable: true
-    };
-    
-    setError(hvacError);
-    setIsConnected(false);
-    
-    if (onError) {
-      onError(hvacError);
-    }
-  }, [onError]);
+  const handleError = useCallback(
+    (errorMessage: string, component: string) => {
+      const hvacError: HVACError = {
+        code: "CONVEX_ERROR",
+        message: errorMessage,
+        timestamp: new Date(),
+        component,
+        severity: "error",
+        recoverable: true,
+      };
+
+      setError(hvacError);
+      setIsConnected(false);
+
+      if (onError) {
+        onError(hvacError);
+      }
+    },
+    [onError]
+  );
 
   // Manual refresh function
   const refresh = useCallback(async () => {
     if (!mountedRef.current) return;
-    
+
     setIsRefreshing(true);
     setError(null);
-    
+
     try {
       // Force refresh by invalidating queries
       // Note: Convex handles this automatically, but we can trigger manual updates
@@ -131,8 +133,8 @@ export function useConvexRealTime(config: UseConvexRealTimeConfig = {}): UseConv
       setIsConnected(true);
     } catch (err) {
       handleError(
-        err instanceof Error ? err.message : 'Unknown refresh error',
-        'useConvexRealTime.refresh'
+        err instanceof Error ? err.message : "Unknown refresh error",
+        "useConvexRealTime.refresh"
       );
     } finally {
       if (mountedRef.current) {
@@ -168,37 +170,39 @@ export function useConvexRealTime(config: UseConvexRealTimeConfig = {}): UseConv
   useEffect(() => {
     if (hvacMetrics && districtData && energyAnalytics && onDataUpdate) {
       const subscriptionData: RealTimeSubscriptionData = {
-        jobs: jobs?.map(job => ({
-          _id: job._id,
-          status: job.status,
-          priority: job.priority as any,
-          district: job.district as WarsawDistrict,
-          lastUpdated: new Date(job._creationTime)
-        })) || [],
-        equipment: equipment?.map(eq => ({
-          _id: eq._id,
-          status: 'optimal' as any, // Transform based on actual equipment status
-          metrics: {
-            id: eq._id,
-            district: 'Śródmieście' as WarsawDistrict, // Default or from equipment data
-            equipmentId: eq._id,
-            energyEfficiency: 85, // Mock data - replace with actual
-            temperature: 22,
-            pressure: 1.2,
-            vatAmount: 0,
-            status: 'optimal' as any,
-            lastUpdated: new Date(),
-            powerConsumption: 2.5,
-            operatingHours: 8760,
-            maintenanceScore: 90,
-            operatingCost: 1200,
-            energyCost: 0.15,
-            maintenanceCost: 300
-          }
-        })) || [],
-        alerts: [] // Implement alert system
+        jobs:
+          jobs?.map((job) => ({
+            _id: job._id,
+            status: job.status,
+            priority: job.priority as any,
+            district: job.district as WarsawDistrict,
+            lastUpdated: new Date(job._creationTime),
+          })) || [],
+        equipment:
+          equipment?.map((eq) => ({
+            _id: eq._id,
+            status: "optimal" as any, // Transform based on actual equipment status
+            metrics: {
+              id: eq._id,
+              district: "Śródmieście" as WarsawDistrict, // Default or from equipment data
+              equipmentId: eq._id,
+              energyEfficiency: 85, // Mock data - replace with actual
+              temperature: 22,
+              pressure: 1.2,
+              vatAmount: 0,
+              status: "optimal" as any,
+              lastUpdated: new Date(),
+              powerConsumption: 2.5,
+              operatingHours: 8760,
+              maintenanceScore: 90,
+              operatingCost: 1200,
+              energyCost: 0.15,
+              maintenanceCost: 300,
+            },
+          })) || [],
+        alerts: [], // Implement alert system
       };
-      
+
       onDataUpdate(subscriptionData);
     }
   }, [hvacMetrics, districtData, energyAnalytics, jobs, equipment, onDataUpdate]);
@@ -225,21 +229,21 @@ export function useConvexRealTime(config: UseConvexRealTimeConfig = {}): UseConv
     hvacMetrics: hvacMetrics as HVACMetrics[] | undefined,
     districtData: districtData as WarsawDistrictData[] | undefined,
     energyAnalytics: energyAnalytics as EnergyAnalyticsData[] | undefined,
-    
+
     // Loading states
     isLoading,
     isRefreshing,
-    
+
     // Error handling
     error,
-    
+
     // Control functions
     refresh,
     clearError,
-    
+
     // Connection status
     isConnected,
-    lastUpdated
+    lastUpdated,
   };
 }
 
@@ -248,12 +252,12 @@ export function useConvexRealTime(config: UseConvexRealTimeConfig = {}): UseConv
  */
 export function useHVACMetrics(district?: WarsawDistrict) {
   const { hvacMetrics, isLoading, error, refresh } = useConvexRealTime({ district });
-  
+
   return {
     metrics: hvacMetrics,
     isLoading,
     error,
-    refresh
+    refresh,
   };
 }
 
@@ -262,12 +266,12 @@ export function useHVACMetrics(district?: WarsawDistrict) {
  */
 export function useDistrictPerformance() {
   const { districtData, isLoading, error, refresh } = useConvexRealTime({});
-  
+
   return {
     districts: districtData,
     isLoading,
     error,
-    refresh
+    refresh,
   };
 }
 
@@ -276,11 +280,11 @@ export function useDistrictPerformance() {
  */
 export function useEnergyAnalytics(district?: WarsawDistrict) {
   const { energyAnalytics, isLoading, error, refresh } = useConvexRealTime({ district });
-  
+
   return {
     analytics: energyAnalytics,
     isLoading,
     error,
-    refresh
+    refresh,
   };
 }

@@ -1,23 +1,23 @@
-import { test, expect, Page } from '@playwright/test';
+import { expect, type Page, test } from "@playwright/test";
 
 // Test configuration
-const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:5173';
-const TEST_USER_EMAIL = 'test@hvac.com';
-const TEST_USER_PASSWORD = 'testpassword';
-const CLIENT_ACCESS_TOKEN = 'client_test_token';
+const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:5173";
+const TEST_USER_EMAIL = "test@hvac.com";
+const TEST_USER_PASSWORD = "testpassword";
+const CLIENT_ACCESS_TOKEN = "client_test_token";
 
-test.describe('Communications System E2E Tests', () => {
+test.describe("Communications System E2E Tests", () => {
   let page: Page;
 
   test.beforeEach(async ({ browser }) => {
     page = await browser.newPage();
-    
+
     // Mock geolocation for Warsaw
     await page.setGeolocation({ latitude: 52.2297, longitude: 21.0122 });
-    
+
     // Grant notification permissions
-    await page.context().grantPermissions(['notifications']);
-    
+    await page.context().grantPermissions(["notifications"]);
+
     await page.goto(BASE_URL);
   });
 
@@ -25,8 +25,8 @@ test.describe('Communications System E2E Tests', () => {
     await page.close();
   });
 
-  test.describe('Real-Time Messaging Flow', () => {
-    test('should complete full messaging workflow', async () => {
+  test.describe("Real-Time Messaging Flow", () => {
+    test("should complete full messaging workflow", async () => {
       // Login as technician
       await page.fill('[data-testid="email-input"]', TEST_USER_EMAIL);
       await page.fill('[data-testid="password-input"]', TEST_USER_PASSWORD);
@@ -45,9 +45,9 @@ test.describe('Communications System E2E Tests', () => {
 
       // Select district channel
       await page.click('[data-testid="channel-district-srodmiescie"]');
-      
+
       // Verify district context is shown
-      await expect(page.locator('[data-testid="district-context"]')).toContainText('Śródmieście');
+      await expect(page.locator('[data-testid="district-context"]')).toContainText("Śródmieście");
 
       // Send a message
       const messageText = `Test message ${Date.now()}`;
@@ -58,15 +58,15 @@ test.describe('Communications System E2E Tests', () => {
       await expect(page.locator(`text=${messageText}`)).toBeVisible();
 
       // Test message priority
-      await page.selectOption('[data-testid="priority-selector"]', 'high');
-      await page.fill('[data-testid="message-input"]', 'High priority message');
+      await page.selectOption('[data-testid="priority-selector"]', "high");
+      await page.fill('[data-testid="message-input"]', "High priority message");
       await page.click('[data-testid="send-button"]');
 
       // Verify priority indicator
       await expect(page.locator('[data-testid="priority-high"]')).toBeVisible();
     });
 
-    test('should handle emergency alerts', async () => {
+    test("should handle emergency alerts", async () => {
       await loginAsTechnician(page);
       await page.click('[data-testid="nav-chat"]');
 
@@ -75,9 +75,12 @@ test.describe('Communications System E2E Tests', () => {
       await expect(page.locator('[data-testid="emergency-panel"]')).toBeVisible();
 
       // Fill emergency form
-      await page.selectOption('[data-testid="urgency-level"]', 'emergency');
-      await page.selectOption('[data-testid="district-select"]', 'Śródmieście');
-      await page.fill('[data-testid="emergency-message"]', 'HVAC system failure - immediate assistance needed');
+      await page.selectOption('[data-testid="urgency-level"]', "emergency");
+      await page.selectOption('[data-testid="district-select"]', "Śródmieście");
+      await page.fill(
+        '[data-testid="emergency-message"]',
+        "HVAC system failure - immediate assistance needed"
+      );
 
       // Send emergency alert
       await page.click('[data-testid="send-emergency-button"]');
@@ -86,71 +89,72 @@ test.describe('Communications System E2E Tests', () => {
       await expect(page.locator('[data-testid="emergency-sent"]')).toBeVisible();
     });
 
-    test('should support voice notes', async () => {
+    test("should support voice notes", async () => {
       await loginAsTechnician(page);
       await page.click('[data-testid="nav-chat"]');
 
       // Mock media devices
       await page.addInitScript(() => {
-        navigator.mediaDevices.getUserMedia = () => Promise.resolve({
-          getTracks: () => [{ stop: () => {} }]
-        } as any);
+        navigator.mediaDevices.getUserMedia = () =>
+          Promise.resolve({
+            getTracks: () => [{ stop: () => {} }],
+          } as any);
       });
 
       // Test voice note recording
       await page.hover('[data-testid="voice-note-button"]');
       await page.mouse.down();
-      
+
       // Wait for recording to start
       await expect(page.locator('[data-testid="recording-indicator"]')).toBeVisible();
-      
+
       // Stop recording
       await page.mouse.up();
-      
+
       // Verify voice note is sent
       await expect(page.locator('[data-testid="voice-note-message"]')).toBeVisible();
     });
 
-    test('should handle file uploads', async () => {
+    test("should handle file uploads", async () => {
       await loginAsTechnician(page);
       await page.click('[data-testid="nav-chat"]');
 
       // Upload file
       const fileInput = page.locator('[data-testid="file-input"]');
       await fileInput.setInputFiles({
-        name: 'test-image.jpg',
-        mimeType: 'image/jpeg',
-        buffer: Buffer.from('fake-image-data')
+        name: "test-image.jpg",
+        mimeType: "image/jpeg",
+        buffer: Buffer.from("fake-image-data"),
       });
 
       // Verify file upload
       await expect(page.locator('[data-testid="file-message"]')).toBeVisible();
-      await expect(page.locator('text=test-image.jpg')).toBeVisible();
+      await expect(page.locator("text=test-image.jpg")).toBeVisible();
     });
 
-    test('should support threading', async () => {
+    test("should support threading", async () => {
       await loginAsTechnician(page);
       await page.click('[data-testid="nav-chat"]');
 
       // Send initial message
-      await page.fill('[data-testid="message-input"]', 'Original message for threading');
+      await page.fill('[data-testid="message-input"]', "Original message for threading");
       await page.click('[data-testid="send-button"]');
 
       // Start thread
       await page.hover('[data-testid="message-bubble"]:last-child');
       await page.click('[data-testid="reply-button"]');
-      
-      await page.fill('[data-testid="thread-input"]', 'Thread reply');
+
+      await page.fill('[data-testid="thread-input"]', "Thread reply");
       await page.click('[data-testid="start-thread-button"]');
 
       // Verify thread panel opens
       await expect(page.locator('[data-testid="thread-panel"]')).toBeVisible();
-      await expect(page.locator('text=Thread reply')).toBeVisible();
+      await expect(page.locator("text=Thread reply")).toBeVisible();
     });
   });
 
-  test.describe('Notification System Flow', () => {
-    test('should display and manage notifications', async () => {
+  test.describe("Notification System Flow", () => {
+    test("should display and manage notifications", async () => {
       await loginAsTechnician(page);
 
       // Open notification center
@@ -161,34 +165,40 @@ test.describe('Communications System E2E Tests', () => {
       await expect(page.locator('[data-testid="notification-item"]')).toHaveCount.greaterThan(0);
 
       // Test filtering
-      await page.selectOption('[data-testid="priority-filter"]', 'high');
-      await expect(page.locator('[data-testid="notification-item"][data-priority="high"]')).toBeVisible();
+      await page.selectOption('[data-testid="priority-filter"]', "high");
+      await expect(
+        page.locator('[data-testid="notification-item"][data-priority="high"]')
+      ).toBeVisible();
 
       // Mark notification as read
       await page.click('[data-testid="notification-item"]:first-child');
-      await expect(page.locator('[data-testid="notification-item"]:first-child [data-testid="unread-indicator"]')).not.toBeVisible();
+      await expect(
+        page.locator(
+          '[data-testid="notification-item"]:first-child [data-testid="unread-indicator"]'
+        )
+      ).not.toBeVisible();
 
       // Mark all as read
       await page.click('[data-testid="mark-all-read"]');
       await expect(page.locator('[data-testid="unread-indicator"]')).toHaveCount(0);
     });
 
-    test('should handle push notifications', async () => {
+    test("should handle push notifications", async () => {
       await loginAsTechnician(page);
 
       // Listen for notification events
-      let notificationReceived = false;
-      page.on('notification', () => {
-        notificationReceived = true;
+      let _notificationReceived = false;
+      page.on("notification", () => {
+        _notificationReceived = true;
       });
 
       // Trigger notification (would be from server in real scenario)
       await page.evaluate(() => {
-        if ('serviceWorker' in navigator && 'PushManager' in window) {
-          navigator.serviceWorker.ready.then(registration => {
-            registration.showNotification('Test Notification', {
-              body: 'Test notification body',
-              icon: '/icons/icon-192x192.png'
+        if ("serviceWorker" in navigator && "PushManager" in window) {
+          navigator.serviceWorker.ready.then((registration) => {
+            registration.showNotification("Test Notification", {
+              body: "Test notification body",
+              icon: "/icons/icon-192x192.png",
             });
           });
         }
@@ -199,7 +209,7 @@ test.describe('Communications System E2E Tests', () => {
       // Note: Actual notification testing would require more complex setup
     });
 
-    test('should prioritize notifications by AI importance', async () => {
+    test("should prioritize notifications by AI importance", async () => {
       await loginAsTechnician(page);
       await page.click('[data-testid="notifications-button"]');
 
@@ -208,18 +218,20 @@ test.describe('Communications System E2E Tests', () => {
 
       // Verify high-importance notifications appear first
       const firstNotification = page.locator('[data-testid="notification-item"]').first();
-      await expect(firstNotification).toHaveAttribute('data-importance', /^[0-9]\.[5-9]|1\.0$/);
+      await expect(firstNotification).toHaveAttribute("data-importance", /^[0-9]\.[5-9]|1\.0$/);
     });
   });
 
-  test.describe('Client Portal Flow', () => {
-    test('should authenticate and display client dashboard', async () => {
+  test.describe("Client Portal Flow", () => {
+    test("should authenticate and display client dashboard", async () => {
       // Navigate to client portal
-      await page.goto(`${BASE_URL}/client-portal?token=${CLIENT_ACCESS_TOKEN}&contact=test-contact`);
+      await page.goto(
+        `${BASE_URL}/client-portal?token=${CLIENT_ACCESS_TOKEN}&contact=test-contact`
+      );
 
       // Verify authentication
       await expect(page.locator('[data-testid="client-dashboard"]')).toBeVisible();
-      await expect(page.locator('text=Welcome back')).toBeVisible();
+      await expect(page.locator("text=Welcome back")).toBeVisible();
 
       // Verify statistics display
       await expect(page.locator('[data-testid="total-jobs"]')).toBeVisible();
@@ -227,9 +239,11 @@ test.describe('Communications System E2E Tests', () => {
       await expect(page.locator('[data-testid="active-installations"]')).toBeVisible();
     });
 
-    test('should complete service booking flow', async () => {
-      await page.goto(`${BASE_URL}/client-portal?token=${CLIENT_ACCESS_TOKEN}&contact=test-contact`);
-      
+    test("should complete service booking flow", async () => {
+      await page.goto(
+        `${BASE_URL}/client-portal?token=${CLIENT_ACCESS_TOKEN}&contact=test-contact`
+      );
+
       // Navigate to booking
       await page.click('[data-testid="book-service-button"]');
       await expect(page.locator('[data-testid="service-booking"]')).toBeVisible();
@@ -244,18 +258,20 @@ test.describe('Communications System E2E Tests', () => {
       await page.click('[data-testid="next-button"]');
 
       // Step 3: Add details
-      await page.selectOption('[data-testid="priority-select"]', 'medium');
-      await page.fill('[data-testid="description-input"]', 'Annual maintenance check');
+      await page.selectOption('[data-testid="priority-select"]', "medium");
+      await page.fill('[data-testid="description-input"]', "Annual maintenance check");
       await page.click('[data-testid="book-appointment-button"]');
 
       // Step 4: Confirmation
       await expect(page.locator('[data-testid="booking-confirmation"]')).toBeVisible();
-      await expect(page.locator('text=Booking Confirmed')).toBeVisible();
+      await expect(page.locator("text=Booking Confirmed")).toBeVisible();
     });
 
-    test('should display service history', async () => {
-      await page.goto(`${BASE_URL}/client-portal?token=${CLIENT_ACCESS_TOKEN}&contact=test-contact`);
-      
+    test("should display service history", async () => {
+      await page.goto(
+        `${BASE_URL}/client-portal?token=${CLIENT_ACCESS_TOKEN}&contact=test-contact`
+      );
+
       await page.click('[data-testid="nav-history"]');
       await expect(page.locator('[data-testid="service-history"]')).toBeVisible();
 
@@ -266,20 +282,25 @@ test.describe('Communications System E2E Tests', () => {
       await expect(page.locator('[data-testid="installation-item"]')).toBeVisible();
     });
 
-    test('should submit feedback', async () => {
-      await page.goto(`${BASE_URL}/client-portal?token=${CLIENT_ACCESS_TOKEN}&contact=test-contact`);
-      
+    test("should submit feedback", async () => {
+      await page.goto(
+        `${BASE_URL}/client-portal?token=${CLIENT_ACCESS_TOKEN}&contact=test-contact`
+      );
+
       await page.click('[data-testid="nav-feedback"]');
       await expect(page.locator('[data-testid="feedback-form"]')).toBeVisible();
 
       // Select job for feedback
-      await page.selectOption('[data-testid="job-select"]', 'completed-job-1');
+      await page.selectOption('[data-testid="job-select"]', "completed-job-1");
 
       // Rate service
       await page.click('[data-testid="star-rating"] [data-star="5"]');
 
       // Add feedback
-      await page.fill('[data-testid="feedback-text"]', 'Excellent service, very professional technician');
+      await page.fill(
+        '[data-testid="feedback-text"]',
+        "Excellent service, very professional technician"
+      );
 
       // Select categories
       await page.check('[data-testid="category-punctuality"]');
@@ -293,32 +314,32 @@ test.describe('Communications System E2E Tests', () => {
     });
   });
 
-  test.describe('Cross-System Integration', () => {
-    test('should sync data across all systems', async () => {
+  test.describe("Cross-System Integration", () => {
+    test("should sync data across all systems", async () => {
       await loginAsTechnician(page);
 
       // Create a job
       await page.click('[data-testid="nav-jobs"]');
       await page.click('[data-testid="create-job-button"]');
-      await page.fill('[data-testid="job-title"]', 'Integration Test Job');
-      await page.selectOption('[data-testid="job-contact"]', 'test-contact');
+      await page.fill('[data-testid="job-title"]', "Integration Test Job");
+      await page.selectOption('[data-testid="job-contact"]', "test-contact");
       await page.click('[data-testid="save-job"]');
 
       // Verify job appears in chat context
       await page.click('[data-testid="nav-chat"]');
       await page.click('[data-testid="channel-project"]');
-      await expect(page.locator('text=Integration Test Job')).toBeVisible();
+      await expect(page.locator("text=Integration Test Job")).toBeVisible();
 
       // Verify notification was created
       await page.click('[data-testid="notifications-button"]');
-      await expect(page.locator('text=New job assigned')).toBeVisible();
+      await expect(page.locator("text=New job assigned")).toBeVisible();
 
       // Verify job appears on map
       await page.click('[data-testid="nav-map"]');
       await expect(page.locator('[data-testid="job-marker"]')).toBeVisible();
     });
 
-    test('should handle offline scenarios', async () => {
+    test("should handle offline scenarios", async () => {
       await loginAsTechnician(page);
       await page.click('[data-testid="nav-chat"]');
 
@@ -326,7 +347,7 @@ test.describe('Communications System E2E Tests', () => {
       await page.context().setOffline(true);
 
       // Try to send message
-      await page.fill('[data-testid="message-input"]', 'Offline message');
+      await page.fill('[data-testid="message-input"]', "Offline message");
       await page.click('[data-testid="send-button"]');
 
       // Verify offline indicator
@@ -336,25 +357,25 @@ test.describe('Communications System E2E Tests', () => {
       await page.context().setOffline(false);
 
       // Verify message syncs
-      await expect(page.locator('text=Offline message')).toBeVisible();
+      await expect(page.locator("text=Offline message")).toBeVisible();
     });
   });
 
-  test.describe('Performance Tests', () => {
-    test('should load within performance targets', async () => {
+  test.describe("Performance Tests", () => {
+    test("should load within performance targets", async () => {
       const startTime = Date.now();
-      
+
       await loginAsTechnician(page);
       await page.click('[data-testid="nav-chat"]');
-      
+
       // Wait for chat to be fully loaded
       await expect(page.locator('[data-testid="message-input"]')).toBeVisible();
-      
+
       const loadTime = Date.now() - startTime;
       expect(loadTime).toBeLessThan(1500); // <1.5s target
     });
 
-    test('should handle high message volume', async () => {
+    test("should handle high message volume", async () => {
       await loginAsTechnician(page);
       await page.click('[data-testid="nav-chat"]');
 
@@ -380,9 +401,9 @@ async function loginAsTechnician(page: Page) {
 }
 
 // Performance measurement helper
-async function measurePageLoad(page: Page, url: string) {
+async function _measurePageLoad(page: Page, url: string) {
   const startTime = Date.now();
   await page.goto(url);
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
   return Date.now() - startTime;
 }

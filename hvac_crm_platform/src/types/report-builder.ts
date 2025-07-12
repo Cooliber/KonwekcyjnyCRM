@@ -6,7 +6,7 @@
 // Data Source Types
 export interface DataSource {
   id: string;
-  type: 'convex' | 'supabase' | 'weaviate' | 'calculated';
+  type: "convex" | "supabase" | "weaviate" | "calculated";
   table?: string;
   query?: string;
   field?: string;
@@ -16,24 +16,41 @@ export interface DataSource {
 
 export interface DataFilter {
   field: string;
-  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains' | 'starts_with' | 'in' | 'between';
+  operator:
+    | "equals"
+    | "not_equals"
+    | "greater_than"
+    | "less_than"
+    | "contains"
+    | "starts_with"
+    | "in"
+    | "between";
   value: any;
-  logicalOperator?: 'AND' | 'OR';
+  logicalOperator?: "AND" | "OR";
 }
 
 export interface DataJoin {
   table: string;
   on: string;
-  type: 'inner' | 'left' | 'right';
+  type: "inner" | "left" | "right";
 }
 
 // Visualization Types
 export interface VisualizationType {
-  type: 'table' | 'bar_chart' | 'line_chart' | 'pie_chart' | 'area_chart' | 'scatter_plot' | 'heatmap' | 'gauge' | 'kpi_card';
+  type:
+    | "table"
+    | "bar_chart"
+    | "line_chart"
+    | "pie_chart"
+    | "area_chart"
+    | "scatter_plot"
+    | "heatmap"
+    | "gauge"
+    | "kpi_card";
   xAxis?: string;
   yAxis?: string;
   groupBy?: string;
-  aggregation?: 'sum' | 'avg' | 'count' | 'min' | 'max' | 'distinct';
+  aggregation?: "sum" | "avg" | "count" | "min" | "max" | "distinct";
   colors?: string[];
   customSettings?: Record<string, any>;
 }
@@ -42,14 +59,14 @@ export interface VisualizationType {
 export interface CalculatedField {
   name: string;
   formula: string;
-  dataType: 'number' | 'string' | 'date' | 'boolean';
+  dataType: "number" | "string" | "date" | "boolean";
 }
 
 // Report Configuration
 export interface ReportConfig {
   name: string;
   description?: string;
-  type: 'dashboard' | 'table' | 'chart' | 'kpi' | 'custom';
+  type: "dashboard" | "table" | "chart" | "kpi" | "custom";
   config: {
     dataSources: DataSource[];
     visualization: VisualizationType;
@@ -107,9 +124,15 @@ export interface ReportTemplate {
   _id: string;
   name: string;
   description?: string;
-  category: 'hvac_performance' | 'financial' | 'operational' | 'customer' | 'equipment' | 'district_analysis';
-  type: 'dashboard' | 'table' | 'chart' | 'kpi' | 'custom';
-  config: ReportConfig['config'];
+  category:
+    | "hvac_performance"
+    | "financial"
+    | "operational"
+    | "customer"
+    | "equipment"
+    | "district_analysis";
+  type: "dashboard" | "table" | "chart" | "kpi" | "custom";
+  config: ReportConfig["config"];
   tags?: string[];
   isPublic: boolean;
   createdBy: string;
@@ -119,7 +142,7 @@ export interface ReportTemplate {
 // Sharing and Permissions
 export interface SharePermission {
   userId: string;
-  permission: 'view' | 'edit' | 'admin';
+  permission: "view" | "edit" | "admin";
 }
 
 export interface ReportShare {
@@ -129,7 +152,7 @@ export interface ReportShare {
 }
 
 // Export Types
-export type ExportFormat = 'pdf' | 'excel' | 'csv';
+export type ExportFormat = "pdf" | "excel" | "csv";
 
 export interface ExportOptions {
   format: ExportFormat;
@@ -141,10 +164,10 @@ export interface ExportOptions {
 // Schedule Types
 export interface ReportSchedule {
   enabled: boolean;
-  frequency: 'hourly' | 'daily' | 'weekly' | 'monthly';
+  frequency: "hourly" | "daily" | "weekly" | "monthly";
   time?: string;
   recipients?: string[];
-  format: ExportFormat | 'email';
+  format: ExportFormat | "email";
 }
 
 // Analytics Types
@@ -190,7 +213,7 @@ export interface ReportError {
   message: string;
   timestamp: Date;
   component: string;
-  severity: 'info' | 'warning' | 'error' | 'critical';
+  severity: "info" | "warning" | "error" | "critical";
   recoverable: boolean;
 }
 
@@ -198,41 +221,41 @@ export interface ReportError {
 export interface CacheConfig {
   enabled: boolean;
   ttl: number; // Time to live in milliseconds
-  strategy: 'lru' | 'fifo' | 'ttl';
+  strategy: "lru" | "fifo" | "ttl";
   maxSize: number;
 }
 
 // Utility Types
-export type ReportStatus = 'draft' | 'published' | 'archived' | 'scheduled';
-export type DataSourceType = DataSource['type'];
-export type VisualizationChartType = VisualizationType['type'];
-export type AggregationType = NonNullable<VisualizationType['aggregation']>;
-export type FilterOperator = DataFilter['operator'];
+export type ReportStatus = "draft" | "published" | "archived" | "scheduled";
+export type DataSourceType = DataSource["type"];
+export type VisualizationChartType = VisualizationType["type"];
+export type AggregationType = NonNullable<VisualizationType["aggregation"]>;
+export type FilterOperator = DataFilter["operator"];
 
 // Warsaw District Types
-export type WarsawDistrict = 
-  | 'Śródmieście'
-  | 'Mokotów'
-  | 'Żoliborz'
-  | 'Ochota'
-  | 'Wola'
-  | 'Praga-Północ'
-  | 'Praga-Południe'
-  | 'Targówek'
-  | 'Bemowo'
-  | 'Ursynów'
-  | 'Wilanów'
-  | 'Białołęka'
-  | 'Bielany'
-  | 'Włochy'
-  | 'Ursus'
-  | 'Wawer'
-  | 'Wesola'
-  | 'Rembertów';
+export type WarsawDistrict =
+  | "Śródmieście"
+  | "Mokotów"
+  | "Żoliborz"
+  | "Ochota"
+  | "Wola"
+  | "Praga-Północ"
+  | "Praga-Południe"
+  | "Targówek"
+  | "Bemowo"
+  | "Ursynów"
+  | "Wilanów"
+  | "Białołęka"
+  | "Bielany"
+  | "Włochy"
+  | "Ursus"
+  | "Wawer"
+  | "Wesola"
+  | "Rembertów";
 
 // Form Types
-export type ReportFormData = Omit<ReportConfig, 'config'> & {
-  config: Partial<ReportConfig['config']>;
+export type ReportFormData = Omit<ReportConfig, "config"> & {
+  config: Partial<ReportConfig["config"]>;
 };
 
 export type ReportUpdateData = Partial<ReportConfig>;

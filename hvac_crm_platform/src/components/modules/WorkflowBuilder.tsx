@@ -1,41 +1,47 @@
-import React, { useState, useCallback } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { 
-  Workflow, 
-  Plus, 
-  Settings, 
-  Play, 
-  Pause, 
-  Trash2, 
-  Edit,
-  Zap,
-  Target,
-  Clock,
-  Users,
+import { useMutation, useQuery } from "convex/react";
+import {
+  AlertTriangle,
   Bell,
-  Route,
   CheckCircle,
-  AlertTriangle
-} from 'lucide-react';
-import { toast } from 'sonner';
+  Clock,
+  Edit,
+  Pause,
+  Play,
+  Plus,
+  Route,
+  Settings,
+  Target,
+  Trash2,
+  Users,
+  Workflow,
+  Zap,
+} from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
 
 // Type definitions for workflow conditions and actions
 interface WorkflowCondition {
   field: string;
-  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains' | 'starts_with';
+  operator: "equals" | "not_equals" | "greater_than" | "less_than" | "contains" | "starts_with";
   value: string | number | boolean;
 }
 
 interface WorkflowAction {
-  type: 'SEND_NOTIFICATION' | 'CREATE_TASK' | 'ASSIGN_TECHNICIAN' | 'UPDATE_STATUS' | 'TRIGGER_ROUTE_OPTIMIZATION';
+  type:
+    | "SEND_NOTIFICATION"
+    | "CREATE_TASK"
+    | "ASSIGN_TECHNICIAN"
+    | "UPDATE_STATUS"
+    | "TRIGGER_ROUTE_OPTIMIZATION";
   parameters: {
     message?: string;
     recipient?: string;
     taskTitle?: string;
     technicianId?: string;
     newStatus?: string;
-    priority?: 'low' | 'medium' | 'high' | 'urgent';
+    priority?: "low" | "medium" | "high" | "urgent";
     [key: string]: unknown;
   };
 }
@@ -46,75 +52,101 @@ interface WorkflowRule {
   description?: string;
   triggerEvent: string;
   triggerCondition: {
-    entityType: 'job' | 'contact' | 'quote' | 'equipment';
+    entityType: "job" | "contact" | "quote" | "equipment";
     conditions: WorkflowCondition[];
   };
   actions: WorkflowAction[];
   priority?: number;
   district?: string;
-  status: 'active' | 'disabled';
+  status: "active" | "disabled";
 }
 
 export const WorkflowBuilder: React.FC = () => {
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
   const [editingWorkflow, setEditingWorkflow] = useState<WorkflowRule | null>(null);
-  const [selectedTrigger, setSelectedTrigger] = useState('');
+  const [_selectedTrigger, _setSelectedTrigger] = useState("");
 
   // Get workflows
   const workflows = useQuery(api.workflows.list, {});
-  
+
   // Mutations
   const createWorkflow = useMutation(api.workflows.create);
   const updateWorkflow = useMutation(api.workflows.update);
   const executeWorkflows = useMutation(api.workflows.executeWorkflows);
 
   const triggerEvents = [
-    { value: 'JOB_STATUS_CHANGE', label: 'Job Status Change', icon: <Target className="w-4 h-4" /> },
-    { value: 'CONTACT_CREATED', label: 'New Contact Created', icon: <Users className="w-4 h-4" /> },
-    { value: 'INVOICE_GENERATED', label: 'Invoice Generated', icon: <CheckCircle className="w-4 h-4" /> },
-    { value: 'EQUIPMENT_LOW_STOCK', label: 'Low Stock Alert', icon: <AlertTriangle className="w-4 h-4" /> },
-    { value: 'SCHEDULED_TIME', label: 'Scheduled Time', icon: <Clock className="w-4 h-4" /> }
+    {
+      value: "JOB_STATUS_CHANGE",
+      label: "Job Status Change",
+      icon: <Target className="w-4 h-4" />,
+    },
+    { value: "CONTACT_CREATED", label: "New Contact Created", icon: <Users className="w-4 h-4" /> },
+    {
+      value: "INVOICE_GENERATED",
+      label: "Invoice Generated",
+      icon: <CheckCircle className="w-4 h-4" />,
+    },
+    {
+      value: "EQUIPMENT_LOW_STOCK",
+      label: "Low Stock Alert",
+      icon: <AlertTriangle className="w-4 h-4" />,
+    },
+    { value: "SCHEDULED_TIME", label: "Scheduled Time", icon: <Clock className="w-4 h-4" /> },
   ];
 
   const actionTypes = [
-    { value: 'ASSIGN_TECHNICIAN', label: 'Auto-Assign Technician', icon: <Users className="w-4 h-4" /> },
-    { value: 'SEND_NOTIFICATION', label: 'Send Notification', icon: <Bell className="w-4 h-4" /> },
-    { value: 'UPDATE_STATUS', label: 'Update Status', icon: <Settings className="w-4 h-4" /> },
-    { value: 'CREATE_TASK', label: 'Create Task', icon: <Plus className="w-4 h-4" /> },
-    { value: 'TRIGGER_ROUTE_OPTIMIZATION', label: 'Optimize Routes', icon: <Route className="w-4 h-4" /> }
+    {
+      value: "ASSIGN_TECHNICIAN",
+      label: "Auto-Assign Technician",
+      icon: <Users className="w-4 h-4" />,
+    },
+    { value: "SEND_NOTIFICATION", label: "Send Notification", icon: <Bell className="w-4 h-4" /> },
+    { value: "UPDATE_STATUS", label: "Update Status", icon: <Settings className="w-4 h-4" /> },
+    { value: "CREATE_TASK", label: "Create Task", icon: <Plus className="w-4 h-4" /> },
+    {
+      value: "TRIGGER_ROUTE_OPTIMIZATION",
+      label: "Optimize Routes",
+      icon: <Route className="w-4 h-4" />,
+    },
   ];
 
   const operators = [
-    { value: 'eq', label: 'Equals' },
-    { value: 'neq', label: 'Not Equals' },
-    { value: 'gt', label: 'Greater Than' },
-    { value: 'lt', label: 'Less Than' },
-    { value: 'contains', label: 'Contains' }
+    { value: "eq", label: "Equals" },
+    { value: "neq", label: "Not Equals" },
+    { value: "gt", label: "Greater Than" },
+    { value: "lt", label: "Less Than" },
+    { value: "contains", label: "Contains" },
   ];
 
   const warsawDistricts = [
-    'Śródmieście', 'Mokotów', 'Wilanów', 'Żoliborz', 'Ursynów', 
-    'Wola', 'Praga-Południe', 'Targówek'
+    "Śródmieście",
+    "Mokotów",
+    "Wilanów",
+    "Żoliborz",
+    "Ursynów",
+    "Wola",
+    "Praga-Południe",
+    "Targówek",
   ];
 
-  const handleCreateWorkflow = async (workflowData: Omit<WorkflowRule, 'id'>) => {
+  const handleCreateWorkflow = async (workflowData: Omit<WorkflowRule, "id">) => {
     try {
       await createWorkflow(workflowData);
-      toast.success('Workflow created successfully');
+      toast.success("Workflow created successfully");
       setIsBuilderOpen(false);
       setEditingWorkflow(null);
-    } catch (error) {
-      toast.error('Failed to create workflow');
+    } catch (_error) {
+      toast.error("Failed to create workflow");
     }
   };
 
   const handleUpdateWorkflow = async (id: string, workflowData: Partial<WorkflowRule>) => {
     try {
       await updateWorkflow({ id: id as any, ...workflowData });
-      toast.success('Workflow updated successfully');
+      toast.success("Workflow updated successfully");
       setEditingWorkflow(null);
-    } catch (error) {
-      toast.error('Failed to update workflow');
+    } catch (_error) {
+      toast.error("Failed to update workflow");
     }
   };
 
@@ -122,14 +154,16 @@ export const WorkflowBuilder: React.FC = () => {
     try {
       const result = await executeWorkflows({
         triggerEvent: workflow.triggerEvent,
-        entityId: 'test-entity',
+        entityId: "test-entity",
         entityType: workflow.triggerCondition.entityType,
-        entityData: { status: 'test', district: 'Śródmieście' }
+        entityData: { status: "test", district: "Śródmieście" },
       });
-      
-      toast.success(`Test completed: ${result.successfulExecutions} successful, ${result.failedExecutions} failed`);
-    } catch (error) {
-      toast.error('Test execution failed');
+
+      toast.success(
+        `Test completed: ${result.successfulExecutions} successful, ${result.failedExecutions} failed`
+      );
+    } catch (_error) {
+      toast.error("Test execution failed");
     }
   };
 
@@ -137,15 +171,19 @@ export const WorkflowBuilder: React.FC = () => {
     <div key={workflow._id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className={`p-2 rounded-lg ${workflow.status === 'active' ? 'bg-green-100' : 'bg-gray-100'}`}>
-            <Workflow className={`w-5 h-5 ${workflow.status === 'active' ? 'text-green-600' : 'text-gray-600'}`} />
+          <div
+            className={`p-2 rounded-lg ${workflow.status === "active" ? "bg-green-100" : "bg-gray-100"}`}
+          >
+            <Workflow
+              className={`w-5 h-5 ${workflow.status === "active" ? "text-green-600" : "text-gray-600"}`}
+            />
           </div>
           <div>
             <h3 className="font-semibold text-gray-900">{workflow.name}</h3>
             <p className="text-sm text-gray-600">{workflow.description}</p>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <button
             onClick={() => handleTestWorkflow(workflow)}
@@ -162,17 +200,23 @@ export const WorkflowBuilder: React.FC = () => {
             <Edit className="w-4 h-4" />
           </button>
           <button
-            onClick={() => handleUpdateWorkflow(workflow._id, { 
-              status: workflow.status === 'active' ? 'disabled' : 'active' 
-            })}
+            onClick={() =>
+              handleUpdateWorkflow(workflow._id, {
+                status: workflow.status === "active" ? "disabled" : "active",
+              })
+            }
             className={`p-2 rounded-lg transition-colors ${
-              workflow.status === 'active' 
-                ? 'text-red-600 hover:bg-red-50' 
-                : 'text-green-600 hover:bg-green-50'
+              workflow.status === "active"
+                ? "text-red-600 hover:bg-red-50"
+                : "text-green-600 hover:bg-green-50"
             }`}
-            title={workflow.status === 'active' ? 'Disable' : 'Enable'}
+            title={workflow.status === "active" ? "Disable" : "Enable"}
           >
-            {workflow.status === 'active' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {workflow.status === "active" ? (
+              <Pause className="w-4 h-4" />
+            ) : (
+              <Play className="w-4 h-4" />
+            )}
           </button>
         </div>
       </div>
@@ -181,7 +225,7 @@ export const WorkflowBuilder: React.FC = () => {
         <div className="flex items-center space-x-2 text-sm">
           <span className="font-medium text-gray-700">Trigger:</span>
           <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-            {triggerEvents.find(t => t.value === workflow.triggerEvent)?.label}
+            {triggerEvents.find((t) => t.value === workflow.triggerEvent)?.label}
           </span>
         </div>
 
@@ -189,8 +233,11 @@ export const WorkflowBuilder: React.FC = () => {
           <span className="font-medium text-gray-700">Actions:</span>
           <div className="flex flex-wrap gap-1">
             {workflow.actions.map((action: any, index: number) => (
-              <span key={index} className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                {actionTypes.find(a => a.value === action.type)?.label}
+              <span
+                key={index}
+                className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs"
+              >
+                {actionTypes.find((a) => a.value === action.type)?.label}
               </span>
             ))}
           </div>
@@ -208,15 +255,21 @@ export const WorkflowBuilder: React.FC = () => {
         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
           <div className="flex items-center space-x-4 text-xs text-gray-500">
             <span>Executions: {workflow.metrics.executions}</span>
-            <span>Success Rate: {workflow.metrics.executions > 0 
-              ? Math.round((workflow.metrics.successes / workflow.metrics.executions) * 100) 
-              : 0}%</span>
+            <span>
+              Success Rate:{" "}
+              {workflow.metrics.executions > 0
+                ? Math.round((workflow.metrics.successes / workflow.metrics.executions) * 100)
+                : 0}
+              %
+            </span>
           </div>
-          <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-            workflow.status === 'active' 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-gray-100 text-gray-800'
-          }`}>
+          <div
+            className={`px-2 py-1 rounded-full text-xs font-medium ${
+              workflow.status === "active"
+                ? "bg-green-100 text-green-800"
+                : "bg-gray-100 text-gray-800"
+            }`}
+          >
             {workflow.status}
           </div>
         </div>
@@ -235,7 +288,7 @@ export const WorkflowBuilder: React.FC = () => {
           </h1>
           <p className="text-gray-600">Automate Jobs and Contacts with custom rules</p>
         </div>
-        
+
         <button
           onClick={() => setIsBuilderOpen(true)}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center space-x-2"
@@ -255,7 +308,7 @@ export const WorkflowBuilder: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Active Workflows</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {workflows?.filter(w => w.status === 'active').length || 0}
+                {workflows?.filter((w) => w.status === "active").length || 0}
               </p>
             </div>
           </div>
@@ -283,10 +336,14 @@ export const WorkflowBuilder: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Success Rate</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {workflows && workflows.length > 0 
-                  ? Math.round((workflows.reduce((sum, w) => sum + w.metrics.successes, 0) / 
-                               workflows.reduce((sum, w) => sum + w.metrics.executions, 0)) * 100) || 0
-                  : 0}%
+                {workflows && workflows.length > 0
+                  ? Math.round(
+                      (workflows.reduce((sum, w) => sum + w.metrics.successes, 0) /
+                        workflows.reduce((sum, w) => sum + w.metrics.executions, 0)) *
+                        100
+                    ) || 0
+                  : 0}
+                %
               </p>
             </div>
           </div>
@@ -309,7 +366,7 @@ export const WorkflowBuilder: React.FC = () => {
       {/* Workflows List */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-gray-900">Active Workflows</h2>
-        
+
         {workflows && workflows.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {workflows.map(renderWorkflowCard)}
@@ -318,7 +375,9 @@ export const WorkflowBuilder: React.FC = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
             <Workflow className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No workflows yet</h3>
-            <p className="text-gray-600 mb-6">Create your first workflow to automate Jobs and Contacts</p>
+            <p className="text-gray-600 mb-6">
+              Create your first workflow to automate Jobs and Contacts
+            </p>
             <button
               onClick={() => setIsBuilderOpen(true)}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
@@ -333,9 +392,10 @@ export const WorkflowBuilder: React.FC = () => {
       {(isBuilderOpen || editingWorkflow) && (
         <WorkflowBuilderModal
           workflow={editingWorkflow}
-          onSave={editingWorkflow ? 
-            (data) => handleUpdateWorkflow(editingWorkflow._id, data) : 
-            handleCreateWorkflow
+          onSave={
+            editingWorkflow
+              ? (data) => handleUpdateWorkflow(editingWorkflow._id, data)
+              : handleCreateWorkflow
           }
           onClose={() => {
             setIsBuilderOpen(false);
@@ -391,20 +451,20 @@ const WorkflowBuilderModal: React.FC<WorkflowBuilderModalProps> = ({
   triggerEvents,
   actionTypes,
   operators,
-  districts
+  districts,
 }) => {
   const [formData, setFormData] = useState({
-    name: workflow?.name || '',
-    description: workflow?.description || '',
-    triggerEvent: workflow?.triggerEvent || '',
+    name: workflow?.name || "",
+    description: workflow?.description || "",
+    triggerEvent: workflow?.triggerEvent || "",
     triggerCondition: workflow?.triggerCondition || {
-      entityType: 'job',
-      conditions: [{ field: 'status', operator: 'eq', value: '' }]
+      entityType: "job",
+      conditions: [{ field: "status", operator: "eq", value: "" }],
     },
-    actions: workflow?.actions || [{ type: '', parameters: {} }],
+    actions: workflow?.actions || [{ type: "", parameters: {} }],
     priority: workflow?.priority || 5,
-    district: workflow?.district || '',
-    status: workflow?.status || 'active'
+    district: workflow?.district || "",
+    status: workflow?.status || "active",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -417,17 +477,15 @@ const WorkflowBuilderModal: React.FC<WorkflowBuilderModalProps> = ({
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
-            {workflow ? 'Edit Workflow' : 'Create New Workflow'}
+            {workflow ? "Edit Workflow" : "Create New Workflow"}
           </h2>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Workflow Name
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Workflow Name</label>
               <input
                 type="text"
                 value={formData.name}
@@ -436,7 +494,7 @@ const WorkflowBuilderModal: React.FC<WorkflowBuilderModalProps> = ({
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 District (Optional)
@@ -447,17 +505,17 @@ const WorkflowBuilderModal: React.FC<WorkflowBuilderModalProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Districts</option>
-                {districts.map(district => (
-                  <option key={district} value={district}>{district}</option>
+                {districts.map((district) => (
+                  <option key={district} value={district}>
+                    {district}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -468,9 +526,7 @@ const WorkflowBuilderModal: React.FC<WorkflowBuilderModalProps> = ({
 
           {/* Trigger Configuration */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Trigger Event
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Trigger Event</label>
             <select
               value={formData.triggerEvent}
               onChange={(e) => setFormData({ ...formData, triggerEvent: e.target.value })}
@@ -478,20 +534,23 @@ const WorkflowBuilderModal: React.FC<WorkflowBuilderModalProps> = ({
               required
             >
               <option value="">Select Trigger</option>
-              {triggerEvents.map(trigger => (
-                <option key={trigger.value} value={trigger.value}>{trigger.label}</option>
+              {triggerEvents.map((trigger) => (
+                <option key={trigger.value} value={trigger.value}>
+                  {trigger.label}
+                </option>
               ))}
             </select>
           </div>
 
           {/* Actions Configuration */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Actions
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Actions</label>
             <div className="space-y-3">
               {formData.actions.map((action, index) => (
-                <div key={index} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                <div
+                  key={index}
+                  className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg"
+                >
                   <select
                     value={action.type}
                     onChange={(e) => {
@@ -502,11 +561,13 @@ const WorkflowBuilderModal: React.FC<WorkflowBuilderModalProps> = ({
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Select Action</option>
-                    {actionTypes.map(actionType => (
-                      <option key={actionType.value} value={actionType.value}>{actionType.label}</option>
+                    {actionTypes.map((actionType) => (
+                      <option key={actionType.value} value={actionType.value}>
+                        {actionType.label}
+                      </option>
                     ))}
                   </select>
-                  
+
                   <button
                     type="button"
                     onClick={() => {
@@ -519,13 +580,13 @@ const WorkflowBuilderModal: React.FC<WorkflowBuilderModalProps> = ({
                   </button>
                 </div>
               ))}
-              
+
               <button
                 type="button"
                 onClick={() => {
                   setFormData({
                     ...formData,
-                    actions: [...formData.actions, { type: '', parameters: {} }]
+                    actions: [...formData.actions, { type: "", parameters: {} }],
                   });
                 }}
                 className="w-full px-3 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors"
@@ -549,7 +610,7 @@ const WorkflowBuilderModal: React.FC<WorkflowBuilderModalProps> = ({
               type="submit"
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
             >
-              {workflow ? 'Update Workflow' : 'Create Workflow'}
+              {workflow ? "Update Workflow" : "Create Workflow"}
             </button>
           </div>
         </form>

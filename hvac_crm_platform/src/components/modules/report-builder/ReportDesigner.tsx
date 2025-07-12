@@ -1,41 +1,35 @@
-import React, { useState, useCallback } from 'react';
-import { useDrop } from 'react-dnd';
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
 import {
-  Settings,
-  Play,
-  Eye,
-  Edit3,
-  Trash2,
-  GripVertical,
-  Plus,
-  Database,
   BarChart3,
-  Table,
-  PieChart,
+  Database,
+  Edit3,
+  Gauge,
+  GripVertical,
   LineChart,
-  Gauge
-} from 'lucide-react';
-import { DraggableField } from './DraggableField';
-import { DropZone } from './DropZone';
-import { FieldConfigDialog } from './FieldConfigDialog';
+  PieChart,
+  Play,
+  Plus,
+  Settings,
+  Table,
+  Trash2,
+} from "lucide-react";
+import { useCallback, useState } from "react";
+import { useDrop } from "react-dnd";
 import type {
-  ReportConfig,
-  ReportDesignerProps,
-  DataSource,
-  VisualizationType,
   CalculatedField,
-  ExecutionResult
-} from '../../../types/report-builder';
+  DataSource,
+  ReportDesignerProps,
+  VisualizationType,
+} from "../../../types/report-builder";
+import { Button } from "../../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
+import { FieldConfigDialog } from "./FieldConfigDialog";
 
 export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerProps) {
   const [selectedField, setSelectedField] = useState<any>(null);
   const [showFieldConfig, setShowFieldConfig] = useState(false);
 
-
   const [{ isOver }, drop] = useDrop({
-    accept: ['field', 'visualization'],
+    accept: ["field", "visualization"],
     drop: (item: any, monitor) => {
       const didDrop = monitor.didDrop();
       if (didDrop) return;
@@ -48,74 +42,89 @@ export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerPr
     }),
   });
 
-  const handleDropItem = useCallback((item: any) => {
-    if (item.type === 'field') {
-      // Add field to data sources or calculated fields
-      const newDataSource: DataSource = {
-        id: `field_${Date.now()}`,
-        type: 'convex' as const,
-        table: item.table,
-        field: item.field,
-        filters: []
-      };
+  const handleDropItem = useCallback(
+    (item: any) => {
+      if (item.type === "field") {
+        // Add field to data sources or calculated fields
+        const newDataSource: DataSource = {
+          id: `field_${Date.now()}`,
+          type: "convex" as const,
+          table: item.table,
+          field: item.field,
+          filters: [],
+        };
 
-      onChange({
-        ...config,
-        config: {
-          ...config.config,
-          dataSources: [...config.config.dataSources, newDataSource]
-        }
-      });
-    } else if (item.type === 'visualization') {
-      // Update visualization type
-      onChange({
-        ...config,
-        config: {
-          ...config.config,
-          visualization: {
-            ...config.config.visualization,
-            type: item.visualizationType as VisualizationType['type']
-          }
-        }
-      });
-    }
-  }, [config, onChange]);
+        onChange({
+          ...config,
+          config: {
+            ...config.config,
+            dataSources: [...config.config.dataSources, newDataSource],
+          },
+        });
+      } else if (item.type === "visualization") {
+        // Update visualization type
+        onChange({
+          ...config,
+          config: {
+            ...config.config,
+            visualization: {
+              ...config.config.visualization,
+              type: item.visualizationType as VisualizationType["type"],
+            },
+          },
+        });
+      }
+    },
+    [config, onChange]
+  );
 
   const handleFieldClick = useCallback((field: any) => {
     setSelectedField(field);
     setShowFieldConfig(true);
   }, []);
 
-  const handleRemoveField = useCallback((fieldId: string) => {
-    onChange({
-      ...config,
-      config: {
-        ...config.config,
-        dataSources: config.config.dataSources.filter((ds: any) => ds.id !== fieldId)
-      }
-    });
-  }, [config, onChange]);
+  const handleRemoveField = useCallback(
+    (fieldId: string) => {
+      onChange({
+        ...config,
+        config: {
+          ...config.config,
+          dataSources: config.config.dataSources.filter((ds: any) => ds.id !== fieldId),
+        },
+      });
+    },
+    [config, onChange]
+  );
 
-  const handleUpdateField = useCallback((fieldId: string, updates: any) => {
-    onChange({
-      ...config,
-      config: {
-        ...config.config,
-        dataSources: config.config.dataSources.map((ds: any) => 
-          ds.id === fieldId ? { ...ds, ...updates } : ds
-        )
-      }
-    });
-  }, [config, onChange]);
+  const handleUpdateField = useCallback(
+    (fieldId: string, updates: any) => {
+      onChange({
+        ...config,
+        config: {
+          ...config.config,
+          dataSources: config.config.dataSources.map((ds: any) =>
+            ds.id === fieldId ? { ...ds, ...updates } : ds
+          ),
+        },
+      });
+    },
+    [config, onChange]
+  );
 
   const getVisualizationIcon = (type: string) => {
     switch (type) {
-      case 'table': return Table;
-      case 'bar_chart': return BarChart3;
-      case 'line_chart': return LineChart;
-      case 'pie_chart': return PieChart;
-      case 'gauge': return Gauge;
-      default: return BarChart3;
+      case "table":
+        return Table;
+      case "bar_chart":
+        return BarChart3;
+      case "line_chart":
+        return LineChart;
+      case "pie_chart":
+        return PieChart;
+      case "gauge":
+        return Gauge;
+      default:
+        return BarChart3;
     }
   };
 
@@ -161,31 +170,35 @@ export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerPr
         <CardHeader>
           <CardTitle className="flex items-center">
             <VisualizationIcon className="w-5 h-5 mr-2" />
-            Visualization: {config.config.visualization.type.replace('_', ' ').toUpperCase()}
+            Visualization: {config.config.visualization.type.replace("_", " ").toUpperCase()}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-5 gap-2">
-            {([
-              { type: 'table' as const, icon: Table, label: 'Table' },
-              { type: 'bar_chart' as const, icon: BarChart3, label: 'Bar Chart' },
-              { type: 'line_chart' as const, icon: LineChart, label: 'Line Chart' },
-              { type: 'pie_chart' as const, icon: PieChart, label: 'Pie Chart' },
-              { type: 'gauge' as const, icon: Gauge, label: 'Gauge' }
-            ] as const).map(({ type, icon: Icon, label }) => (
+            {(
+              [
+                { type: "table" as const, icon: Table, label: "Table" },
+                { type: "bar_chart" as const, icon: BarChart3, label: "Bar Chart" },
+                { type: "line_chart" as const, icon: LineChart, label: "Line Chart" },
+                { type: "pie_chart" as const, icon: PieChart, label: "Pie Chart" },
+                { type: "gauge" as const, icon: Gauge, label: "Gauge" },
+              ] as const
+            ).map(({ type, icon: Icon, label }) => (
               <button
                 key={type}
-                onClick={() => onChange({
-                  ...config,
-                  config: {
-                    ...config.config,
-                    visualization: { ...config.config.visualization, type }
-                  }
-                })}
+                onClick={() =>
+                  onChange({
+                    ...config,
+                    config: {
+                      ...config.config,
+                      visualization: { ...config.config.visualization, type },
+                    },
+                  })
+                }
                 className={`p-3 rounded-lg border-2 transition-colors ${
                   config.config.visualization.type === type
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 hover:border-gray-300"
                 }`}
               >
                 <Icon className="w-6 h-6 mx-auto mb-1" />
@@ -208,9 +221,7 @@ export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerPr
           <div
             ref={drop as any}
             className={`min-h-32 border-2 border-dashed rounded-lg p-4 transition-colors ${
-              isOver
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-300 hover:border-gray-400'
+              isOver ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400"
             }`}
           >
             {config.config.dataSources.length === 0 ? (
@@ -221,7 +232,7 @@ export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerPr
               </div>
             ) : (
               <div className="space-y-3">
-                {config.config.dataSources.map((dataSource: any, index: number) => (
+                {config.config.dataSources.map((dataSource: any, _index: number) => (
                   <div
                     key={dataSource.id}
                     className="flex items-center justify-between p-3 bg-white border rounded-lg hover:shadow-sm transition-shadow"
@@ -230,7 +241,7 @@ export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerPr
                       <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
                       <div>
                         <div className="font-medium text-sm">
-                          {dataSource.table}.{dataSource.field || 'all'}
+                          {dataSource.table}.{dataSource.field || "all"}
                         </div>
                         <div className="text-xs text-gray-500">
                           {dataSource.type} • {dataSource.filters?.length || 0} filters
@@ -275,15 +286,15 @@ export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerPr
               onClick={() => {
                 const newField: CalculatedField = {
                   name: `calculated_${Date.now()}`,
-                  formula: '0',
-                  dataType: 'number' as const
+                  formula: "0",
+                  dataType: "number" as const,
                 };
                 onChange({
                   ...config,
                   config: {
                     ...config.config,
-                    calculatedFields: [...(config.config.calculatedFields || []), newField]
-                  }
+                    calculatedFields: [...(config.config.calculatedFields || []), newField],
+                  },
                 });
               }}
             >
@@ -325,7 +336,7 @@ export function ReportDesigner({ config, onChange, onExecute }: ReportDesignerPr
                         );
                         onChange({
                           ...config,
-                          config: { ...config.config, calculatedFields: updatedFields }
+                          config: { ...config.config, calculatedFields: updatedFields },
                         });
                       }}
                     >

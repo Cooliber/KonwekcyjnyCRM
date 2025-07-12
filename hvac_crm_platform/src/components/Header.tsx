@@ -1,8 +1,8 @@
 import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import { SignOutButton } from "../SignOutButton";
 import { Bell, Search } from "lucide-react";
 import { useState } from "react";
+import { api } from "../../convex/_generated/api";
+import { SignOutButton } from "../SignOutButton";
 
 export function Header() {
   const user = useQuery(api.auth.loggedInUser);
@@ -39,9 +39,7 @@ export function Header() {
 
           <div className="flex items-center space-x-3">
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">
-                {user?.email || "User"}
-              </p>
+              <p className="text-sm font-medium text-gray-900">{user?.email || "User"}</p>
               <p className="text-xs text-gray-500">HVAC Technician</p>
             </div>
             <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">

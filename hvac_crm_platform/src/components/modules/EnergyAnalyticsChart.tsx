@@ -3,39 +3,39 @@
  * Real-time energy efficiency charts with Polish VAT calculations
  */
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { 
-  Zap, 
-  TrendingUp, 
-  TrendingDown, 
-  DollarSign, 
-  Leaf, 
-  Target,
-  Download,
+import {
   BarChart3,
+  DollarSign,
+  Download,
+  Leaf,
   LineChart as LineChartIcon,
-  PieChart as PieChartIcon
-} from 'lucide-react';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  AreaChart,
+  PieChart as PieChartIcon,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
+import React, { useState } from "react";
+import {
   Area,
-  BarChart,
+  AreaChart,
   Bar,
-  PieChart,
-  Pie,
+  BarChart,
+  CartesianGrid,
   Cell,
-  ComposedChart
-} from 'recharts';
-import type { EnergyAnalyticsData, WarsawDistrict } from '../../types/hvac';
+  ComposedChart,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import type { EnergyAnalyticsData, WarsawDistrict } from "../../types/hvac";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface EnergyAnalyticsChartProps {
   data: EnergyAnalyticsData[] | undefined;
@@ -50,36 +50,38 @@ const VAT_RATE = 0.23; // 23%
 
 // Chart colors
 const COLORS = {
-  primary: '#3b82f6',
-  secondary: '#10b981',
-  accent: '#f59e0b',
-  danger: '#ef4444',
-  success: '#22c55e',
-  warning: '#eab308'
+  primary: "#3b82f6",
+  secondary: "#10b981",
+  accent: "#f59e0b",
+  danger: "#ef4444",
+  success: "#22c55e",
+  warning: "#eab308",
 };
 
-export function EnergyAnalyticsChart({ 
-  data, 
-  timeRange, 
-  district, 
-  isLoading, 
-  showVATBreakdown = true 
+export function EnergyAnalyticsChart({
+  data,
+  timeRange,
+  district,
+  isLoading,
+  showVATBreakdown = true,
 }: EnergyAnalyticsChartProps) {
-  const [chartType, setChartType] = useState<'line' | 'area' | 'bar' | 'composed'>('area');
-  const [selectedMetric, setSelectedMetric] = useState<'efficiency' | 'cost' | 'consumption' | 'carbon'>('efficiency');
+  const [chartType, setChartType] = useState<"line" | "area" | "bar" | "composed">("area");
+  const [selectedMetric, setSelectedMetric] = useState<
+    "efficiency" | "cost" | "consumption" | "carbon"
+  >("efficiency");
 
   // Generate mock data if no real data available
   const mockData: EnergyAnalyticsData[] = React.useMemo(() => {
     if (data && data.length > 0) return data;
-    
-    const hours = timeRange === '1h' ? 12 : timeRange === '24h' ? 24 : timeRange === '7d' ? 7 : 30;
-    const interval = timeRange === '1h' ? 5 : timeRange === '24h' ? 1 : timeRange === '7d' ? 1 : 1;
-    
+
+    const hours = timeRange === "1h" ? 12 : timeRange === "24h" ? 24 : timeRange === "7d" ? 7 : 30;
+    const _interval = timeRange === "1h" ? 5 : timeRange === "24h" ? 1 : timeRange === "7d" ? 1 : 1;
+
     return Array.from({ length: hours }, (_, i) => {
       const timestamp = new Date();
-      if (timeRange === '1h') {
+      if (timeRange === "1h") {
         timestamp.setMinutes(timestamp.getMinutes() - (hours - i) * 5);
-      } else if (timeRange === '24h') {
+      } else if (timeRange === "24h") {
         timestamp.setHours(timestamp.getHours() - (hours - i));
       } else {
         timestamp.setDate(timestamp.getDate() - (hours - i));
@@ -92,7 +94,7 @@ export function EnergyAnalyticsChart({
 
       return {
         timestamp,
-        district: district || 'Śródmieście',
+        district: district || "Śródmieście",
         equipmentId: `EQ-${Math.floor(Math.random() * 1000)}`,
         energyConsumption: Math.round(baseConsumption * 100) / 100,
         energyEfficiency: Math.round(efficiency * 100) / 100,
@@ -102,7 +104,7 @@ export function EnergyAnalyticsChart({
         totalCost: Math.round((baseCost + vatAmount) * 100) / 100,
         industryAverage: 82,
         targetEfficiency: 90,
-        savingsPotential: Math.round((90 - efficiency) * 2 * 100) / 100 // Potential savings in PLN
+        savingsPotential: Math.round((90 - efficiency) * 2 * 100) / 100, // Potential savings in PLN
       };
     });
   }, [data, timeRange, district]);
@@ -112,15 +114,19 @@ export function EnergyAnalyticsChart({
     if (mockData.length === 0) return null;
 
     const totalConsumption = mockData.reduce((sum, d) => sum + d.energyConsumption, 0);
-    const avgEfficiency = mockData.reduce((sum, d) => sum + d.energyEfficiency, 0) / mockData.length;
+    const avgEfficiency =
+      mockData.reduce((sum, d) => sum + d.energyEfficiency, 0) / mockData.length;
     const totalCost = mockData.reduce((sum, d) => sum + d.totalCost, 0);
     const totalVAT = mockData.reduce((sum, d) => sum + d.vatAmount, 0);
     const totalCarbon = mockData.reduce((sum, d) => sum + d.carbonFootprint, 0);
     const totalSavings = mockData.reduce((sum, d) => sum + d.savingsPotential, 0);
 
-    const efficiencyTrend = mockData.length > 1 
-      ? ((mockData[mockData.length - 1].energyEfficiency - mockData[0].energyEfficiency) / mockData[0].energyEfficiency) * 100
-      : 0;
+    const efficiencyTrend =
+      mockData.length > 1
+        ? ((mockData[mockData.length - 1].energyEfficiency - mockData[0].energyEfficiency) /
+            mockData[0].energyEfficiency) *
+          100
+        : 0;
 
     return {
       totalConsumption: Math.round(totalConsumption * 100) / 100,
@@ -129,17 +135,18 @@ export function EnergyAnalyticsChart({
       totalVAT: Math.round(totalVAT * 100) / 100,
       totalCarbon: Math.round(totalCarbon * 100) / 100,
       totalSavings: Math.round(totalSavings * 100) / 100,
-      efficiencyTrend: Math.round(efficiencyTrend * 100) / 100
+      efficiencyTrend: Math.round(efficiencyTrend * 100) / 100,
     };
   }, [mockData]);
 
   // Prepare chart data
-  const chartData = mockData.map((item, index) => ({
-    time: timeRange === '1h' 
-      ? item.timestamp.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
-      : timeRange === '24h'
-        ? item.timestamp.toLocaleTimeString('pl-PL', { hour: '2-digit' })
-        : item.timestamp.toLocaleDateString('pl-PL', { month: 'short', day: 'numeric' }),
+  const chartData = mockData.map((item, _index) => ({
+    time:
+      timeRange === "1h"
+        ? item.timestamp.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })
+        : timeRange === "24h"
+          ? item.timestamp.toLocaleTimeString("pl-PL", { hour: "2-digit" })
+          : item.timestamp.toLocaleDateString("pl-PL", { month: "short", day: "numeric" }),
     efficiency: item.energyEfficiency,
     consumption: item.energyConsumption,
     cost: item.totalCost,
@@ -148,14 +155,20 @@ export function EnergyAnalyticsChart({
     carbon: item.carbonFootprint,
     target: item.targetEfficiency,
     industry: item.industryAverage,
-    savings: item.savingsPotential
+    savings: item.savingsPotential,
   }));
 
   // VAT breakdown data for pie chart
-  const vatBreakdownData = summaryStats ? [
-    { name: 'Base Cost', value: summaryStats.totalCost - summaryStats.totalVAT, color: COLORS.primary },
-    { name: 'VAT (23%)', value: summaryStats.totalVAT, color: COLORS.accent }
-  ] : [];
+  const vatBreakdownData = summaryStats
+    ? [
+        {
+          name: "Base Cost",
+          value: summaryStats.totalCost - summaryStats.totalVAT,
+          color: COLORS.primary,
+        },
+        { name: "VAT (23%)", value: summaryStats.totalVAT, color: COLORS.accent },
+      ]
+    : [];
 
   if (isLoading) {
     return (
@@ -168,7 +181,7 @@ export function EnergyAnalyticsChart({
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
             <span className="ml-2 text-gray-600">Loading energy analytics...</span>
           </div>
         </CardContent>
@@ -183,7 +196,9 @@ export function EnergyAnalyticsChart({
           <CardTitle className="flex items-center">
             <Zap className="w-5 h-5 mr-2" />
             Energy Analytics
-            {district && <span className="ml-2 text-sm font-normal text-gray-500">({district})</span>}
+            {district && (
+              <span className="ml-2 text-sm font-normal text-gray-500">({district})</span>
+            )}
           </CardTitle>
           <div className="flex items-center gap-2">
             <select
@@ -200,15 +215,15 @@ export function EnergyAnalyticsChart({
               variant="outline"
               size="sm"
               onClick={() => {
-                const types: typeof chartType[] = ['line', 'area', 'bar', 'composed'];
+                const types: (typeof chartType)[] = ["line", "area", "bar", "composed"];
                 const currentIndex = types.indexOf(chartType);
                 setChartType(types[(currentIndex + 1) % types.length]);
               }}
             >
-              {chartType === 'line' && <LineChartIcon className="w-4 h-4" />}
-              {chartType === 'area' && <BarChart3 className="w-4 h-4" />}
-              {chartType === 'bar' && <BarChart3 className="w-4 h-4" />}
-              {chartType === 'composed' && <PieChartIcon className="w-4 h-4" />}
+              {chartType === "line" && <LineChartIcon className="w-4 h-4" />}
+              {chartType === "area" && <BarChart3 className="w-4 h-4" />}
+              {chartType === "bar" && <BarChart3 className="w-4 h-4" />}
+              {chartType === "composed" && <PieChartIcon className="w-4 h-4" />}
             </Button>
             <Button variant="outline" size="sm">
               <Download className="w-4 h-4" />
@@ -235,7 +250,9 @@ export function EnergyAnalyticsChart({
                   ) : (
                     <TrendingDown className="w-3 h-3 text-red-500 mr-1" />
                   )}
-                  <span className={`text-xs ${summaryStats.efficiencyTrend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span
+                    className={`text-xs ${summaryStats.efficiencyTrend >= 0 ? "text-green-600" : "text-red-600"}`}
+                  >
                     {Math.abs(summaryStats.efficiencyTrend).toFixed(1)}%
                   </span>
                 </div>
@@ -256,7 +273,9 @@ export function EnergyAnalyticsChart({
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-orange-700">Consumption</p>
-                    <p className="text-lg font-bold text-orange-900">{summaryStats.totalConsumption} kWh</p>
+                    <p className="text-lg font-bold text-orange-900">
+                      {summaryStats.totalConsumption} kWh
+                    </p>
                   </div>
                   <BarChart3 className="w-5 h-5 text-orange-500" />
                 </div>
@@ -286,7 +305,9 @@ export function EnergyAnalyticsChart({
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-yellow-700">Savings</p>
-                    <p className="text-lg font-bold text-yellow-900">{summaryStats.totalSavings} PLN</p>
+                    <p className="text-lg font-bold text-yellow-900">
+                      {summaryStats.totalSavings} PLN
+                    </p>
                   </div>
                   <TrendingUp className="w-5 h-5 text-yellow-500" />
                 </div>
@@ -298,72 +319,123 @@ export function EnergyAnalyticsChart({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <ResponsiveContainer width="100%" height={400}>
-                {chartType === 'line' && (
+                {chartType === "line" && (
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="time" />
                     <YAxis />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value, name) => {
-                        if (name === 'efficiency') return [`${value}%`, 'Efficiency'];
-                        if (name === 'cost') return [`${value} PLN`, 'Total Cost'];
-                        if (name === 'consumption') return [`${value} kWh`, 'Consumption'];
-                        if (name === 'carbon') return [`${value} kg`, 'Carbon'];
+                        if (name === "efficiency") return [`${value}%`, "Efficiency"];
+                        if (name === "cost") return [`${value} PLN`, "Total Cost"];
+                        if (name === "consumption") return [`${value} kWh`, "Consumption"];
+                        if (name === "carbon") return [`${value} kg`, "Carbon"];
                         return [value, name];
                       }}
                     />
-                    {selectedMetric === 'efficiency' && (
+                    {selectedMetric === "efficiency" && (
                       <>
-                        <Line type="monotone" dataKey="efficiency" stroke={COLORS.primary} strokeWidth={2} />
-                        <Line type="monotone" dataKey="target" stroke={COLORS.success} strokeDasharray="5 5" />
-                        <Line type="monotone" dataKey="industry" stroke={COLORS.warning} strokeDasharray="3 3" />
+                        <Line
+                          type="monotone"
+                          dataKey="efficiency"
+                          stroke={COLORS.primary}
+                          strokeWidth={2}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="target"
+                          stroke={COLORS.success}
+                          strokeDasharray="5 5"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="industry"
+                          stroke={COLORS.warning}
+                          strokeDasharray="3 3"
+                        />
                       </>
                     )}
-                    {selectedMetric === 'cost' && (
+                    {selectedMetric === "cost" && (
                       <>
-                        <Line type="monotone" dataKey="cost" stroke={COLORS.primary} strokeWidth={2} />
-                        <Line type="monotone" dataKey="baseCost" stroke={COLORS.secondary} strokeWidth={2} />
+                        <Line
+                          type="monotone"
+                          dataKey="cost"
+                          stroke={COLORS.primary}
+                          strokeWidth={2}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="baseCost"
+                          stroke={COLORS.secondary}
+                          strokeWidth={2}
+                        />
                       </>
                     )}
-                    {selectedMetric === 'consumption' && (
-                      <Line type="monotone" dataKey="consumption" stroke={COLORS.accent} strokeWidth={2} />
+                    {selectedMetric === "consumption" && (
+                      <Line
+                        type="monotone"
+                        dataKey="consumption"
+                        stroke={COLORS.accent}
+                        strokeWidth={2}
+                      />
                     )}
-                    {selectedMetric === 'carbon' && (
-                      <Line type="monotone" dataKey="carbon" stroke={COLORS.danger} strokeWidth={2} />
+                    {selectedMetric === "carbon" && (
+                      <Line
+                        type="monotone"
+                        dataKey="carbon"
+                        stroke={COLORS.danger}
+                        strokeWidth={2}
+                      />
                     )}
                   </LineChart>
                 )}
 
-                {chartType === 'area' && (
+                {chartType === "area" && (
                   <AreaChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="time" />
                     <YAxis />
                     <Tooltip />
-                    <Area 
-                      type="monotone" 
-                      dataKey={selectedMetric === 'efficiency' ? 'efficiency' : selectedMetric === 'cost' ? 'cost' : selectedMetric === 'consumption' ? 'consumption' : 'carbon'}
-                      stroke={COLORS.primary} 
-                      fill={COLORS.primary} 
+                    <Area
+                      type="monotone"
+                      dataKey={
+                        selectedMetric === "efficiency"
+                          ? "efficiency"
+                          : selectedMetric === "cost"
+                            ? "cost"
+                            : selectedMetric === "consumption"
+                              ? "consumption"
+                              : "carbon"
+                      }
+                      stroke={COLORS.primary}
+                      fill={COLORS.primary}
                       fillOpacity={0.3}
                     />
                   </AreaChart>
                 )}
 
-                {chartType === 'bar' && (
+                {chartType === "bar" && (
                   <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="time" />
                     <YAxis />
                     <Tooltip />
-                    <Bar 
-                      dataKey={selectedMetric === 'efficiency' ? 'efficiency' : selectedMetric === 'cost' ? 'cost' : selectedMetric === 'consumption' ? 'consumption' : 'carbon'}
+                    <Bar
+                      dataKey={
+                        selectedMetric === "efficiency"
+                          ? "efficiency"
+                          : selectedMetric === "cost"
+                            ? "cost"
+                            : selectedMetric === "consumption"
+                              ? "consumption"
+                              : "carbon"
+                      }
                       fill={COLORS.primary}
                     />
                   </BarChart>
                 )}
 
-                {chartType === 'composed' && selectedMetric === 'cost' && (
+                {chartType === "composed" && selectedMetric === "cost" && (
                   <ComposedChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="time" />
@@ -395,14 +467,16 @@ export function EnergyAnalyticsChart({
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => [`${value} PLN`, '']} />
+                    <Tooltip formatter={(value) => [`${value} PLN`, ""]} />
                   </PieChart>
                 </ResponsiveContainer>
-                
+
                 <div className="mt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Base Cost:</span>
-                    <span className="font-medium">{(summaryStats.totalCost - summaryStats.totalVAT).toFixed(2)} PLN</span>
+                    <span className="font-medium">
+                      {(summaryStats.totalCost - summaryStats.totalVAT).toFixed(2)} PLN
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">VAT (23%):</span>

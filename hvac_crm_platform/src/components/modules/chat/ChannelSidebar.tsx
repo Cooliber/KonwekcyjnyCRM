@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
-import { 
-  Hash, 
-  Users, 
-  MapPin, 
-  Briefcase, 
-  AlertTriangle, 
-  Plus,
+import {
+  AlertTriangle,
+  Briefcase,
   ChevronDown,
   ChevronRight,
+  Hash,
+  MapPin,
   MessageCircle,
   Phone,
-  Settings
-} from 'lucide-react';
+  Plus,
+  Settings,
+  Users,
+} from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 
 interface LastMessage {
   _id: string;
@@ -19,13 +20,21 @@ interface LastMessage {
   senderId: string;
   senderName?: string;
   timestamp: number;
-  type: 'text' | 'image' | 'file' | 'audio' | 'location' | 'system';
+  type: "text" | "image" | "file" | "audio" | "location" | "system";
 }
 
 interface Channel {
   _id: string;
   name: string;
-  type: 'district' | 'emergency' | 'general' | 'technicians' | 'sales' | 'support' | 'project' | 'direct';
+  type:
+    | "district"
+    | "emergency"
+    | "general"
+    | "technicians"
+    | "sales"
+    | "support"
+    | "project"
+    | "direct";
   district?: string;
   unreadCount: number;
   onlineParticipants: number;
@@ -54,36 +63,36 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
   channels,
   districtChannels,
   activeChannelId,
-  onChannelSelect
+  onChannelSelect,
 }) => {
   const [expandedSections, setExpandedSections] = useState({
     general: true,
     districts: true,
     projects: true,
-    direct: true
+    direct: true,
   });
 
   const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
   const getChannelIcon = (type: string) => {
     switch (type) {
-      case 'general':
-      case 'technicians':
-      case 'sales':
-      case 'support':
+      case "general":
+      case "technicians":
+      case "sales":
+      case "support":
         return <Hash className="w-4 h-4" />;
-      case 'emergency':
+      case "emergency":
         return <AlertTriangle className="w-4 h-4 text-red-500" />;
-      case 'district':
+      case "district":
         return <MapPin className="w-4 h-4 text-blue-500" />;
-      case 'project':
+      case "project":
         return <Briefcase className="w-4 h-4 text-green-500" />;
-      case 'direct':
+      case "direct":
         return <MessageCircle className="w-4 h-4 text-purple-500" />;
       default:
         return <Hash className="w-4 h-4" />;
@@ -91,69 +100,65 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
   };
 
   const getAffluenceColor = (affluence: number) => {
-    if (affluence >= 8) return 'text-green-600 bg-green-100';
-    if (affluence >= 6) return 'text-yellow-600 bg-yellow-100';
-    return 'text-red-600 bg-red-100';
+    if (affluence >= 8) return "text-green-600 bg-green-100";
+    if (affluence >= 6) return "text-yellow-600 bg-yellow-100";
+    return "text-red-600 bg-red-100";
   };
 
   const formatLastMessage = (message: any) => {
-    if (!message) return '';
-    
-    const content = message.content.length > 30 
-      ? `${message.content.substring(0, 30)}...` 
-      : message.content;
-    
-    return `${message.sender?.profile?.firstName || 'Someone'}: ${content}`;
+    if (!message) return "";
+
+    const content =
+      message.content.length > 30 ? `${message.content.substring(0, 30)}...` : message.content;
+
+    return `${message.sender?.profile?.firstName || "Someone"}: ${content}`;
   };
 
   // Group channels by type
-  const generalChannels = channels.filter(ch => 
-    ['general', 'technicians', 'sales', 'support', 'emergency'].includes(ch.type)
+  const generalChannels = channels.filter((ch) =>
+    ["general", "technicians", "sales", "support", "emergency"].includes(ch.type)
   );
-  const districtChannelsActive = channels.filter(ch => ch.type === 'district');
-  const projectChannels = channels.filter(ch => ch.type === 'project');
-  const directChannels = channels.filter(ch => ch.type === 'direct');
+  const districtChannelsActive = channels.filter((ch) => ch.type === "district");
+  const projectChannels = channels.filter((ch) => ch.type === "project");
+  const directChannels = channels.filter((ch) => ch.type === "direct");
 
   const ChannelItem: React.FC<{ channel: Channel }> = ({ channel }) => (
     <button
       onClick={() => onChannelSelect(channel.name)}
       className={`
         w-full flex items-center justify-between p-2 rounded-lg text-left transition-colors
-        ${activeChannelId === channel.name 
-          ? 'bg-blue-100 text-blue-900 border border-blue-200' 
-          : 'hover:bg-gray-100 text-gray-700'
+        ${
+          activeChannelId === channel.name
+            ? "bg-blue-100 text-blue-900 border border-blue-200"
+            : "hover:bg-gray-100 text-gray-700"
         }
       `}
     >
       <div className="flex items-center flex-1 min-w-0">
         {getChannelIcon(channel.type)}
         <span className="ml-2 text-sm font-medium truncate">
-          {channel.name.replace(/^(district-|project-|direct-)/, '')}
+          {channel.name.replace(/^(district-|project-|direct-)/, "")}
         </span>
         {channel.district && (
-          <span className="ml-1 text-xs text-gray-500">
-            ({channel.district})
-          </span>
+          <span className="ml-1 text-xs text-gray-500">({channel.district})</span>
         )}
       </div>
-      
+
       <div className="flex items-center space-x-1">
         {channel.onlineParticipants > 0 && (
-          <span className="text-xs text-gray-500">
-            {channel.onlineParticipants}
-          </span>
+          <span className="text-xs text-gray-500">{channel.onlineParticipants}</span>
         )}
         {channel.unreadCount > 0 && (
           <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
-            {channel.unreadCount > 99 ? '99+' : channel.unreadCount}
+            {channel.unreadCount > 99 ? "99+" : channel.unreadCount}
           </span>
         )}
       </div>
     </button>
   );
 
-  const SectionHeader: React.FC<{ 
-    title: string; 
+  const SectionHeader: React.FC<{
+    title: string;
     section: keyof typeof expandedSections;
     count?: number;
     onAdd?: () => void;
@@ -169,9 +174,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
           <ChevronRight className="w-3 h-3 mr-1" />
         )}
         {title}
-        {count !== undefined && (
-          <span className="ml-1 text-gray-400">({count})</span>
-        )}
+        {count !== undefined && <span className="ml-1 text-gray-400">({count})</span>}
       </button>
       {onAdd && (
         <button
@@ -190,14 +193,10 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
       <div className="p-4 space-y-4">
         {/* General Channels */}
         <div>
-          <SectionHeader 
-            title="Channels" 
-            section="general" 
-            count={generalChannels.length}
-          />
+          <SectionHeader title="Channels" section="general" count={generalChannels.length} />
           {expandedSections.general && (
             <div className="space-y-1 mt-2">
-              {generalChannels.map(channel => (
+              {generalChannels.map((channel) => (
                 <ChannelItem key={channel._id} channel={channel} />
               ))}
             </div>
@@ -206,18 +205,18 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
 
         {/* Warsaw Districts */}
         <div>
-          <SectionHeader 
-            title="Warsaw Districts" 
-            section="districts" 
+          <SectionHeader
+            title="Warsaw Districts"
+            section="districts"
             count={districtChannels.length}
           />
           {expandedSections.districts && (
             <div className="space-y-1 mt-2">
-              {districtChannels.map(district => {
-                const activeChannel = districtChannelsActive.find(ch => 
-                  ch.district === district.name
+              {districtChannels.map((district) => {
+                const activeChannel = districtChannelsActive.find(
+                  (ch) => ch.district === district.name
                 );
-                
+
                 return (
                   <div key={district.name} className="space-y-1">
                     {/* District Info */}
@@ -225,20 +224,23 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                       <div className="flex items-center">
                         <MapPin className="w-4 h-4 text-blue-500 mr-2" />
                         <span className="text-sm font-medium">{district.name}</span>
-                        <span className={`ml-2 px-1.5 py-0.5 text-xs rounded-full ${getAffluenceColor(district.affluence)}`}>
+                        <span
+                          className={`ml-2 px-1.5 py-0.5 text-xs rounded-full ${getAffluenceColor(district.affluence)}`}
+                        >
                           {district.affluence}/10
                         </span>
                       </div>
                       {district.urgencyMultiplier > 1.2 && (
-                        <AlertTriangle className="w-4 h-4 text-orange-500" title="High Priority District" />
+                        <AlertTriangle
+                          className="w-4 h-4 text-orange-500"
+                          title="High Priority District"
+                        />
                       )}
                     </div>
-                    
+
                     {/* District Channel */}
-                    {activeChannel && (
-                      <ChannelItem channel={activeChannel} />
-                    )}
-                    
+                    {activeChannel && <ChannelItem channel={activeChannel} />}
+
                     {!district.hasChannel && (
                       <button className="w-full p-2 text-xs text-gray-500 border border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:text-gray-700">
                         Create {district.name} Channel
@@ -254,14 +256,10 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
         {/* Project Channels */}
         {projectChannels.length > 0 && (
           <div>
-            <SectionHeader 
-              title="Projects" 
-              section="projects" 
-              count={projectChannels.length}
-            />
+            <SectionHeader title="Projects" section="projects" count={projectChannels.length} />
             {expandedSections.projects && (
               <div className="space-y-1 mt-2">
-                {projectChannels.map(channel => (
+                {projectChannels.map((channel) => (
                   <div key={channel._id}>
                     <ChannelItem channel={channel} />
                     {channel.lastMessage && (
@@ -279,14 +277,10 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
         {/* Direct Messages */}
         {directChannels.length > 0 && (
           <div>
-            <SectionHeader 
-              title="Direct Messages" 
-              section="direct" 
-              count={directChannels.length}
-            />
+            <SectionHeader title="Direct Messages" section="direct" count={directChannels.length} />
             {expandedSections.direct && (
               <div className="space-y-1 mt-2">
-                {directChannels.map(channel => (
+                {directChannels.map((channel) => (
                   <div key={channel._id}>
                     <ChannelItem channel={channel} />
                     {channel.lastMessage && (

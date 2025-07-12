@@ -1,14 +1,14 @@
+import { useMutation, useQuery } from "convex/react";
+import { Calendar, Clock, Plus } from "lucide-react";
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { Calendar, Clock, MapPin, User, Plus, Filter } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
 
 export function ScheduleModule() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"month" | "week" | "day">("week");
   const [filterTechnician, setFilterTechnician] = useState("");
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [_showAddForm, setShowAddForm] = useState(false);
 
   // Get jobs for the current time period
   const jobs = useQuery(api.jobs.list, {
@@ -16,7 +16,7 @@ export function ScheduleModule() {
     scheduledBefore: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getTime(),
   });
 
-  const contacts = useQuery(api.contacts.list, {});
+  const _contacts = useQuery(api.contacts.list, {});
   const updateJob = useMutation(api.jobs.update);
 
   // Get current week dates
@@ -25,7 +25,7 @@ export function ScheduleModule() {
     const day = start.getDay();
     const diff = start.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
     start.setDate(diff);
-    
+
     const dates = [];
     for (let i = 0; i < 7; i++) {
       const date = new Date(start);
@@ -39,26 +39,26 @@ export function ScheduleModule() {
 
   const getJobsForDate = (date: Date) => {
     if (!jobs) return [];
-    
-    return jobs.filter(job => {
+
+    return jobs.filter((job) => {
       if (!job.scheduledDate) return false;
       const jobDate = new Date(job.scheduledDate);
       return jobDate.toDateString() === date.toDateString();
     });
   };
 
-  const handleJobDrop = async (jobId: string, newDate: Date, newTime: string) => {
+  const _handleJobDrop = async (jobId: string, newDate: Date, newTime: string) => {
     try {
-      const [hours, minutes] = newTime.split(':').map(Number);
+      const [hours, minutes] = newTime.split(":").map(Number);
       const scheduledDate = new Date(newDate);
       scheduledDate.setHours(hours, minutes);
-      
+
       await updateJob({
         id: jobId as any,
         scheduledDate: scheduledDate.getTime(),
       });
       toast.success("Job rescheduled successfully");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to reschedule job");
     }
   };
@@ -101,16 +101,20 @@ export function ScheduleModule() {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))}
+                onClick={() =>
+                  setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
+                }
                 className="p-2 hover:bg-gray-100 rounded-lg"
               >
                 ←
               </button>
               <h2 className="text-lg font-semibold text-gray-900">
-                {currentDate.toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' })}
+                {currentDate.toLocaleDateString("pl-PL", { month: "long", year: "numeric" })}
               </h2>
               <button
-                onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
+                onClick={() =>
+                  setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
+                }
                 className="p-2 hover:bg-gray-100 rounded-lg"
               >
                 →
@@ -123,7 +127,7 @@ export function ScheduleModule() {
               Today
             </button>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <select
               value={viewMode}
@@ -134,7 +138,7 @@ export function ScheduleModule() {
               <option value="week">Week</option>
               <option value="month">Month</option>
             </select>
-            
+
             <select
               value={filterTechnician}
               onChange={(e) => setFilterTechnician(e.target.value)}
@@ -160,13 +164,15 @@ export function ScheduleModule() {
               <div key={index} className="p-4 bg-gray-50 border-r border-gray-200 last:border-r-0">
                 <div className="text-center">
                   <div className="text-sm font-medium text-gray-900">
-                    {date.toLocaleDateString('pl-PL', { weekday: 'short' })}
+                    {date.toLocaleDateString("pl-PL", { weekday: "short" })}
                   </div>
-                  <div className={`text-lg font-semibold mt-1 ${
-                    date.toDateString() === new Date().toDateString() 
-                      ? 'text-blue-600' 
-                      : 'text-gray-900'
-                  }`}>
+                  <div
+                    className={`text-lg font-semibold mt-1 ${
+                      date.toDateString() === new Date().toDateString()
+                        ? "text-blue-600"
+                        : "text-gray-900"
+                    }`}
+                  >
                     {date.getDate()}
                   </div>
                 </div>
@@ -182,14 +188,17 @@ export function ScheduleModule() {
                   <span className="text-sm text-gray-500">{hour}:00</span>
                 </div>
                 {weekDates.map((date, dateIndex) => {
-                  const dayJobs = getJobsForDate(date).filter(job => {
+                  const dayJobs = getJobsForDate(date).filter((job) => {
                     if (!job.scheduledDate) return false;
                     const jobHour = new Date(job.scheduledDate).getHours();
                     return jobHour === hour;
                   });
 
                   return (
-                    <div key={dateIndex} className="p-2 border-r border-gray-200 last:border-r-0 min-h-[60px]">
+                    <div
+                      key={dateIndex}
+                      className="p-2 border-r border-gray-200 last:border-r-0 min-h-[60px]"
+                    >
                       {dayJobs.map((job) => (
                         <div
                           key={job._id}
@@ -198,7 +207,7 @@ export function ScheduleModule() {
                         >
                           <div className="font-medium truncate">{job.title}</div>
                           <div className="text-xs opacity-75 truncate">
-                            {job.type.replace('_', ' ')}
+                            {job.type.replace("_", " ")}
                           </div>
                         </div>
                       ))}
@@ -215,47 +224,54 @@ export function ScheduleModule() {
       {viewMode === "day" && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold mb-4">
-            {currentDate.toLocaleDateString('pl-PL', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
+            {currentDate.toLocaleDateString("pl-PL", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
             })}
           </h3>
-          
+
           <div className="space-y-3">
             {getJobsForDate(currentDate).map((job) => (
-              <div key={job._id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+              <div
+                key={job._id}
+                className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg"
+              >
                 <div className="flex-shrink-0">
                   <Clock className="w-5 h-5 text-gray-400" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
                     <h4 className="font-medium text-gray-900">{job.title}</h4>
-                    <span className={`px-2 py-1 text-xs rounded-full ${priorityColors[job.priority]}`}>
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${priorityColors[job.priority]}`}
+                    >
                       {job.priority}
                     </span>
-                    <span className={`px-2 py-1 text-xs rounded-full ${statusColors[job.status as keyof typeof statusColors]}`}>
-                      {job.status.replace('_', ' ')}
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${statusColors[job.status as keyof typeof statusColors]}`}
+                    >
+                      {job.status.replace("_", " ")}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 mt-1">{job.description}</p>
                   <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
                     <span className="flex items-center">
                       <Clock className="w-3 h-3 mr-1" />
-                      {job.scheduledDate ? new Date(job.scheduledDate).toLocaleTimeString('pl-PL', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      }) : 'Not scheduled'}
+                      {job.scheduledDate
+                        ? new Date(job.scheduledDate).toLocaleTimeString("pl-PL", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "Not scheduled"}
                     </span>
-                    {job.estimatedHours && (
-                      <span>Est. {job.estimatedHours}h</span>
-                    )}
+                    {job.estimatedHours && <span>Est. {job.estimatedHours}h</span>}
                   </div>
                 </div>
               </div>
             ))}
-            
+
             {getJobsForDate(currentDate).length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />

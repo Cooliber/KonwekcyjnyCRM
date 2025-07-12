@@ -1,93 +1,64 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useQuery, useMutation, useAction } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { 
-  Plus, 
-  Save, 
-  Play, 
-  Download, 
-  Share, 
-  Settings,
-  Database,
-  BarChart3,
-  Table,
-  PieChart,
-  LineChart,
-  Gauge,
-  Filter,
-  Calculator,
-  MapPin,
-  Brain,
-  Clock,
-  Users,
-  Eye,
-  Edit,
-  Trash2,
-  Copy,
-  Star,
-  StarOff
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { ReportDesigner } from './report-builder/ReportDesigner';
-import { DataSourcePanel } from './report-builder/DataSourcePanel';
-import { VisualizationPanel } from './report-builder/VisualizationPanel';
-import { FilterPanel } from './report-builder/FilterPanel';
-import { PreviewPanel } from './report-builder/PreviewPanel';
-import { WarsawSettingsPanel } from './report-builder/WarsawSettingsPanel';
-import { ReportTemplates } from './report-builder/ReportTemplates';
-import { ReportList } from './report-builder/ReportList';
-import { ExportDialog } from './report-builder/ExportDialog';
-import { ShareDialog } from './report-builder/ShareDialog';
+import { useAction, useMutation, useQuery } from "convex/react";
+import { BarChart3, Copy, Download, Play, Plus, Save, Share, Table } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
+import { Button } from "../ui/button";
+import { DataSourcePanel } from "./report-builder/DataSourcePanel";
+import { ExportDialog } from "./report-builder/ExportDialog";
+import { FilterPanel } from "./report-builder/FilterPanel";
+import { PreviewPanel } from "./report-builder/PreviewPanel";
+import { ReportDesigner } from "./report-builder/ReportDesigner";
+import { ReportList } from "./report-builder/ReportList";
+import { ReportTemplates } from "./report-builder/ReportTemplates";
+import { ShareDialog } from "./report-builder/ShareDialog";
+import { VisualizationPanel } from "./report-builder/VisualizationPanel";
+import { WarsawSettingsPanel } from "./report-builder/WarsawSettingsPanel";
 
 interface CustomReportBuilderProps {
-  initialView?: 'list' | 'builder' | 'templates';
+  initialView?: "list" | "builder" | "templates";
   reportId?: string;
 }
 
-export function CustomReportBuilder({ 
-  initialView = 'list',
-  reportId 
-}: CustomReportBuilderProps) {
+export function CustomReportBuilder({ initialView = "list", reportId }: CustomReportBuilderProps) {
   const [activeView, setActiveView] = useState(initialView);
   const [selectedReportId, setSelectedReportId] = useState<string | null>(reportId || null);
-  const [isBuilderMode, setIsBuilderMode] = useState(false);
+  const [_isBuilderMode, setIsBuilderMode] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [reportConfig, setReportConfig] = useState<any>({
-    name: '',
-    description: '',
-    type: 'table',
+    name: "",
+    description: "",
+    type: "table",
     config: {
       dataSources: [],
       visualization: {
-        type: 'table',
-        xAxis: '',
-        yAxis: '',
-        groupBy: '',
-        aggregation: 'count',
-        colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+        type: "table",
+        xAxis: "",
+        yAxis: "",
+        groupBy: "",
+        aggregation: "count",
+        colors: ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"],
       },
       calculatedFields: [],
       warsawSettings: {
-        districtFilter: '',
+        districtFilter: "",
         affluenceWeighting: false,
         seasonalAdjustment: false,
-        routeOptimization: false
-      }
+        routeOptimization: false,
+      },
     },
-    category: '',
+    category: "",
     tags: [],
-    isPublic: false
+    isPublic: false,
   });
 
   // Queries
   const reports = useQuery(api.reports.list, {});
   const templates = useQuery(api.reports.getTemplates, {});
-  const currentReport = selectedReportId 
+  const currentReport = selectedReportId
     ? useQuery(api.reports.get, { id: selectedReportId as any })
     : null;
 
@@ -103,12 +74,12 @@ export function CustomReportBuilder({
     if (currentReport) {
       setReportConfig({
         name: currentReport.name,
-        description: currentReport.description || '',
+        description: currentReport.description || "",
         type: currentReport.type,
         config: currentReport.config,
-        category: currentReport.category || '',
+        category: currentReport.category || "",
         tags: currentReport.tags || [],
-        isPublic: currentReport.isPublic
+        isPublic: currentReport.isPublic,
       });
     }
   }, [currentReport]);
@@ -123,95 +94,98 @@ export function CustomReportBuilder({
           config: reportConfig.config,
           category: reportConfig.category,
           tags: reportConfig.tags,
-          isPublic: reportConfig.isPublic
+          isPublic: reportConfig.isPublic,
         });
-        toast.success('Report updated successfully');
+        toast.success("Report updated successfully");
       } else {
         const newReportId = await createReport({
-          name: reportConfig.name || 'Untitled Report',
+          name: reportConfig.name || "Untitled Report",
           description: reportConfig.description,
           type: reportConfig.type,
           config: reportConfig.config,
           category: reportConfig.category,
           tags: reportConfig.tags,
-          isPublic: reportConfig.isPublic
+          isPublic: reportConfig.isPublic,
         });
         setSelectedReportId(newReportId);
-        toast.success('Report created successfully');
+        toast.success("Report created successfully");
       }
     } catch (error) {
-      toast.error('Failed to save report');
-      console.error('Save error:', error);
+      toast.error("Failed to save report");
+      console.error("Save error:", error);
     }
   }, [selectedReportId, reportConfig, createReport, updateReport]);
 
   const handleExecuteReport = useCallback(async () => {
     if (!selectedReportId) {
-      toast.error('Please save the report first');
+      toast.error("Please save the report first");
       return;
     }
 
     try {
       const result = await executeReport({
         reportId: selectedReportId as any,
-        useCache: true
+        useCache: true,
       });
       toast.success(`Report executed successfully (${result.metadata.totalRows} rows)`);
       return result;
     } catch (error) {
-      toast.error('Failed to execute report');
-      console.error('Execution error:', error);
+      toast.error("Failed to execute report");
+      console.error("Execution error:", error);
     }
   }, [selectedReportId, executeReport]);
 
-  const handleDeleteReport = useCallback(async (reportId: string) => {
-    try {
-      await deleteReport({ id: reportId as any });
-      if (selectedReportId === reportId) {
-        setSelectedReportId(null);
-        setActiveView('list');
+  const handleDeleteReport = useCallback(
+    async (reportId: string) => {
+      try {
+        await deleteReport({ id: reportId as any });
+        if (selectedReportId === reportId) {
+          setSelectedReportId(null);
+          setActiveView("list");
+        }
+        toast.success("Report deleted successfully");
+      } catch (_error) {
+        toast.error("Failed to delete report");
       }
-      toast.success('Report deleted successfully');
-    } catch (error) {
-      toast.error('Failed to delete report');
-    }
-  }, [deleteReport, selectedReportId]);
+    },
+    [deleteReport, selectedReportId]
+  );
 
   const handleNewReport = useCallback(() => {
     setSelectedReportId(null);
     setReportConfig({
-      name: '',
-      description: '',
-      type: 'table',
+      name: "",
+      description: "",
+      type: "table",
       config: {
         dataSources: [],
         visualization: {
-          type: 'table',
-          xAxis: '',
-          yAxis: '',
-          groupBy: '',
-          aggregation: 'count',
-          colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+          type: "table",
+          xAxis: "",
+          yAxis: "",
+          groupBy: "",
+          aggregation: "count",
+          colors: ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"],
         },
         calculatedFields: [],
         warsawSettings: {
-          districtFilter: '',
+          districtFilter: "",
           affluenceWeighting: false,
           seasonalAdjustment: false,
-          routeOptimization: false
-        }
+          routeOptimization: false,
+        },
       },
-      category: '',
+      category: "",
       tags: [],
-      isPublic: false
+      isPublic: false,
     });
-    setActiveView('builder');
+    setActiveView("builder");
     setIsBuilderMode(true);
   }, []);
 
   const handleEditReport = useCallback((reportId: string) => {
     setSelectedReportId(reportId);
-    setActiveView('builder');
+    setActiveView("builder");
     setIsBuilderMode(true);
   }, []);
 
@@ -223,30 +197,30 @@ export function CustomReportBuilder({
       </div>
       <div className="flex items-center space-x-3">
         <div className="flex bg-gray-100 rounded-lg p-1">
-          {(['list', 'builder', 'templates'] as const).map(view => (
+          {(["list", "builder", "templates"] as const).map((view) => (
             <button
               key={view}
               onClick={() => setActiveView(view)}
               className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
                 activeView === view
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
               }`}
             >
-              {view === 'list' && <Table className="w-4 h-4 mr-1 inline" />}
-              {view === 'builder' && <BarChart3 className="w-4 h-4 mr-1 inline" />}
-              {view === 'templates' && <Copy className="w-4 h-4 mr-1 inline" />}
+              {view === "list" && <Table className="w-4 h-4 mr-1 inline" />}
+              {view === "builder" && <BarChart3 className="w-4 h-4 mr-1 inline" />}
+              {view === "templates" && <Copy className="w-4 h-4 mr-1 inline" />}
               {view.charAt(0).toUpperCase() + view.slice(1)}
             </button>
           ))}
         </div>
-        {activeView === 'list' && (
+        {activeView === "list" && (
           <Button onClick={handleNewReport}>
             <Plus className="w-4 h-4 mr-2" />
             New Report
           </Button>
         )}
-        {activeView === 'builder' && (
+        {activeView === "builder" && (
           <>
             <Button variant="outline" onClick={handleSaveReport}>
               <Save className="w-4 h-4 mr-2" />
@@ -275,7 +249,7 @@ export function CustomReportBuilder({
       <div className="space-y-6">
         {renderHeader()}
 
-        {activeView === 'list' && (
+        {activeView === "list" && (
           <ReportList
             reports={reports || []}
             onEdit={handleEditReport}
@@ -284,37 +258,37 @@ export function CustomReportBuilder({
           />
         )}
 
-        {activeView === 'templates' && (
+        {activeView === "templates" && (
           <ReportTemplates
             templates={templates || []}
             onUseTemplate={(templateId) => {
               setSelectedReportId(templateId);
-              setActiveView('builder');
+              setActiveView("builder");
               setIsBuilderMode(true);
             }}
           />
         )}
 
-        {activeView === 'builder' && (
+        {activeView === "builder" && (
           <div className="grid grid-cols-12 gap-6">
             {/* Left Sidebar - Configuration Panels */}
             <div className="col-span-3 space-y-4">
               <DataSourcePanel
                 dataSources={reportConfig.config.dataSources}
-                onChange={(dataSources) => 
-                  setReportConfig(prev => ({
+                onChange={(dataSources) =>
+                  setReportConfig((prev) => ({
                     ...prev,
-                    config: { ...prev.config, dataSources }
+                    config: { ...prev.config, dataSources },
                   }))
                 }
               />
-              
+
               <VisualizationPanel
                 visualization={reportConfig.config.visualization}
                 onChange={(visualization) =>
-                  setReportConfig(prev => ({
+                  setReportConfig((prev) => ({
                     ...prev,
-                    config: { ...prev.config, visualization }
+                    config: { ...prev.config, visualization },
                   }))
                 }
               />
@@ -322,9 +296,9 @@ export function CustomReportBuilder({
               <FilterPanel
                 filters={reportConfig.config.filters || []}
                 onChange={(filters) =>
-                  setReportConfig(prev => ({
+                  setReportConfig((prev) => ({
                     ...prev,
-                    config: { ...prev.config, filters }
+                    config: { ...prev.config, filters },
                   }))
                 }
               />
@@ -332,9 +306,9 @@ export function CustomReportBuilder({
               <WarsawSettingsPanel
                 settings={reportConfig.config.warsawSettings}
                 onChange={(warsawSettings) =>
-                  setReportConfig(prev => ({
+                  setReportConfig((prev) => ({
                     ...prev,
-                    config: { ...prev.config, warsawSettings }
+                    config: { ...prev.config, warsawSettings },
                   }))
                 }
               />
@@ -362,10 +336,7 @@ export function CustomReportBuilder({
 
         {/* Dialogs */}
         {showExportDialog && (
-          <ExportDialog
-            reportId={selectedReportId}
-            onClose={() => setShowExportDialog(false)}
-          />
+          <ExportDialog reportId={selectedReportId} onClose={() => setShowExportDialog(false)} />
         )}
 
         {showShareDialog && (

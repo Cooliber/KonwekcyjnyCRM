@@ -1,25 +1,19 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useMutation } from 'convex/react';
-import { api } from '../../../../convex/_generated/api';
-import { 
-  Send, 
-  Paperclip, 
-  Mic, 
-  MicOff, 
-  MapPin, 
-  Clock, 
-  AlertTriangle,
-  Smile,
-  AtSign
-} from 'lucide-react';
+import { useMutation } from "convex/react";
+import { AtSign, Clock, MapPin, Mic, MicOff, Paperclip, Send, Smile } from "lucide-react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
+import { api } from "../../../../convex/_generated/api";
 
 interface MessageInputProps {
-  onSendMessage: (content: string, options?: {
-    priority?: 'low' | 'normal' | 'high' | 'urgent';
-    mentions?: string[];
-    location?: { lat: number; lng: number; address?: string };
-    scheduledFor?: number;
-  }) => void;
+  onSendMessage: (
+    content: string,
+    options?: {
+      priority?: "low" | "normal" | "high" | "urgent";
+      mentions?: string[];
+      location?: { lat: number; lng: number; address?: string };
+      scheduledFor?: number;
+    }
+  ) => void;
   placeholder?: string;
   allowVoiceNotes?: boolean;
   allowFileUpload?: boolean;
@@ -33,17 +27,21 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   allowVoiceNotes = true,
   allowFileUpload = true,
   showDistrictContext = false,
-  district
+  district,
 }) => {
-  const [message, setMessage] = useState('');
-  const [priority, setPriority] = useState<'low' | 'normal' | 'high' | 'urgent'>('normal');
+  const [message, setMessage] = useState("");
+  const [priority, setPriority] = useState<"low" | "normal" | "high" | "urgent">("normal");
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [showScheduler, setShowScheduler] = useState(false);
   const [scheduledFor, setScheduledFor] = useState<Date | null>(null);
-  const [currentLocation, setCurrentLocation] = useState<{lat: number; lng: number; address?: string} | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<{
+    lat: number;
+    lng: number;
+    address?: string;
+  } | null>(null);
   const [mentions, setMentions] = useState<string[]>([]);
-  
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -58,10 +56,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
-  }, [message]);
+  }, []);
 
   // Get current location
   useEffect(() => {
@@ -70,10 +68,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         (position) => {
           setCurrentLocation({
             lat: position.coords.latitude,
-            lng: position.coords.longitude
+            lng: position.coords.longitude,
           });
         },
-        (error) => console.log('Location access denied:', error)
+        (error) => console.log("Location access denied:", error)
       );
     }
   }, [showDistrictContext]);
@@ -85,18 +83,18 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       priority,
       mentions: mentions.length > 0 ? mentions : undefined,
       location: currentLocation,
-      scheduledFor: scheduledFor?.getTime()
+      scheduledFor: scheduledFor?.getTime(),
     };
 
     onSendMessage(message, options);
-    setMessage('');
-    setPriority('normal');
+    setMessage("");
+    setPriority("normal");
     setScheduledFor(null);
     setMentions([]);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -110,11 +108,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
       const chunks: Blob[] = [];
       mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-      
+
       mediaRecorder.onstop = async () => {
-        const blob = new Blob(chunks, { type: 'audio/webm' });
+        const blob = new Blob(chunks, { type: "audio/webm" });
         await uploadVoiceNote(blob);
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorder.start();
@@ -122,11 +120,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       setRecordingTime(0);
 
       recordingIntervalRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
+        setRecordingTime((prev) => prev + 1);
       }, 1000);
-
     } catch (error) {
-      console.error('Failed to start recording:', error);
+      console.error("Failed to start recording:", error);
     }
   };
 
@@ -143,9 +140,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   const uploadVoiceNote = async (blob: Blob) => {
     try {
       const uploadUrl = await generateUploadUrl();
-      
+
       const response = await fetch(uploadUrl, {
-        method: 'POST',
+        method: "POST",
         body: blob,
       });
 
@@ -154,11 +151,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         await sendVoiceNote({
           fileId: storageId,
           duration: recordingTime,
-          transcription: `Voice note (${recordingTime}s)`
+          transcription: `Voice note (${recordingTime}s)`,
         });
       }
     } catch (error) {
-      console.error('Failed to upload voice note:', error);
+      console.error("Failed to upload voice note:", error);
     }
   };
 
@@ -168,50 +165,55 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
     try {
       const uploadUrl = await generateUploadUrl();
-      
+
       const response = await fetch(uploadUrl, {
-        method: 'POST',
+        method: "POST",
         body: file,
       });
 
       if (response.ok) {
         const { storageId } = await response.json();
-        
-        if (file.type.startsWith('image/')) {
+
+        if (file.type.startsWith("image/")) {
           await sendImage({
             fileId: storageId,
-            fileName: file.name
+            fileName: file.name,
           });
         } else {
           await sendFile({
             fileId: storageId,
-            fileName: file.name
+            fileName: file.name,
           });
         }
       }
     } catch (error) {
-      console.error('Failed to upload file:', error);
+      console.error("Failed to upload file:", error);
     }
 
     // Reset file input
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   const formatRecordingTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const getPriorityColor = () => {
     switch (priority) {
-      case 'urgent': return 'text-red-600 bg-red-50 border-red-200';
-      case 'high': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'normal': return 'text-gray-600 bg-gray-50 border-gray-200';
-      case 'low': return 'text-blue-600 bg-blue-50 border-blue-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      case "urgent":
+        return "text-red-600 bg-red-50 border-red-200";
+      case "high":
+        return "text-orange-600 bg-orange-50 border-orange-200";
+      case "normal":
+        return "text-gray-600 bg-gray-50 border-gray-200";
+      case "low":
+        return "text-blue-600 bg-blue-50 border-blue-200";
+      default:
+        return "text-gray-600 bg-gray-50 border-gray-200";
     }
   };
 
@@ -255,7 +257,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           {showDistrictContext && (
             <button
               onClick={() => setCurrentLocation(currentLocation ? null : { lat: 0, lng: 0 })}
-              className={`p-1 rounded ${currentLocation ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`p-1 rounded ${currentLocation ? "text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
               title="Include Location"
             >
               <MapPin className="w-4 h-4" />
@@ -272,7 +274,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           </label>
           <input
             type="datetime-local"
-            value={scheduledFor ? scheduledFor.toISOString().slice(0, 16) : ''}
+            value={scheduledFor ? scheduledFor.toISOString().slice(0, 16) : ""}
             onChange={(e) => setScheduledFor(e.target.value ? new Date(e.target.value) : null)}
             className="w-full p-2 border border-gray-300 rounded text-sm"
           />
@@ -311,9 +313,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             placeholder={placeholder}
             className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             rows={1}
-            style={{ maxHeight: '120px' }}
+            style={{ maxHeight: "120px" }}
           />
-          
+
           {/* Mentions and Emojis */}
           <div className="absolute bottom-2 right-2 flex items-center space-x-1">
             <button className="p-1 text-gray-400 hover:text-gray-600">
@@ -332,11 +334,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             onMouseUp={stopRecording}
             onMouseLeave={stopRecording}
             className={`p-2 rounded-lg transition-colors ${
-              isRecording 
-                ? 'bg-red-600 text-white' 
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              isRecording
+                ? "bg-red-600 text-white"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
             }`}
-            title={isRecording ? 'Release to send' : 'Hold to record'}
+            title={isRecording ? "Release to send" : "Hold to record"}
           >
             {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
           </button>
@@ -356,7 +358,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       {/* Recording Indicator */}
       {isRecording && (
         <div className="flex items-center justify-center space-x-2 text-red-600">
-          <div className="w-2 h-2 bg-red-600 rounded-full animate-pulse"></div>
+          <div className="w-2 h-2 bg-red-600 rounded-full animate-pulse" />
           <span className="text-sm font-medium">
             Recording: {formatRecordingTime(recordingTime)}
           </span>
