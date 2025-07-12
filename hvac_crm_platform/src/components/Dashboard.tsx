@@ -8,8 +8,17 @@ import { MapModule } from "./modules/MapModule";
 import { ProphecyDashboard } from "./modules/ProphecyDashboard";
 import { SalesPipelineModule } from "./modules/SalesPipelineModule";
 import { BusinessIntelligenceDashboard } from "./modules/BusinessIntelligenceDashboard";
+import { CustomReportBuilder } from "./modules/CustomReportBuilder";
 import { FileUploadManager } from "./modules/FileUploadManager";
+import { ContractManagementModule } from "./modules/ContractManagementModule";
+import { ServiceAgreementModule } from "./modules/ServiceAgreementModule";
+import { AdvancedAnalyticsDashboard } from "./modules/AdvancedAnalyticsDashboard";
+import { EquipmentLifecycleModule } from "./modules/EquipmentLifecycleModule";
+import { CustomerPortalModule } from "./modules/CustomerPortalModule";
 import { RealTimeSubscriptionManager } from "./modules/RealTimeSubscriptionManager";
+import { HVACDashboard } from "./modules/HVACDashboard";
+import { EnhancedInstallationModule } from "./modules/EnhancedInstallationModule";
+import { EnhancedServiceModule } from "./modules/EnhancedServiceModule";
 
 interface DashboardProps {
   activeModule: string;
@@ -48,10 +57,28 @@ export function Dashboard({ activeModule }: DashboardProps) {
         return <SalesPipelineModule />;
       case "business_intelligence":
         return <BusinessIntelligenceDashboard />;
+      case "custom_reports":
+        return <CustomReportBuilder />;
       case "file_manager":
         return <FileUploadManager />;
       case "realtime_manager":
         return <RealTimeSubscriptionManager />;
+      case "hvac_dashboard":
+        return <HVACDashboard />;
+      case "enhanced_installations":
+        return <EnhancedInstallationModule />;
+      case "enhanced_services":
+        return <EnhancedServiceModule />;
+      case "contract_management":
+        return <ContractManagementModule />;
+      case "service_agreements":
+        return <ServiceAgreementModule />;
+      case "advanced_analytics":
+        return <AdvancedAnalyticsDashboard />;
+      case "equipment_lifecycle":
+        return <EquipmentLifecycleModule />;
+      case "customer_portal":
+        return <CustomerPortalModule />;
       default:
         return <DashboardOverview />;
     }

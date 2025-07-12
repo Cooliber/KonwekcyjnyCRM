@@ -1,0 +1,170 @@
+{
+  "name": "@hvac-crm/gotun",
+  "version": "1.0.0",
+  "description": "Epic Enterprise Enhancement Package - ACI-MCP Integration for HVAC CRM Platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && npm run build:assets",
+    "build:assets": "cp -r src/assets dist/ 2>/dev/null || true",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "test:ui": "vitest --ui",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "start:aci-unified": "uvx aci-mcp unified-server --linked-account-owner-id $ACI_LINKED_ACCOUNT_OWNER_ID",
+    "start:aci-apps": "uvx aci-mcp apps-server --apps $ACI_APPS_LIST --linked-account-owner-id $ACI_LINKED_ACCOUNT_OWNER_ID",
+    "start:aci-vibeops": "uvx aci-mcp vibeops-server",
+    "debug:aci-unified": "npx @modelcontextprotocol/inspector uvx aci-mcp unified-server --linked-account-owner-id $ACI_LINKED_ACCOUNT_OWNER_ID",
+    "debug:aci-apps": "npx @modelcontextprotocol/inspector uvx aci-mcp apps-server --apps $ACI_APPS_LIST --linked-account-owner-id $ACI_LINKED_ACCOUNT_OWNER_ID",
+    "debug:aci-vibeops": "npx @modelcontextprotocol/inspector uvx aci-mcp vibeops-server"
+  },
+  "keywords": [
+    "hvac",
+    "crm",
+    "enterprise",
+    "aci-mcp",
+    "ai",
+    "prophecy",
+    "warsaw",
+    "automation",
+    "integration",
+    "typescript"
+  ],
+  "author": {
+    "name": "HVAC CRM Team",
+    "email": "dev@hvac-crm.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cooliber/KonwekcyjnyCRM.git",
+    "directory": "hvac_crm_platform/packages/GoTun"
+  },
+  "bugs": {
+    "url": "https://github.com/Cooliber/KonwekcyjnyCRM/issues"
+  },
+  "homepage": "https://github.com/Cooliber/KonwekcyjnyCRM#readme",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "@types/node": "^20.0.0",
+    "axios": "^1.6.0",
+    "convex": "^1.16.0",
+    "date-fns": "^3.0.0",
+    "lodash": "^4.17.21",
+    "uuid": "^9.0.0",
+    "zod": "^3.22.0",
+    "ws": "^8.14.0",
+    "eventemitter3": "^5.0.1",
+    "retry": "^0.13.1"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.200",
+    "@types/uuid": "^9.0.7",
+    "@types/ws": "^8.5.10",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.2.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types/index.js",
+      "require": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./core": {
+      "import": "./dist/core/index.js",
+      "require": "./dist/core/index.js",
+      "types": "./dist/core/index.d.ts"
+    },
+    "./enterprise": {
+      "import": "./dist/enterprise/index.js",
+      "require": "./dist/enterprise/index.js",
+      "types": "./dist/enterprise/index.d.ts"
+    },
+    "./hvac": {
+      "import": "./dist/hvac/index.js",
+      "require": "./dist/hvac/index.js",
+      "types": "./dist/hvac/index.d.ts"
+    },
+    "./integrations": {
+      "import": "./dist/integrations/index.js",
+      "require": "./dist/integrations/index.js",
+      "types": "./dist/integrations/index.d.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com"
+  },
+  "config": {
+    "aci": {
+      "defaultApps": "SALESFORCE,HUBSPOT,ZAPIER,GMAIL,SLACK,GOOGLE_SHEETS,CALENDLY,STRIPE",
+      "linkedAccountOwnerId": "${ACI_LINKED_ACCOUNT_OWNER_ID}",
+      "apiKey": "${ACI_API_KEY}",
+      "vibeopsApiKey": "${VIBEOPS_API_KEY}"
+    },
+    "hvac": {
+      "warsawDistricts": [
+        "Śródmieście",
+        "Mokotów",
+        "Ochota",
+        "Wola",
+        "Żoliborz",
+        "Praga-Północ",
+        "Praga-Południe",
+        "Targówek",
+        "Rembertów",
+        "Wawer",
+        "Wilanów",
+        "Ursynów",
+        "Włochy",
+        "Ursus",
+        "Bemowo",
+        "Bielany",
+        "Białołęka"
+      ],
+      "hvacEquipmentTypes": [
+        "split_ac",
+        "central_ac",
+        "heat_pump",
+        "ventilation",
+        "air_purifier",
+        "humidifier",
+        "dehumidifier"
+      ]
+    }
+  },
+  "volta": {
+    "node": "20.10.0",
+    "npm": "10.2.3"
+  }
+}

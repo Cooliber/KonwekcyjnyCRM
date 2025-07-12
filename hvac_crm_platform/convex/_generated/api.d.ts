@@ -31,6 +31,7 @@ import type * as messages from "../messages.js";
 import type * as notifications from "../notifications.js";
 import type * as performanceOptimization from "../performanceOptimization.js";
 import type * as quotes from "../quotes.js";
+import type * as reports from "../reports.js";
 import type * as router from "../router.js";
 import type * as routes from "../routes.js";
 import type * as transcriptions from "../transcriptions.js";
@@ -65,6 +66,7 @@ declare const fullApi: ApiFromModules<{
   notifications: typeof notifications;
   performanceOptimization: typeof performanceOptimization;
   quotes: typeof quotes;
+  reports: typeof reports;
   router: typeof router;
   routes: typeof routes;
   transcriptions: typeof transcriptions;

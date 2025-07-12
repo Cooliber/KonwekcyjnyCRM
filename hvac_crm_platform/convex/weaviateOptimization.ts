@@ -82,7 +82,7 @@ const WEAVIATE_CONFIG = {
 const vectorCache = new Map<string, { data: any; timestamp: number; ttl: number }>();
 
 // Optimized vector search with caching and district weighting
-export const optimizedVectorSearch = action({
+export const optimizedVectorSearchPublic = action({
   args: {
     query: v.string(),
     type: v.union(
@@ -206,7 +206,7 @@ export const searchByDistrict = action({
     
     try {
       const searchQuery = buildDistrictSearchQuery(args.district, args.searchType, args.context);
-      const results: VectorSearchResponse = await ctx.runAction(internal.weaviateOptimization.optimizedVectorSearch, {
+      const results: VectorSearchResponse = await ctx.runAction(internal.weaviateOptimization.optimizedVectorSearchInternal, {
         query: searchQuery,
         type: getSearchTypeMapping(args.searchType),
         district: args.district,
@@ -252,7 +252,7 @@ export const batchVectorOperations = action({
     if (searchOps.length > 0) {
       searchResults = await Promise.all(
         searchOps.map((op): Promise<VectorSearchResponse> =>
-          ctx.runAction(internal.weaviateOptimization.optimizedVectorSearch, {
+          ctx.runAction(internal.weaviateOptimization.optimizedVectorSearchInternal, {
             ...op.data,
             district: args.district
           })
@@ -288,7 +288,7 @@ export const batchVectorOperations = action({
 });
 
 // Internal optimized vector search
-export const optimizedVectorSearch = internalAction({
+export const optimizedVectorSearchInternal = internalAction({
   args: {
     query: v.string(),
     type: v.string(),

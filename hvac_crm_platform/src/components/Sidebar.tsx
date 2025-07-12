@@ -11,9 +11,14 @@ import {
   Smartphone,
   BarChart3,
   TrendingUp,
+  PieChart,
   Upload,
   Radio,
-  Zap
+  Zap,
+  FileSignature,
+  Shield,
+  Activity,
+  Globe
 } from "lucide-react";
 
 interface SidebarProps {
@@ -27,9 +32,15 @@ const menuItems = [
   { id: "jobs", label: "Service Jobs", icon: Wrench },
   { id: "schedule", label: "Schedule", icon: Calendar },
   { id: "equipment", label: "Equipment", icon: Package },
+  { id: "equipment_lifecycle", label: "Equipment Lifecycle", icon: Activity },
   { id: "quotes", label: "Quotes", icon: DollarSign },
+  { id: "contract_management", label: "Contract Management", icon: FileSignature },
+  { id: "service_agreements", label: "Service Agreements", icon: Shield },
   { id: "sales_pipeline", label: "Sales Pipeline", icon: TrendingUp },
   { id: "business_intelligence", label: "Business Intelligence", icon: BarChart3 },
+  { id: "advanced_analytics", label: "Advanced Analytics", icon: PieChart },
+  { id: "custom_reports", label: "Custom Reports", icon: FileText },
+  { id: "customer_portal", label: "Customer Portal", icon: Globe },
   { id: "documents", label: "Documents", icon: FileText },
   { id: "file_manager", label: "File Manager", icon: Upload },
   { id: "chat", label: "Team Chat", icon: MessageSquare },

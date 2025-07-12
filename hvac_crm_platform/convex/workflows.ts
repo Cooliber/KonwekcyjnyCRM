@@ -1,4 +1,4 @@
-import { query, mutation, action, internalMutation } from "./_generated/server";
+import { query, mutation, action, internalAction, internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
@@ -214,7 +214,7 @@ export const update = mutation({
 });
 
 // Execute workflow engine - processes all active workflows
-export const executeWorkflows = action({
+export const executeWorkflows = internalAction({
   args: {
     triggerEvent: v.string(),
     entityId: v.string(),
@@ -297,7 +297,7 @@ export const executeWorkflows = action({
 });
 
 // Internal query to get active workflows
-export const getActiveWorkflows = query({
+export const getActiveWorkflows = internalQuery({
   args: {
     triggerEvent: v.string(),
     entityType: v.string()
@@ -313,9 +313,6 @@ export const getActiveWorkflows = query({
       .collect();
   },
 });
-
-// Execute workflows action (alias for executeWorkflows)
-export const executeWorkflows = executeWorkflowsAction;
 
 // Internal mutation to execute workflow actions
 export const executeWorkflowActions = internalMutation({

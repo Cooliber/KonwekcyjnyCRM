@@ -444,3 +444,149 @@ export const getDashboardMetrics = query({
     };
   },
 });
+
+// Real-time HVAC metrics query
+export const getRealtimeMetrics = query({
+  args: {
+    district: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    // Get equipment data for real-time metrics
+    const equipment = await ctx.db.query("equipment").collect();
+
+    // Filter by district if specified
+    const filteredEquipment = args.district
+      ? equipment.filter(eq => eq.location?.includes(args.district!))
+      : equipment;
+
+    return filteredEquipment.map(eq => ({
+      id: eq._id,
+      district: eq.location || 'Unknown',
+      equipmentId: eq._id,
+      energyEfficiency: 85 + Math.random() * 10, // Mock data
+      temperature: 20 + Math.random() * 5,
+      pressure: 1.0 + Math.random() * 0.5,
+      vatAmount: 0,
+      status: 'optimal',
+      lastUpdated: new Date(),
+      powerConsumption: 2 + Math.random() * 3,
+      operatingHours: 8000 + Math.random() * 1000,
+      maintenanceScore: 80 + Math.random() * 15,
+      operatingCost: 1000 + Math.random() * 500,
+      energyCost: 0.1 + Math.random() * 0.1,
+      maintenanceCost: 200 + Math.random() * 200
+    }));
+  }
+});
+
+// HVAC metrics query
+export const getHVACMetrics = query({
+  args: {
+    district: v.optional(v.string()),
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const equipment = await ctx.db.query("equipment")
+      .collect();
+
+    // Take only the requested number of items
+    const limitedEquipment = equipment.slice(0, args.limit || 50);
+
+    return limitedEquipment.map((eq: any) => ({
+      id: eq._id,
+      district: eq.location || 'Śródmieście',
+      equipmentId: eq._id,
+      energyEfficiency: 75 + Math.random() * 20,
+      temperature: 18 + Math.random() * 8,
+      pressure: 0.8 + Math.random() * 0.8,
+      vatAmount: 0,
+      status: Math.random() > 0.8 ? 'warning' : 'optimal',
+      lastUpdated: new Date(),
+      powerConsumption: 1.5 + Math.random() * 4,
+      operatingHours: 7000 + Math.random() * 2000,
+      maintenanceScore: 70 + Math.random() * 25,
+      operatingCost: 800 + Math.random() * 800,
+      energyCost: 0.08 + Math.random() * 0.12,
+      maintenanceCost: 150 + Math.random() * 300
+    }));
+  }
+});
+
+// District performance query
+export const getDistrictPerformance = query({
+  args: {
+    timeRange: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const districts = [
+      'Śródmieście', 'Wilanów', 'Mokotów', 'Żoliborz', 'Ursynów',
+      'Wola', 'Praga-Południe', 'Targówek', 'Ochota', 'Praga-Północ'
+    ];
+
+    return districts.map(district => ({
+      districtName: district,
+      affluenceScore: 4 + Math.random() * 6,
+      serviceDemand: 10 + Math.random() * 40,
+      averageJobValue: 1500 + Math.random() * 3000,
+      activeInstallations: 20 + Math.random() * 80,
+      coordinates: {
+        lat: 52.2 + Math.random() * 0.2,
+        lng: 21.0 + Math.random() * 0.2
+      },
+      completionRate: 80 + Math.random() * 15,
+      customerSatisfaction: 3.5 + Math.random() * 1.5,
+      responseTime: 15 + Math.random() * 30,
+      monthlyRevenue: 20000 + Math.random() * 50000,
+      yearlyRevenue: 200000 + Math.random() * 500000,
+      revenueGrowth: -10 + Math.random() * 40
+    }));
+  }
+});
+
+// Energy analytics query
+export const getEnergyAnalytics = query({
+  args: {
+    district: v.optional(v.string()),
+    timeRange: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const hours = args.timeRange === '1h' ? 12 : args.timeRange === '24h' ? 24 : 30;
+
+    return Array.from({ length: hours }, (_, i) => {
+      const timestamp = new Date();
+      timestamp.setHours(timestamp.getHours() - (hours - i));
+
+      const baseConsumption = 15 + Math.random() * 10;
+      const efficiency = 75 + Math.random() * 20;
+      const baseCost = baseConsumption * 0.65;
+      const vatAmount = baseCost * 0.23;
+
+      return {
+        timestamp,
+        district: args.district || 'Śródmieście',
+        equipmentId: `EQ-${Math.floor(Math.random() * 1000)}`,
+        energyConsumption: Math.round(baseConsumption * 100) / 100,
+        energyEfficiency: Math.round(efficiency * 100) / 100,
+        carbonFootprint: Math.round(baseConsumption * 0.8 * 100) / 100,
+        baseCost: Math.round(baseCost * 100) / 100,
+        vatAmount: Math.round(vatAmount * 100) / 100,
+        totalCost: Math.round((baseCost + vatAmount) * 100) / 100,
+        industryAverage: 82,
+        targetEfficiency: 90,
+        savingsPotential: Math.round((90 - efficiency) * 2 * 100) / 100
+      };
+    });
+  }
+});

@@ -42,13 +42,13 @@ interface RoutePoint {
   lng: number;
   address: string;
   district: string;
-  priority: string;
+  priority: "low" | "medium" | "high" | "urgent";
   estimatedDuration: number;
   timeWindow?: {
     start: string;
     end: string;
   };
-  jobType: string;
+  jobType: "installation" | "repair" | "maintenance" | "inspection" | "emergency";
 }
 
 interface OptimizedRoute {
@@ -86,9 +86,19 @@ export const optimizeRoutes = action({
     if (!userId) throw new Error("Not authenticated");
 
     // Get scheduled jobs for the date
-    const jobs: JobWithCoordinates[] = await ctx.runQuery(api.jobs.getScheduledForDate, {
+    const rawJobs = await ctx.runQuery(api.jobs.getScheduledForDate, {
       date: args.date
     });
+
+    // Filter jobs that have coordinates and transform to JobWithCoordinates
+    const jobs: JobWithCoordinates[] = rawJobs
+      .filter((job: any) => job.coordinates && job.coordinates.lat && job.coordinates.lng)
+      .map((job: any) => ({
+        ...job,
+        coordinates: job.coordinates!,
+        priority: job.priority || "medium",
+        type: job.type || "maintenance"
+      }));
 
     // Get available technicians
     const technicians: TechnicianProfile[] = await ctx.runQuery(api.users.getTechnicians, {
@@ -96,22 +106,20 @@ export const optimizeRoutes = action({
     });
 
     // Transform data for route optimization
-    const routePoints: RoutePoint[] = jobs
-      .filter((job: JobWithCoordinates) => job.coordinates)
-      .map((job: JobWithCoordinates) => ({
-        id: job._id,
-        lat: job.coordinates!.lat,
-        lng: job.coordinates!.lng,
-        address: job.address || "Unknown address",
-        district: job.district || "Unknown",
-        priority: job.priority,
-        estimatedDuration: getJobDuration(job.type),
-        timeWindow: job.preferredTimeSlot ? {
-          start: job.preferredTimeSlot.start,
-          end: job.preferredTimeSlot.end
-        } : undefined,
-        jobType: job.type
-      }));
+    const routePoints: RoutePoint[] = jobs.map((job) => ({
+      id: job._id,
+      lat: job.coordinates.lat,
+      lng: job.coordinates.lng,
+      address: job.address || "Unknown address",
+      district: job.district || "Unknown",
+      priority: job.priority,
+      estimatedDuration: getJobDuration(job.type || "maintenance"),
+      timeWindow: job.preferredTimeSlot ? {
+        start: job.preferredTimeSlot.start,
+        end: job.preferredTimeSlot.end
+      } : undefined,
+      jobType: (job.type as "installation" | "repair" | "maintenance" | "inspection" | "emergency") || "maintenance"
+    }));
 
     const technicianProfiles: Array<{
       id: Id<"users">;
